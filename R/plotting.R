@@ -17,8 +17,8 @@
 #' 
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @import ggplot2
-#' @import ggpattern
 #' @import dplyr
+#' @import tidyr
 #' @export
 
 plotWLCCcomp = function(df, ncol = 3,
@@ -38,7 +38,7 @@ plotWLCCcomp = function(df, ncol = 3,
   if (length(unique(df$Stat)) > 1) {
     
     return(df |>
-             tidyr::pivot_longer(cols = starts_with(c("observed", "pseudo"))) |>
+             pivot_longer(cols = starts_with(c("observed", "pseudo"))) |>
              mutate(temp = if_else(grepl(".*sd", name), "SD", "mean"),
                     Type = case_when(grepl("observ.*", name) ~ "WLCC", 
                                      Method == "Dyad" ~ "pseudoDyad-WLCC", 
@@ -74,7 +74,7 @@ plotWLCCcomp = function(df, ncol = 3,
   } else {
     
     return(df |>
-             tidyr::pivot_longer(cols = starts_with(c("observed", "pseudo"))) |>
+             pivot_longer(cols = starts_with(c("observed", "pseudo"))) |>
              mutate(temp = if_else(grepl(".*sd", name), "SD", "mean"),
                     Type = case_when(grepl("observ.*", name) ~ "WLCC", 
                                      Method == "Dyad" ~ "pseudoDyad-WLCC", 
