@@ -38,7 +38,7 @@ plotWLCCcomp = function(df, ncol = 3,
   if (length(unique(df$Stat)) > 1) {
     
     return(df |>
-             pivot_longer(cols = starts_with(c("observed", "pseudo"))) |>
+             tidyr::pivot_longer(cols = starts_with(c("observed", "pseudo"))) |>
              mutate(temp = if_else(grepl(".*sd", name), "SD", "mean"),
                     Type = case_when(grepl("observ.*", name) ~ "WLCC", 
                                      Method == "Dyad" ~ "pseudoDyad-WLCC", 
@@ -74,7 +74,7 @@ plotWLCCcomp = function(df, ncol = 3,
   } else {
     
     return(df |>
-             pivot_longer(cols = starts_with(c("observed", "pseudo"))) |>
+             tidyr::pivot_longer(cols = starts_with(c("observed", "pseudo"))) |>
              mutate(temp = if_else(grepl(".*sd", name), "SD", "mean"),
                     Type = case_when(grepl("observ.*", name) ~ "WLCC", 
                                      Method == "Dyad" ~ "pseudoDyad-WLCC", 
