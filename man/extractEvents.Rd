@@ -2,22 +2,24 @@
 % Please edit documentation in R/convertVERSE.R
 \name{extractEvents}
 \alias{extractEvents}
-\title{Extract information from event files created by VERSE environment}
+\title{Extract Information from VERSE Environment Event Files}
 \usage{
 extractEvents(fl.ls, timezone, type = "list")
 }
 \arguments{
-\item{fl.ls}{Vector of paths including Filenames for EventLog.txt files}
+\item{fl.ls}{Character vector. File system paths pointing to target \code{EventLog.txt} documents.}
 
-\item{timezone}{Timezone in which the data collection was conducted}
+\item{timezone}{Character. Timezone in which the data collection was conducted.}
 
-\item{type}{String to choose which type of variable should be created, either 
-"list" (creates a list containing everthing from the Event file) or 
-"df" (creates a dataframe with important information and Events)}
+\item{type}{Character string. Target format of parsing outcome. Use \code{"list"} to compile all
+unprocessed elements dynamically, or \code{"df"} to extract structured tabular fields. Default is \code{"list"}.}
 }
 \value{
-list or dataframe
+A composite \code{list} or integrated \code{dataframe} depending on selection assigned to \code{type}.
 }
 \description{
-Utility function to read in VERSE event files from EventLog.txt
+Utility function to read in raw VERSE environmental logs from an underlying \code{EventLog.txt} structure.
+}
+\author{
+Irene Sophia Plank (\email{10planki@gmail.com})
 }

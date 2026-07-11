@@ -2,7 +2,7 @@
 % Please edit documentation in R/convertVERSE.R
 \name{extractData}
 \alias{extractData}
-\title{Load tracked data from VERSE environment}
+\title{Load Tracked Data from VERSE Environment}
 \usage{
 extractData(
   df.info,
@@ -17,33 +17,36 @@ extractData(
 )
 }
 \arguments{
-\item{df.info}{Dataframe with one row per file to be read in. 
-Must contain the column Filename (full path to the CSV file), 
-can additionally contain columns to describe start and end point of the data to be read in 
-(start.use : first Timestamp to be used, 
-end.use : last Timestamp to be used, 
-frame.use : number of frames, starting either at start.use or at the beginning)}
+\item{df.info}{Dataframe with one row per file to be read in. Must contain the
+column \code{Filename} (full path to the CSV file). Can optionally contain parameters
+defining windows: \code{start.use} (first Timestamp), \code{end.use} (last Timestamp),
+or \code{frame.use} (number of frames starting at \code{start.use} or sequence origin).}
 
-\item{rs.path}{Directory path to where the rds file will be saved, if empty nothing is saved}
+\item{rs.path}{Path to the directory where the output file will be saved, if empty (is_empty(rs.path) == TRUE), then nothing is saved}
 
-\item{timezone}{Timezone in which the data collection was conducted}
+\item{timezone}{Character. Timezone in which the data collection was conducted.}
 
-\item{suffix}{Suffix to be added to the file saved to disk (default: "")}
+\item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 
-\item{resetTime}{Switch to toggle whether time shall be reset to 0 for anonymisation (default: FALSE)}
+\item{resetTime}{Logical. Switch to toggle whether time should be reset to 0 for anonymisation. Default is \code{FALSE}.}
 
-\item{verbose}{switch to toggle whether output shall be printed to the console (default: TRUE)}
+\item{nos}{Numeric. Number of Social Actors in the VERSE environment. Default is \code{2}.}
 
-\item{recompute}{switch to toggle whether existing data should be recomputed and overwritten (default: FALSE)}
+\item{verbose}{Logical. Whether progress and output are printed to the console. Default is \code{TRUE}.}
 
-\item{return}{switch to toggle whether a dataframe is returned (default: TRUE)}
+\item{recompute}{Logical. Whether existing data on disk should be recomputed and overwritten. Default is \code{FALSE}.}
+
+\item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
 }
 \value{
-dataVERSE[suffix].rds saved to disk in the rs.path [Optional], with a dataframe of the same data potentially returned [Optional]
+If \code{return = TRUE}, returns the imported VERSE dataframe. Saves \verb{dataVERSE[suffix].rds} to \code{rs.path} if provided.
 }
 \description{
-Utility function to read in VERSE data streams from the TrackingLog.csv
+Utility function to read in VERSE data streams from TrackingLog.csv file(s).
 }
 \seealso{
-[readCSVs()]
+\code{\link[=readCSVs]{readCSVs()}}
+}
+\author{
+Irene Sophia Plank (\email{10planki@gmail.com})
 }

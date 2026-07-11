@@ -10,6 +10,7 @@ BugReports: https://github.com/IreneSophia/interactR/issues
 Depends: R (>= 4.0.0)
 License: GPL-3
 Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
 Config/roxygen2/version: 8.0.0
 Imports: 
     tidyverse,
@@ -20,3 +21,5 @@ Imports:
     BayesFactor,
     stringr,
     ggpattern
+Remotes: 
+    kleinbub/rMEA

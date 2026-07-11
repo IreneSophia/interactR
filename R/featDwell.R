@@ -1,27 +1,30 @@
-#' Dwell time extraction from gaze patterns
+#' Dwell Time Extraction From Gaze Vectors
 #'
-#' This function extracts dwell times and joint attention from gaze hits. The function
-#' assumes a dataframe with one row per frame. It assumes that AOIs are captured
-#' in two columns, one for the left eye (AOI.left) and one for the right eye (AOI.right). 
-#' AOI identifiers can be provided which are then used to classify the fixation. 
-#' The AOI columns should be "None" if no AOI was hit in this frame. 
+#' Extracts descriptive dwell times and indexes joint-attention allocations from spatial gaze data. 
+#' The function assumes a dataframe schema with one row per sample frame. 
+#' AOIs can be captured separately for eyes in `AOI.left` and `AOI.right` or in one column `AOI`.
+#'
+#' @param df Dataframe containing tracking data streams. Must explicitly feature columns `Dyad`, 
+#'   `Identifier`, `Frame`, either `AOI.left` and `AOI.right` or `AOI`.
+#' @param ls.AOI List of character vectors. When specified, values isolate targets for AOI classification, 
+#'   automatically re-coding undeclared targets to `"None"`. 
+#'   If empty (`is_empty(ls.AOI) == TRUE`), existing classification is used.
+#' @param rs.path Character. Path to the directory where the output files will be saved.
+#'   If empty (`is_empty(rs.path) == TRUE`), nothing is saved to disk.
+#' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
+#' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
+#' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
+#' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
+#'
+#' @return If `return = TRUE`, returns the dataframe or saves consolidated summary CSV to `rs.path` if provided.
 #' 
-#' @param df Dataframe containing the tracked data. Must contain the columns Dyad, 
-#' Identifier and Frame as well as AOI.left and AOI.right. 
-#' @param ls.AOI List of character vectors. If not empty, these descriptions will be used to classify the fixation, 
-#' ignoring all other possible targets by setting them to "None". 
-#' @param rs.path Path to the directory where the output csv will be saved, if empty (is_empty(rs.path) == TRUE), then nothing is saved
-#' @param suffix Suffix added to the file saved to disk (default: "")
-#' @param verbose Whether output is printed to the console (BOOLEAN, default: TRUE)
-#' @param recompute Whether existing data is recomputed and overwritten (BOOLEAN, default: FALSE)
-#' @param return Whether the dataframe is returned (BOOLEAN, default: TRUE)
-#' @return csv containing aggregated dwell times saved to disk [Optional] or returned [Optional]
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @import tidyverse
 #' @export
 #' 
 
 featDwell = function(df, ls.AOI, rs.path, suffix = "", 
-                     verbose = T, recompute = F, return = T, save = T) {
+                     verbose = T, recompute = F, return = T) {
   
   # check rs.path
   if (is_empty(rs.path)) {
@@ -53,23 +56,34 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Preprocessing dwell times\n")
     # if ls.AOI is given, classify according to this
     if (!is_empty(ls.AOI)) {
-      df = df %>% 
-        mutate(
-          AOI.left = coalesce(str_extract(AOI.left, pattern), "None"),
-          AOI.right = coalesce(str_extract(AOI.right, pattern), "None")
+      if ("AOI" %in% colnames(df)) {
+        df = df %>% 
+          mutate(
+            AOI = coalesce(str_extract(AOI, pattern), "None")
           )
+      } else {
+        df = df %>% 
+          mutate(
+            AOI.left = coalesce(str_extract(AOI.left, pattern), "None"),
+            AOI.right = coalesce(str_extract(AOI.right, pattern), "None")
+          )
+      }
     }
     
-    # combine the two eyes into one gaze fixation
-    df.dwell = df %>% 
-      mutate(
-        AOI = case_when(
-          AOI.left == AOI.right ~ AOI.left, 
-          grepl("None", AOI.left) ~ AOI.right,
-          grepl("None", AOI.right) ~ AOI.left,
-          T ~ AOI.left
+    # if necessary, combine the two eyes into one gaze fixation
+    if ("AOI" %in% colnames(df)) {
+      df.dwell = df
+    } else {
+      df.dwell = df %>% 
+        mutate(
+          AOI = case_when(
+            AOI.left == AOI.right ~ AOI.left, 
+            grepl("None", AOI.left) ~ AOI.right,
+            grepl("None", AOI.right) ~ AOI.left,
+            T ~ AOI.left
           )
-      )
+        )
+      }
     
     # aggregate the dwell times
     df.dwell.agg = df.dwell %>% 

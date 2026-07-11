@@ -1,39 +1,37 @@
-# Functions to extract features from Facial Expressions. 
-# (c) Irene Sophia Plank, 10planki@gmail.com
 
-# if packman is not installed yet, install it
-if(!("pacman" %in% installed.packages()[,"Package"])) install.packages("pacman")
-pacman::p_load(tidyverse)
+#' Combine ARKit52 Facial Expressions into Emotional Facial Expressions (EFE)
+#'
+#' This function combines individual facial expressions into emotional facial expressions
+#' (EFE) based on the classification proposed in Aldenhoven et al. (2026).
+#' While these are based on the ARKit52 system collected in the VERSE environment, 
+#' similar facial expressions can also be extracted using computer vision (e.g., OpenFace),
+#' provided the column names are adjusted to fit the system described below.
+#'
+#' @param df Dataframe containing the facial data. Must contain the columns `Dyad`, 
+#'   `Identifier` and `Frame`, as well as columns with ARKit52 values. 
+#'   Specifically, the algorithm uses the following patterns (`.*` denotes sides):
+#'   `"Facial_BrowDown.*"`, `"Facial_.*Eye_Squint"`, `"Facial_.*Eye_Wide"`, 
+#'   `"Facial_MouthPucker"`, `"Facial_MouthFrown.*"`, `"Facial_MouthLowerDown.*"`, 
+#'   `"Facial_NoseSneer.*"`, `"Facial_CheekSquint.*"`, `"Facial_MouthSmile.*"`, 
+#'   `"Facial_BrowInnerUp"`, `"Facial_BrowOuterUp.*"`, `"Facial_JawOpen"`, 
+#'   `"Facial_MouthStretch.*"` and `"Facial_MouthDimple.*"`.
+#'   If the dataframe contains a `Communication` column, EFEs are also
+#'   aggregated based on Speaking, Listening, Both and None.
+#' @param rs.path Character. Path to the directory where the output files will be saved.
+#'   If empty (`is_empty(rs.path) == TRUE`), nothing is saved to disk.
+#' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
+#' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
+#' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
+#' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `FALSE`.
+#'
+#' @return If `return = TRUE`, returns a dataframe with aggregated results (one row per participant). 
+#'   Otherwise, returns `NULL` invisibly. Saves `dataEFE[suffix].rds` and `featEFE[suffix].csv` to disk if `rs.path` is provided.
+#' 
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @import tidyverse
+#' @references Aldenhoven et al. (2026). Sensors.
+#' @export
 
-# This function combines facial expressions to emotional facial expressions
-#  (EFE) based on the classification proposed in Aldenhoven et al. (2026).
-# While these are based on the ARKit52 system, similar facial expressions can 
-# also be extracted using computer vision, e.g., OpenFace. Then, the column
-# names have to be adjusted to fit the system described below. 
-# (c) Irene Sophia Plank, 10planki@gmail.com
-#
-# Inputs: 
-#   * df : dataframe containing the Facial data. Must contain the columns Dyad, 
-#               Identifier, Frame as well as columns with ARKit52 values, 
-#               specifically the algorithm uses (.* for Sides): 
-#               "Facial_BrowDown.*", "Facial_.*Eye_Squint", "Facial_.*Eye_Wide", 
-#               "Facial_MouthPucker", "Facial_MouthFrown.*", "Facial_MouthLowerDown.*", 
-#               "Facial_NoseSneer.*", "Facial_CheekSquint.*", "Facial_MouthSmile.*", 
-#               "Facial_BrowInnerUp", "Facial_BrowOuterUp.*", "Facial_JawOpen", 
-#               "Facial_MouthStretch.*", "Facial_MouthDimple.*"
-#               If the data frame contains a Communication column, EFEs are also
-#               aggregated based on Speaking, Listening, Both and None. 
-#   * rs.path : path to the directory where the output csv will be saved, if 
-#               empty (is_empty(rs.path) == TRUE), then nothing is saved
-#   * suffix : suffix to be added to the file saved to disk (default: '')
-#   * verbose : boolean, whether output is printed to the console (default: TRUE)
-#   * recompute : boolean, whether existing data is recomputed and overwritten (default: FALSE)
-#   * return : boolean, whether the dataframe is returned (default: FALSE)
-# 
-# Output:
-#   * returns data frame with aggregated results (one row per participant) [Optional]
-#   * dataEFE[suffix].rds and featEFE[suffix].csv saved to disk [Optional]
-# 
 featEFE = function(df, rs.path, suffix = "", verbose = T,
                     recompute = F, return = F) {
   

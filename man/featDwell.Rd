@@ -2,7 +2,7 @@
 % Please edit documentation in R/featDwell.R
 \name{featDwell}
 \alias{featDwell}
-\title{Dwell time extraction from gaze patterns}
+\title{Dwell Time Extraction From Gaze Vectors}
 \usage{
 featDwell(
   df,
@@ -11,34 +11,36 @@ featDwell(
   suffix = "",
   verbose = T,
   recompute = F,
-  return = T,
-  save = T
+  return = T
 )
 }
 \arguments{
-\item{df}{Dataframe containing the tracked data. Must contain the columns Dyad, 
-Identifier and Frame as well as AOI.left and AOI.right.}
+\item{df}{Dataframe containing tracking data streams. Must explicitly feature columns \code{Dyad},
+\code{Identifier}, \code{Frame}, either \code{AOI.left} and \code{AOI.right} or \code{AOI}.}
 
-\item{ls.AOI}{List of character vectors. If not empty, these descriptions will be used to classify the fixation, 
-ignoring all other possible targets by setting them to "None".}
+\item{ls.AOI}{List of character vectors. When specified, values isolate targets for AOI classification,
+automatically re-coding undeclared targets to \code{"None"}.
+If empty (\code{is_empty(ls.AOI) == TRUE}), existing classification is used.}
 
-\item{rs.path}{Path to the directory where the output csv will be saved, if empty (is_empty(rs.path) == TRUE), then nothing is saved}
+\item{rs.path}{Character. Path to the directory where the output files will be saved.
+If empty (\code{is_empty(rs.path) == TRUE}), nothing is saved to disk.}
 
-\item{suffix}{Suffix added to the file saved to disk (default: "")}
+\item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 
-\item{verbose}{Whether output is printed to the console (BOOLEAN, default: TRUE)}
+\item{verbose}{Logical. Whether progress and output are printed to the console. Default is \code{TRUE}.}
 
-\item{recompute}{Whether existing data is recomputed and overwritten (BOOLEAN, default: FALSE)}
+\item{recompute}{Logical. Whether existing data on disk should be recomputed and overwritten. Default is \code{FALSE}.}
 
-\item{return}{Whether the dataframe is returned (BOOLEAN, default: TRUE)}
+\item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
 }
 \value{
-csv containing aggregated dwell times saved to disk [Optional] or returned [Optional]
+If \code{return = TRUE}, returns the dataframe or saves consolidated summary CSV to \code{rs.path} if provided.
 }
 \description{
-This function extracts dwell times and joint attention from gaze hits. The function
-assumes a dataframe with one row per frame. It assumes that AOIs are captured
-in two columns, one for the left eye (AOI.left) and one for the right eye (AOI.right). 
-AOI identifiers can be provided which are then used to classify the fixation. 
-The AOI columns should be "None" if no AOI was hit in this frame.
+Extracts descriptive dwell times and indexes joint-attention allocations from spatial gaze data.
+The function assumes a dataframe schema with one row per sample frame.
+AOIs can be captured separately for eyes in \code{AOI.left} and \code{AOI.right} or in one column \code{AOI}.
+}
+\author{
+Irene Sophia Plank (\email{10planki@gmail.com})
 }

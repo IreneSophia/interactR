@@ -1,27 +1,28 @@
-# Functions to extract features from Speech analysed with praat. 
-# (c) Irene Sophia Plank, 10planki@gmail.com
 
-# if packman is not installed yet, install it
-if(!("pacman" %in% installed.packages()[,"Package"])) install.packages("pacman")
-pacman::p_load(tidyverse)
+#' Aggregate Acoustic Information Extracted via Praat
+#'
+#' This function aggregates all of the information extracted from `featSpeech.praat`, 
+#' which includes the aggregated scores from the uhm-o-meter (de Jong et al., 2021).
+#'
+#' @param df.speak Dataframe containing all information about the sounding instances,
+#'   typically created using [convertGrid()].
+#' @param praat.path Character. Path to the directory containing the Praat output files.
+#' @param praat.prefix Character. Prefix used in the Praat script for the output files.
+#' @param rs.path Character. Path to the directory where the output files will be saved.
+#'   If empty (`is_empty(rs.path) == TRUE`), nothing is saved to disk.
+#' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
+#' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
+#' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
+#' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `FALSE`.
+#'
+#' @return If `return = TRUE`, returns the processed dataframe. Saves `featSpeech[suffix].csv` to disk if `rs.path` is provided.
+#' 
+#' @import tidyverse
+#' @references de Jong & Wempe (2009). Behavior Research Methods.
+#' @references de Jong, Pacilly & Heeren (2021). Assessment in Education: Principles, Policy and Practice.
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @export
 
-# Function to aggregate all of the information extracted from featSpeech.praat 
-# which includes the aggregated scores from the uhm-o-meter (de Jong et al. 2021).
-# 
-# Input: 
-#   * df.speak : dataframe containing all info about the sounding instances,
-#                created using convertGrid
-#   * praat.path : path to the directory containing the praat output files
-#   * praat.prefix : prefix used in the praat script for the output files
-#   * rs.path : path to the directory where the output csv will be saved, if 
-#               empty (is_empty(rs.path) == TRUE), then nothing is saved
-#   * suffix : suffix to be added to the file saved to disk (default: '')
-#   * verbose : boolean, whether output is printed to the console (default: TRUE)
-#   * recompute : boolean, whether existing data is recomputed and overwritten (default: FALSE)
-#   * return : boolean, whether the dataframe is returned (default: FALSE)
-# 
-# Output: featSpeech[suffix].csv saved to disk [Optional] or dataframe returned [Optional]
-# 
 featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
                       verbose = T, recompute = F, return = F) {
   
@@ -161,23 +162,32 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
 }
 
 
-# Function to convert the TextGrid output produced by the uhm-o-meter into a 
-# dataframe containing all sounding instances and the number of syllables. 
-# 
-# Input: 
-#   * ls.files : list of paths for the TextGrid files, including filename and extension
-#   * rs.path : path to the directory where the output csv will be saved, if 
-#               empty (is_empty(rs.path) == TRUE), then nothing is saved
-#   * suffix : suffix to be added to the file saved to disk (default: '')
-#   * prefix : prefix for the Filename (default empty string)
-#   * extract : boolean, whether Dyad and Identifier are extracted from Filename (default: T)
-#               needs this Filename structure: "[prefix][Dyad]_[Identifier]_*
-#   * verbose : boolean, whether output is printed to the console (default: T)
-#   * recompute : boolean, whether existing data is recomputed and overwritten (default: FALSE)
-#   * return : boolean, whether the dataframe is returned (default: T)
-# 
-# Output: dataUhm[suffix].rds saved to disk [Optional] or dataframe returned [Optional]
-# 
+#' Convert TextGrid Outputs into Dataframes
+#'
+#' This function converts the TextGrid output produced by the uhm-o-meter into a 
+#' dataframe containing all sounding instances and the total number of syllables.
+#'
+#' @param ls.files Character vector. Paths for the TextGrid files, including filename and extension.
+#' @param rs.path Character. Path to the directory where the output files will be saved.
+#'   If empty (`is_empty(rs.path) == TRUE`), nothing is saved to disk.
+#' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
+#' @param prefix Character. Prefix for the filename allowing extraction of Dyad and Identifier from filenames. Default is `""`.
+#' @param extract Logical. Whether Dyad and Identifier variables are extracted from the file names.
+#'   Requires the filename structure: `"[prefix][Dyad]_[Identifier]_*"`. Default is `TRUE`.
+#' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
+#' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
+#' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
+#'
+#' @return If `return = TRUE`, returns the processed dataframe. Saves `dataUhm[suffix].rds` to disk if `rs.path` is provided.
+#' 
+
+#' @references de Jong & Wempe (2009). Behavior Research Methods.
+#' @references de Jong, Pacilly & Heeren (2021). Assessment in Education: Principles, Policy and Practice.
+#' 
+#' @import tidyverse
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @export
+#' 
 convertGrid = function(ls.files, rs.path, suffix = '', prefix = '', extract = T, 
                        verbose = T, recompute = F, return = F) {
   
@@ -252,25 +262,34 @@ convertGrid = function(ls.files, rs.path, suffix = '', prefix = '', extract = T,
   
 }
 
-# This function adds the Listening, Speaking and Communication column
-# based on the speech analysis performed in praat using the uhm-o-meter 
-# developed by de Jong et al. (2021). If these columns already exist in the 
-# data, they will be renamed with the suffix "_Original".
-# 
-# Inputs: 
-#   * df : dataframe containing the tracked data. Must contain the columns Dyad, 
-#               Frame and Timestamp (in POSIX)
-#   * df.speak : dataframe containing the sounding info from the uhm-o-meter,
-#               must contain the columns Dyad, Identifier, Start and End (both in sec)
-#   * rs.path : path to the directory where the output csv will be saved, if 
-#               empty (is_empty(rs.path) == TRUE), then nothing is saved
-#   * suffix : suffix to be added to the file saved to disk (default: '')
-#   * verbose : boolean, whether output is printed to the console (default: TRUE)
-#   * recompute : boolean, whether existing data is recomputed and overwritten (default: FALSE)
-#   * return : boolean, whether the dataframe is returned (default: TRUE)
-# 
-# Output: data[suffix].rds saved to disk [Optional] or dataframe returned [Optional]
-# 
+#' Add Conversational States Based on Speech Profiles
+#'
+#' This function adds the `Listening`, `Speaking`, and `Communication` state columns
+#' based on speech analysis performed in Praat using the uhm-o-meter developed by 
+#' de Jong et al. (2021). If these columns already exist in the dataset, they will 
+#' be dynamically renamed with the suffix `"_Original"`.
+#'
+#' @param df Dataframe containing the tracked data. Must contain the columns `Dyad`, 
+#'   `Frame` and `Timestamp` (in POSIX format).
+#' @param df.speak Dataframe containing all information about the sounding instances,
+#'   typically created using [convertGrid()]. 
+#'   Must contain the columns `Dyad`, `Identifier`, `Start`, and `End` (both in seconds).
+#' @param rs.path Character. Path to the directory where the output files will be saved.
+#'   If empty (`is_empty(rs.path) == TRUE`), nothing is saved to disk.
+#' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
+#' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
+#' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
+#' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
+#'
+#' @return If `return = TRUE`, returns the processed dataframe. Saves `data[suffix].rds` to disk if `rs.path` is provided.
+#' 
+#' @references de Jong & Wempe (2009). Behavior Research Methods.
+#' @references de Jong, Pacilly & Heeren (2021). Assessment in Education: Principles, Policy and Practice.
+#' 
+#' @import tidyverse
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @export
+#' 
 addCommunication = function(df, df.speak, rs.path, suffix = '',
                             verbose = T, recompute = F, return = T) { 
   
@@ -378,24 +397,28 @@ addCommunication = function(df, df.speak, rs.path, suffix = '',
   
 }
 
-# The output of the uhm-o-meter has to be aurally and visually inspected. Most 
-# of the misclassifications affect sounding instances with few nSyll, which 
-# captured loud breathing instead of speaking. One can also set a minimum 
-# distance for the sounding instances that will be checked. How often breathing
-# is captures depends on the placement of the microphone. This function saves an 
-# altered TextGrid which only contains sounding instances within a range of 
-# nSyll making it easier to check exactly those instances. 
-#
-# Input: 
-#  * ls.files : list of path + filenames to the TextGrid files
-#  * rs.path : path to directory where results are saved
-#  * minSyll : minimum syllables which a sounding instance has to contain (default: 1)
-#  * maxSyll : maximum syllables which a sounding instance has to contain (default: 4)
-#  * max.nos : maximum number of sounding instances which should be kept (default: Inf)
-#  * min.dist : minimum distance between sounding instance and others in seconds (default: 0)
-#
-# Output: Rewritten TextGrids saved to disk in rs.path, [filename]_check-[nos].TextGrid
-#
+#' Filter and Rewrite TextGrids for Manual Auditory Inspection
+#'
+#' The output of the uhm-o-meter requires visual and manual auditory inspection. 
+#' Most misclassifications affect sounding instances with few syllables (`nSyll`), 
+#' capturing loud breathing rather than authentic speaking. This utility function exports 
+#' targeted TextGrids containing only specific syllable-count ranges to ease down-stream validation.
+#'
+#' @param ls.files Character vector. Full system paths and filenames pointing to target TextGrid files.
+#' @param rs.path Character. Path to the directory where filtered results are saved.
+#' @param minSyll Numeric. Minimum syllables a valid sounding instance must contain. Default is `1`.
+#' @param maxSyll Numeric. Maximum syllables a valid sounding instance can contain. Default is `4`.
+#' @param max.nos Numeric. Maximum total number of sounding instances to keep. Default is `Inf`.
+#' @param min.dist Numeric. Minimum distance in seconds required between separate sounding instances. Default is `0`.
+#'
+#' @return Saves reconstructed TextGrid files to disk under `rs.path` named as `[filename]_check-[nos].TextGrid`.
+#' 
+#' @references de Jong & Wempe (2009). Behavior Research Methods.
+#' @references de Jong, Pacilly & Heeren (2021). Assessment in Education: Principles, Policy and Practice.
+#' 
+#' @import tidyverse
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @export
 
 rewriteGrid = function(ls.files, rs.path, minSyll = 1, maxSyll = 4,
                        max.nos = Inf, min.dist = 0) {
@@ -403,8 +426,8 @@ rewriteGrid = function(ls.files, rs.path, minSyll = 1, maxSyll = 4,
   for (path in ls.files) {
 
     # extract the turns and nSyll, then filter to those that should be removed
-    df.speak = convertGrid(path, rs.path, verbose = F, 
-                           return = T, save = F, extract = F) %>%
+    df.speak = convertGrid(path, c(), verbose = F, 
+                           return = T, extract = F) %>%
       select(-Path) %>%
       # exclude all turns that do not fit the nSyll range
       mutate(exclude = nSyll < minSyll | nSyll > maxSyll) %>%

@@ -1,70 +1,54 @@
-# This R script computes WLCC and compares it to two types of pseudo-WLCC. 
-# (c) Irene Sophia Plank, 10planki@gmail.com
 
-# if packman is not installed yet, install it
-if(!("pacman" %in% installed.packages()[,"Package"])) install.packages("pacman")
-pacman::p_load(tidyverse, rMEA, stringr, BayesFactor)
-
-# main function to compute observed and pseudo WLCC -----------------------
-
-# This function computes observed and pseudo windowed-lagged cross-correlations.
-# It uses functions from the rMEA package (version 1.3.1 is needed for the 
-# plotting of heatmaps when ABS = F, which may have to be installed from GitHub)
-# The function uses Bayes Factors to assess credibility when comparing pseudo
-# and real WLCC. 
-# 
-# Inputs: 
-#   * df : dataframe containing the tracked data. Must contain the columns Dyad, 
-#               Identifier and Frame as well as the Column containing the 
-#               timecourse for which WLCC is to be computed (colname)
-#   * rs.path : path to the directory where the output csv will be saved, if 
-#               empty (is_empty(rs.path) == TRUE), then nothing is saved
-#   * colname : name of the column for which WLCC is to be computed
-#   * featname : feature name to be used for the description, cannot contain _
-#   * win, inc, lag : window, increment and lag size in seconds
-#   * fps : frames per second
-#   * suffix : suffix to be added to folder in which files are saved (default: '')
-#   * parallel : boolean, whether parallelisation is used with MEAccf (default: TRUE)
-#   * pseudoDyad : boolean, whether to compute pseudo-WLCC based on dyad shuffling (default: TRUE)
-#   * nDyad : if pseudoDyad, how many pseudo dyads are used (default: 100)
-#   * bfThreshold : threshold of credibility for Bayes Factors (default: log(3) ~ moderate evidence)
-#   * pseudoShuffling : boolean, whether to compute pseudo-WLCC based on timecourse shuffling (default: FALSE)
-#   * shuffleMethod : if pseudoShuffling, determines whether segments or data points are shuffled (default: 'Seg', alternative 'Data')
-#   * nShuffle : if pseudoShuffling, how many times each dyad's timecourse are shuffled (default: 100)
-#   * pseudoPass : how many pseudo tests need to have been passed for credible lag (default: 1)
-#                  this matters when both timecourse and dyad shuffling is used
-#                  do lags need to be credibly higher than pseudo in both methods?
-#   * credibleThreshold : threshold for permutation tests to determine credible lags (default: 90)s
-#   * method : either peak-picking or mean of values (default: "peak", alternative "mean")
-#   * r2Z : boolean, whether correlation coefficients are z-transformed (default: TRUE)
-#   * ABS : boolean, whether absolute of values making direction irrelevant (default: TRUE)
-#   * seed : either a number to set a seed or the term 'random' - seed is saved in filenames for reproducibility (default: 'random')
-#   * plot : boolean, whether plots are saved to disk (default: TRUE)
-#   * verbose : boolean, whether output is printed to the console (default: TRUE)
-#   * recompute : boolean, whether existing data is recomputed and overwritten (default: FALSE)
-#   * return : boolean, whether the dataframe is returned (default: TRUE)
-# 
-# Output: 
-#   * returns aggregated dataframe [Optional]
-#   * data as RDS and CSV files to disk, all in folder [rs.path]/featWLCC[suffix]
-#     prefix = featWLCC-[featname]-w[win]-l[lag]-i[inc] [Optional]
-#      - [prefix]_ccf.rds : MEAlist with observed WLCC values for each Dyad
-#      - [prefix]_pseudo-comp.csv : comparison of observed and pseudoWLCC for each lag 
-#      - [prefix]_pseudo[Method]_seed[seed]-n[nsim]_df-agg.rds : aggregated pseudoWLCC values, one row per simulation
-#      - [prefix]_pseudo[Method]_seed[seed]-n[nsim]_df.rds : pseudoWLCC values, lags * 2 (mean, peak) rows per simulation 
-#      - [prefix]_pseudo[Method]_seed[seed]-n[nsim].rds : MEAlist with pseudo WLCC values
-#      - [prefix].csv : aggregated observed WLCC, one row per Identifier
-#      - [prefix].rds : dataframe containing all observed WLCC, windows * lags rows per Dyad
-#   * plots saved in featWLCC-[featname]-w[win]-l[lag]-i[inc].pdf [Optional]
-# 
+#' Compute Windowed-Lagged Cross-Correlations (WLCC), potentially with Pseudo-Synchrony Comparison
+#'
+#' Computes empirical and pseudo windowed-lagged cross-correlations using backend tools from `rMEA`. 
+#'
+#' @note Requires package `rMEA` (>= 1.3.1) to support generating diagnostic heatmap distributions when `ABS = FALSE`.
+#'
+#' @param df Dataframe containing tracking data. Requires the variables `Dyad`, `Identifier`, `Frame` and the target numeric timeline (`colname`). 
+#' @param rs.path Character. Path to destination directory. Files are written inside a generated directory nested under `[rs.path]/featWLCC[suffix]`.
+#'        If empty (is_empty(rs.path) == TRUE), then nothing is saved.
+#' @param colname Character. Name of column vector inside `df` to isolate for analysis.
+#' @param featname Character. Descriptive label for feature. Must not contain underscores.
+#' @param win Numeric. Window size in seconds.
+#' @param inc Numeric. Window increment step in seconds.
+#' @param lag Numeric. Evaluated cross-correlation lag step in seconds.
+#' @param fps Numeric. Sampling rate (frames per second).
+#' @param suffix Character. Suffix string appended onto `rs.path`. Default is `""`.
+#' @param parallel Logical. Enables multi-core clusters inside the parent `MEAccf` routine. Default is `TRUE`.
+#' @param pseudoDyad Logical. Flags whether to generate pseudo-WLCC benchmarks using dyad shuffling. Default is `TRUE`.
+#' @param nDyad Numeric. Total number of synthetic dyad simulations to execute when `pseudoDyad = TRUE`. Default is `100`.
+#' @param bfThreshold Numeric. Credibility threshold for evaluation of log-transformed Bayes Factors. Default is `log(3)`.
+#' @param pseudoShuffling Logical. Flags whether to generate pseudo-WLCC benchmarks using within-series random shuffles. Default is `FALSE`.
+#' @param shuffleMethod Character. Assigns segment shuffling (`"Seg"`) or cell shuffling (`"Data"`). Default is `"Seg"`.
+#' @param nShuffle Numeric. Shuffling iterations for `pseudoShuffling` per dyad. Default is `100`.
+#' @param pseudoPass Numeric. Passing threshold to determine credible lags based on different pseudo-WLCC methods. Default is `1`.
+#' @param credibleThreshold Numeric. Percentile cutoff for credibility based on permutations. Default is `90`.
+#' @param method Character. Perform either peak extraction (`"peak"`) or window averages (`"mean"`) for observed WLCC. Default is `"peak"`.
+#' @param r2Z Logical. Applies Fisher's Z transformation over raw cross-correlation indexes. Default is `TRUE`.
+#' @param ABS Logical. Maps vectors using absolute values, filtering out directionality of WlCC. Default is `TRUE`.
+#' @param seed Universal flag supporting reproducibility. Takes an integer seed or `"random"`. Default is `"random"`.
+#' @param plot Logical. Generates PDF evaluation outputs in the output folder. Default is `TRUE`.
+#' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
+#' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
+#' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
+#'
+#' @return Summary dataframe arrays when `return = TRUE`. Creates a structured directory bundle featuring 
+#'  `_ccf.rds`, `_df-agg.csv`, `_df.csv` datasets for observed and pseudo-WLCC, 
+#'  statistical tables (`_pseudo-comp.csv`), and structural visualization plots (`.pdf`). This bundle
+#'  is only created if `!is_empty(rs.path)`.
+#' 
+#' @import tidyverse
+#' @import rMEA
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @export
+#' 
 featWLCC = function(df, rs.path, colname, featname,
                     win, inc, lag, fps, suffix = '', parallel = T,
                     pseudoDyad = T, nDyad = 100, bfThreshold = log(3),
                     pseudoShuffling = F, shuffleMethod = 'Seg', nShuffle = 100,
-                    pseudoPass = 1, # how many pseudo tests need to have been passed for credible lag?
-                    credibleThreshold = 90, # what's the threshold for credibility for pseudo?
-                    method = "peak", # peak or mean
-                    r2Z = T, ABS = T, seed = 'random', plot = T, 
+                    pseudoPass = 1, credibleThreshold = 90, 
+                    method = "peak", r2Z = T, ABS = T, seed = 'random', plot = T, 
                     verbose = T, recompute = F, return = T) {
   
   # check if featname contains an underscore - problem with rMEA
@@ -81,7 +65,7 @@ featWLCC = function(df, rs.path, colname, featname,
     wlcc.path = file.path(rs.path, sprintf("featWLCC%s", suffix))
     dir.create(wlcc.path, showWarnings = F, recursive = T)
     # combine
-    flcsv = file.path(wlcc.path, sprintf("%s.csv", fl.wlcc))
+    flcsv = file.path(wlcc.path, sprintf("%s_df-agg.csv", fl.wlcc))
     flnm  = file.path(wlcc.path, fl.wlcc)
   }
   
@@ -98,8 +82,8 @@ featWLCC = function(df, rs.path, colname, featname,
     df.out = read_csv(flcsv, show_col_types = F)
   } else {
     # if no recompute and the RDS file exists, it is simply loaded - observed WLCC
-    if (!recompute & file.exists(paste0(flnm, "_ccf", ".rds"))) {
-      ls.ccf = readRDS(paste0(flnm, "_ccf", ".rds"))
+    if (!recompute & file.exists(paste0(flnm, "_ccf.rds"))) {
+      ls.ccf = readRDS(paste0(flnm, "_ccf.rds"))
     } else {
       
       # ensure that the dataframe is properly arranged
@@ -160,7 +144,7 @@ featWLCC = function(df, rs.path, colname, featname,
       ls.ccf = MEAccf(ls.mea, lagSec = lag, winSec = win, incSec = inc, 
                       r2Z = r2Z, ABS = ABS, cores = parallel) 
       
-      if (!is_empty(rs.path)) saveRDS(ls.ccf, paste0(flnm, "_ccf", ".rds"))
+      if (!is_empty(rs.path)) saveRDS(ls.ccf, paste0(flnm, "_ccf.rds"))
       
       # plotting with heatmaps
       if (plot) {
@@ -201,7 +185,7 @@ featWLCC = function(df, rs.path, colname, featname,
         ls.dyad = MEAccf(ls.dyad, lagSec = lag, winSec = win, incSec = inc, 
                          r2Z = r2Z, ABS = ABS, cores = parallel) 
         # save the outcome
-        if (!is_empty(rs.path)) saveRDS(ls.dyad, sprintf("%s.rds", fl.dyad))
+        if (!is_empty(rs.path)) saveRDS(ls.dyad, sprintf("%s_ccf.rds", fl.dyad))
         
         # convert to dataframe
         if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Converting pseudoDyad-WLCC to dataframe\n")
@@ -342,7 +326,7 @@ featWLCC = function(df, rs.path, colname, featname,
           lag == 0 ~ "simultaneous")
       )
     # save the resulting dataframe
-    if (!is_empty(rs.path)) saveRDS(df.ccf %>% ungroup(), paste0(fl.shuffle, ".rds"))
+    if (!is_empty(rs.path)) saveRDS(df.ccf %>% ungroup(), paste0(fl.shuffle, "_df.rds"))
     
     # choose which pseudoWLCC dataframes to use for lag comparison
     if (all(c("df.pseudoDyad", "df.pseudoShuff") %in% ls())) {
@@ -414,7 +398,7 @@ featWLCC = function(df, rs.path, colname, featname,
     shuffle = "not tested"
     dyad    = "not tested"
     if ("df.pseudoShuff.agg" %in% ls()) {
-      t.shuff = ttestBF(df.ccf.dyad$DyadWLCC, df.pseudoShuff.agg$pseudo)
+      t.shuff = BayesFactor::ttestBF(df.ccf.dyad$DyadWLCC, df.pseudoShuff.agg$pseudo)
       if ((t.shuff@bayesFactor$bf > bfThreshold) & 
           (mean(df.ccf.dyad$DyadWLCC) > mean(df.pseudoShuff.agg$pseudo))) {
         shuffle = "credible"
@@ -423,7 +407,7 @@ featWLCC = function(df, rs.path, colname, featname,
       }
     }
     if ("df.pseudoDyad.agg" %in% ls()) {
-      t.dyad = ttestBF(df.ccf.dyad$DyadWLCC, df.pseudoDyad.agg$pseudo)
+      t.dyad = BayesFactor::ttestBF(df.ccf.dyad$DyadWLCC, df.pseudoDyad.agg$pseudo)
       if ((t.dyad@bayesFactor$bf > bfThreshold) & 
           (mean(df.ccf.dyad$DyadWLCC) > mean(df.pseudoDyad.agg$pseudo))) {
         dyad = "credible"
@@ -476,18 +460,27 @@ featWLCC = function(df, rs.path, colname, featname,
   
 }
 
-# fake MEA object ---------------------------------------------------------
-# Input: 
-#     * s1, s2 : numeric vectors containing the values to be correlated
-#     * fps : sampling rate per second
-#     * s1Name, s2Name : names for vectors s1 and s2
-#     * group : mea group, added to the name of the MEA object
-#     * id : mea ID, added to the name of the MEA object
-#     * session: session number, added to the name of the MEA object
-# 
-# Output:
-#     * fake MEA object that pretends to be a MEA object, name [group]_[id]_[session]
-# 
+#' Construct Synthetic MEA Object
+#'
+#' Mock constructor function forming an empty `MEA` structured class object.
+#'
+#' @param s1 Numeric vector. Metric distribution values mapped for actor track 1.
+#' @param s2 Numeric vector. Metric distribution values mapped for actor track 2.
+#' @param fps Numeric. Frame sampling frequency rate observed per second.
+#' @param s1Name Character. Descriptive label assigned to track `s1`. Default is `"s1Name"`.
+#' @param s2Name Character. Descriptive label assigned to track `s2`. Default is `"s2Name"`.
+#' @param group Character. Class grouping metadata key attached straight onto the returned object. Default is `"all"`.
+#' @param id Character. Unique identity structural key tracking references. Default is `"ID"`.
+#' @param session Numeric. Reference indexing counter tracing tracking epochs. Default is `1`.
+#'
+#' @return A mock class object formatted to match structure schemas native to `rMEA`, labeled as `[group]_[id]_[session]`.
+#' 
+#' @note s1 and s2 must be two corresponding timecourses, i.e., of the same length and arranged by time.
+#' 
+#' @import rMEA
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @export
+
 MEAfake = function(s1, s2, fps, s1Name = "s1Name", s2Name = "s2Name", 
                    group = "all", id = "ID", session = 1) {
   data = list(s1Name = s1, s2Name = s2)
@@ -502,49 +495,40 @@ MEAfake = function(s1, s2, fps, s1Name = "s1Name", s2Name = "s2Name",
   return(mea)
 }
 
-# 
-# Pseudosynchrony calculation using the CCF function from rMEA. 
-# 
-# Two approaches can be used by setting the shuffleMethod input variable, both are 
-# described in in Moulder et al. (2018, Psychol Methods) 
-# 
-# Choose "data" to test the following hypothesis: "There is no time 
-# dependency at all between these two time series." (data shuffling). 
-# This data shuffling, from Moulder et al., "For each pair of time series (X, Y) 
-# each data point, Xi, is randomly shuffled to create a new time series, Xs 
-# until no single data point existed at its original time point Xi!=Xjs.". 
-# This new time series is then paired with an unchanged time series Y. 
-#
-# Choose "seg" to to test the following hypothesis: "Synchrony does not 
-# exist between sections of size m in these two time series" (section sliding). 
-# This segment shuffling, from Moulder et al., "requires researchers to cut a 
-# time series X into shorter sections of size m which are randomly appended to 
-# one another to create a new time series Xs until no section is in its original 
-# position". This shuffled time series is then paired with an unchanged time 
-# series Y. 
-#
-# Input: 
-#     * shuffleMethod : string, either "Data" or "Seg"
-#     * mea.orig : a list of MEA objects, can be created using fakeMEA
-#     * rs.path : path where the result are saved
-#     * fl.wlcc : file prefix for the resulting files, more info is added, no extension
-#     * win, inc, lag : length of window, increment and lag in seconds
-#     * fps : sampling rate per second
-#     * recompute : whether data is recomputed if it already exists (default: FALSE)
-#     * n : how many permutations to perform per MEA object (default: 100)
-#     * peak : whether to apply peak picking (BOOLEAN, default: F, translates to grandavg)
-#     * r2Z : whether to apply z transformation (BOOLEAN, default: T)
-#     * ABS : whether to report absolute values (BOOLEAN, default: T)
-#     * seed : whether to set a specific seed (F for no, integer for yes)
-#     * verbose : boolean, whether output is printed to the console (default: TRUE)
-#     * recompute : boolean, whether existing data is recomputed and overwritten (default: FALSE)
-#     * return : boolean, whether the dataframe is returned (default: TRUE)
-# 
-# Output:
-#     * returns aggregated pseudo-WLCC values [Optional] and saves ls.psync to disk [Optional]
-#
 
-# pseudoWLCC function -----------------------------------------------------
+#' Permutation-Based Pseudosynchrony for Windowed-Lagged Cross-Correlation
+#'
+#' Evaluates baseline pseudosynchrony indicators leveraging `rMEA::CCF`. 
+#' Based on methods documented in Moulder et al. (2018).
+#' 
+#' * Assigning `"Data"` tests time independence: shuffles all data points in one of the two sequences.
+#' * Assigning `"Seg"` tests regional independence: slices one sequence into windows of length `win` and shuffles these segments.
+#'
+#' @param shuffleMethod Character string. Specifies the shuffling paradigm; accept options are either `"Data"` or `"Seg"`.
+#' @param mea.orig List containing `MEA` objects (can be created via [MEAfake()]).
+#' @param rs.path Character. Path to destination directory where the output files will be saved.
+#'        If empty (is_empty(rs.path) == TRUE), then nothing is saved.
+#' @param fl.wlcc Character. Prefix for files saved to disk.
+#' @param win Numeric. Window size in seconds.
+#' @param inc Numeric. Window increment step in seconds.
+#' @param lag Numeric. Evaluated cross-correlation lag step in seconds.
+#' @param fps Numeric. Sampling rate (frames per second).
+#' @param n Numeric. Total quantity of individual permutations for each `MEA` object. Default is `100`.
+#' @param r2Z Logical. Applies Fisher's Z transformation over raw cross-correlation indexes. Default is `TRUE`.
+#' @param ABS Logical. Maps vectors using absolute values, filtering out directionality Default is `TRUE`.
+#' @param seed Universal flag supporting reproducibility. Takes an integer seed or `"random"`. Default is `"random"`.
+#' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
+#' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
+#' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
+#'
+#' @return If `return = TRUE`, returns aggregated pseudo-WLCC values. Automatically saves `ls.psync` to disk if `rs.path` is provided.
+#' 
+#' @references Moulder, R. G., et al. (2018). Psychol Methods.
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @export
+#' @import rMEA
+#' @import tidyverse
+#' 
 
 pseudoWLCC = function(shuffleMethod, mea.orig, rs.path, fl.wlcc, 
                       win = win, inc = inc, lag = lag, fps = fps, 
@@ -576,7 +560,7 @@ pseudoWLCC = function(shuffleMethod, mea.orig, rs.path, fl.wlcc,
   }
   
   # check if the ls exists
-  if (!file.exists(paste0(savePath, ".rds")) | recompute) {
+  if (!file.exists(paste0(savePath, "_ccf.rds")) | recompute) {
     # start with empty ls.psync
     ls.psync = list()
     
@@ -652,9 +636,9 @@ pseudoWLCC = function(shuffleMethod, mea.orig, rs.path, fl.wlcc,
     }
     
     # save the list for this AU
-    if (!is_empty(rs.path)) saveRDS(ls.psync, paste0(savePath, ".rds"))
+    if (!is_empty(rs.path)) saveRDS(ls.psync, paste0(savePath, "_ccf.rds"))
   } else {
-    ls.psync = readRDS(paste0(savePath, ".rds"))
+    ls.psync = readRDS(paste0(savePath, "_ccf.rds"))
   }
   
   # convert info to dataframe

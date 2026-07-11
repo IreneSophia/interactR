@@ -1,13 +1,19 @@
-# Functions to extract features from head movement.
-# (c) Irene Sophia Plank, 10planki@gmail.com
+#' Correct for Geometric Circularity in Rotational Time Series
+#'
+#' A tracking data helper function that identifies and removes artificial phase-wrapping 
+#' jumps (e.g., flipping between -180 and +180 or 0 and 360 degrees) across consecutive frames.
+#' Accumulates correction factors forward via cumulative sums. Inspired by the methods in Hale et al. (2020).
+#'
+#' @note **Caution:** The input vector `x` must be sorted chronologically (i.e., in the correct order of Frame / Timecourse).
+#'
+#' @param x Numeric vector. Uncorrected rotational data column entries ordered sequentially by time or frame.
+#' @param th Numeric. Boundary threshold angle used to detect an artificial phase jump. Default is `270`.
+#'
+#' @return A numeric vector of the same length as `x` corrected for wrapping discontinuities.
+#' 
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @export
 
-# if packman is not installed yet, install it
-if(!("pacman" %in% installed.packages()[,"Package"])) install.packages("pacman")
-pacman::p_load(tidyverse)
-
-# Helper function to correct for circularity in one rotational data column.
-# Caution: x has to be in the correct order, i.e., by Frame / Timecourse. 
-# Inspired by Hale et al. (2020)
 fixCirc = function(x, th = 270) {
   
   # do nothing, if x only has one entry
@@ -30,39 +36,53 @@ fixCirc = function(x, th = 270) {
   return(x + cumsum(shifts))
 }
 
-# Helper function to correct for circularity when computing the difference 
-# between two timecourses, e.g. head and neck. 
+#' Calculate Circular Distance Between Two Rotational Time Series
+#'
+#' A helper function that computes the shortest angular difference between two rotational 
+#' positions (e.g., calculating independent head rotation relative to a baseline neck position) 
+#' while correcting for modulo 360-degree wrapping.
+#'
+#' @param x Numeric vector. Target rotational position timecourse (e.g., head).
+#' @param y Numeric vector. Baseline or relative comparison rotational position timecourse (e.g., neck).
+#'
+#' @return A numeric vector representing the wrapped angular difference, bounded strictly between -180 and +180 degrees.
+#' 
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @export
+
 rotDiff = function(x, y) {
   return((((x - y) + 180) %% 360) - 180)
 }
 
-# This function preprocesses head motion data. Rotational columns are corrected 
-# for circularity or adjusted by a "baseline" body part. Translational columns 
-# are detrended.
-# 
-# Inputs: 
-#   * df : dataframe containing all head movement data. Must also contain the 
-#               columns Dyad, Identifier and Frame
-#   * rs.path : path to the directory where the output csv and rds is saved, if 
-#               empty (is_empty(rs.path) == TRUE), then nothing is saved
-#   * rotnames : names of columns containing rotational head movement 
-#   * tranames : names of the columns containing translational head movement
-#   * suffix : suffix to be added to files saved to disk (default: '')
-#   * performFixCirc : boolean, whether to fix the circularity (default: TRUE)
-#   * cornames : list of column names of the same length of rotnames, these are
-#               used to perform a "baseline correction", i.e., the spine for 
-#               head rotation independent of the body. Column names have to be 
-#               in the same order as the rotnames (default: c(), not performed)
-#   * verbose : boolean, whether output is printed to the console (default: TRUE)
-#   * recompute : boolean, whether existing data is recomputed and overwritten (default: FALSE)
-#   * return : boolean, whether the dataframe is returned (default: FALSE)
-# 
-# Output:
-#   * dataframe with adjusted head movement [Optional]
-#   * dataHead[suffix].rds saved to disk in rs.path [Optional]
+#' Preprocess Head Motion Coordinates
+#'
+#' Preprocesses spatial head trajectory streams. Rotational paths are scrubbed of wrap-around geometric circularity 
+#' or baseline-adjusted using corresponding body segments. Circularity corrected and translational trajectories are detrended.
+#'
+#' @param df Dataframe containing head coordinate streams. Requires tracking coordinates alongside core columns `Dyad`, `Identifier` and `Frame`.
+#' @param rs.path Character. Path to the directory where the output files will be saved.
+#'   If empty (`is_empty(rs.path) == TRUE`), nothing is saved to disk.
+#' @param rotnames Character vector. String labels identifying target rotational columns.
+#' @param tranames Character vector. String labels identifying target translational columns.
+#' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
+#' @param performFixCirc Logical. Directs execution to correct boundaries for angular circular values. Default is `TRUE`.
+#' @param cornames Character vector. Optional mapping labels matched in length to `rotnames` for baseline adjustments 
+#'   (e.g., using spine tracking vectors to separate head posture from whole-body sway). Default is `c()`.
+#' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
+#' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
+#' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `FALSE`.
+#'
+#' @return If `return = TRUE`, returns an adjusted movement dataframe. Saves `dataHead[suffix].rds` to `rs.path` if provided.
+#' 
+#' @references Hale et al. (2020). Journal of Nonverbal Behavior.
+#' @import tidyverse
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @export
+#' 
+
 preproHead = function(df, rs.path, rotnames, tranames, suffix = '',
                       performFixCirc = T, cornames = c(),
-                      correct = '', verbose = T, recompute = F, return = F) {
+                      verbose = T, recompute = F, return = F) {
   
   # check rs.path
   if (is_empty(rs.path)) {

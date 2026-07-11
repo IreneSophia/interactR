@@ -1,25 +1,27 @@
-#' Load tracked data from VERSE environment
+#' Load Tracked Data from VERSE Environment
 #' 
-#' Utility function to read in VERSE data streams from the TrackingLog.csv
+#' Utility function to read in VERSE data streams from TrackingLog.csv file(s).
 #' 
-#' @param df.info Dataframe with one row per file to be read in. 
-#' Must contain the column Filename (full path to the CSV file), 
-#' can additionally contain columns to describe start and end point of the data to be read in 
-#' (start.use : first Timestamp to be used, 
-#' end.use : last Timestamp to be used, 
-#' frame.use : number of frames, starting either at start.use or at the beginning)
-#' @param rs.path Directory path to where the rds file will be saved, if empty nothing is saved
-#' @param timezone Timezone in which the data collection was conducted
-#' @param suffix Suffix to be added to the file saved to disk (default: "")
-#' @param resetTime Switch to toggle whether time shall be reset to 0 for anonymisation (default: FALSE)
-#' @param verbose switch to toggle whether output shall be printed to the console (default: TRUE)
-#' @param recompute switch to toggle whether existing data should be recomputed and overwritten (default: FALSE)
-#' @param return switch to toggle whether a dataframe is returned (default: TRUE)
-#' @returns dataVERSE[suffix].rds saved to disk in the rs.path [Optional], with a dataframe of the same data potentially returned [Optional]
+#' @param df.info Dataframe with one row per file to be read in. Must contain the 
+#'   column `Filename` (full path to the CSV file). Can optionally contain parameters 
+#'   defining windows: `start.use` (first Timestamp), `end.use` (last Timestamp), 
+#'   or `frame.use` (number of frames starting at `start.use` or sequence origin).
+#' @param rs.path Path to the directory where the output file will be saved, if empty (is_empty(rs.path) == TRUE), then nothing is saved
+#' @param timezone Character. Timezone in which the data collection was conducted.
+#' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
+#' @param resetTime Logical. Switch to toggle whether time should be reset to 0 for anonymisation. Default is `FALSE`.
+#' @param nos Numeric. Number of Social Actors in the VERSE environment. Default is `2`.
+#' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
+#' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
+#' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
+#'
+#' @return If `return = TRUE`, returns the imported VERSE dataframe. Saves `dataVERSE[suffix].rds` to `rs.path` if provided.
+#' 
 #' @seealso [readCSVs()]
 #' @import tidyverse
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
-#' 
+
 extractData = function(df.info, rs.path, timezone, suffix = '',
                        resetTime = F, nos = 2,
                        verbose = T, recompute = F, return = T) {
@@ -206,16 +208,19 @@ extractData = function(df.info, rs.path, timezone, suffix = '',
   
 }
 
-#' Read in multiple files with fread
+#' Read Multiple Tracking Log Files In Parallel
 #' 
-#' This function reads in a list of files using the data.table::fread function
+#' Fast pipeline tool to parse collections of filepaths leveraging `data.table::fread`.
 #' 
-#' @param Filename List of filepaths + filenames pointing to TrackingDataLog.csv files
-#' @param cols Which columns to read in, default is 1:186 corresponding to actor0 in VERSE
-#' @return Returns the df with the data read in from the files in Filename
+#' @param Filename Character vector. Structured file paths and locations pointing to individual `TrackingDataLog.csv` files.
+#' @param cols Numeric vector. Index maps of specific column dimensions to fetch. Default is `1:186` (corresponds to actor0 inside VERSE configurations).
+#'
+#' @return A consolidated dataframe representing data parsed from file targets declared in `Filename`.
+#' 
 #' @seealso [data.table::fread()]
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
-#' 
+
 readCSVs = function(Filename, cols = 1:186) {
   
   # add the names to the Filename variable so that these can be used as the ID column
@@ -240,15 +245,19 @@ readCSVs = function(Filename, cols = 1:186) {
   
 }
 
-#' Extract information from event files created by VERSE environment
+
+#' Extract Information from VERSE Environment Event Files
 #' 
-#' Utility function to read in VERSE event files from EventLog.txt
-#' @param fl.ls Vector of paths including Filenames for EventLog.txt files
-#' @param timezone Timezone in which the data collection was conducted
-#' @param type String to choose which type of variable should be created, either 
-#' "list" (creates a list containing everthing from the Event file) or 
-#' "df" (creates a dataframe with important information and Events)
-#' @return list or dataframe
+#' Utility function to read in raw VERSE environmental logs from an underlying `EventLog.txt` structure.
+#' 
+#' @param fl.ls Character vector. File system paths pointing to target `EventLog.txt` documents.
+#' @param timezone Character. Timezone in which the data collection was conducted.
+#' @param type Character string. Target format of parsing outcome. Use `"list"` to compile all 
+#'   unprocessed elements dynamically, or `"df"` to extract structured tabular fields. Default is `"list"`.
+#'
+#' @return A composite `list` or integrated `dataframe` depending on selection assigned to `type`.
+#' 
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @import tidyverse
 #' @export
 #' 

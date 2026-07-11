@@ -2,21 +2,24 @@
 % Please edit documentation in R/convertVERSE.R
 \name{readCSVs}
 \alias{readCSVs}
-\title{Read in multiple files with fread}
+\title{Read Multiple Tracking Log Files In Parallel}
 \usage{
 readCSVs(Filename, cols = 1:186)
 }
 \arguments{
-\item{Filename}{List of filepaths + filenames pointing to TrackingDataLog.csv files}
+\item{Filename}{Character vector. Structured file paths and locations pointing to individual \code{TrackingDataLog.csv} files.}
 
-\item{cols}{Which columns to read in, default is 1:186 corresponding to actor0 in VERSE}
+\item{cols}{Numeric vector. Index maps of specific column dimensions to fetch. Default is \code{1:186} (corresponds to actor0 inside VERSE configurations).}
 }
 \value{
-Returns the df with the data read in from the files in Filename
+A consolidated dataframe representing data parsed from file targets declared in \code{Filename}.
 }
 \description{
-This function reads in a list of files using the data.table::fread function
+Fast pipeline tool to parse collections of filepaths leveraging \code{data.table::fread}.
 }
 \seealso{
-[data.table::fread()]
+\code{\link[data.table:fread]{data.table::fread()}}
+}
+\author{
+Irene Sophia Plank (\email{10planki@gmail.com})
 }
