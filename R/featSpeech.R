@@ -364,13 +364,12 @@ addCommunication = function(df, df.speak, rs.path, suffix = '',
     # fill in the speaking time between startFrame and endFrame
     df.dyad = df.dyad |>
       group_by(Dyad) |>
-      fill(ends_with("speaking")) |>
+      tidyr::fill(ends_with("speaking")) |>
       tidyr::replace_na(list(actor1speaking = F, actor0speaking = F))
     
     # merge with the original dataframe
     df = df |>
-      merge(., 
-            rbind(
+      merge(rbind(
               df.dyad |> rename(Identifier = actor0, 
                                Speaking = actor0speaking,
                                Listening = actor1speaking) |>
