@@ -268,7 +268,7 @@ featWLCC = function(df, rs.path, colname, featname,
             summarise(pseudo = max(pseudo)) |>
             group_by(name, sim) |>
             summarise(pseudo = mean(pseudo)) |>
-            separate(name, into = c("Feature", "Dyad", "Session"), sep = "_") |>
+            tidyr::separate(name, into = c("Feature", "Dyad", "Session"), sep = "_") |>
             select(-Session)
         } else {
           df.pseudoShuff.agg = df.pseudoShuff |>
@@ -278,7 +278,7 @@ featWLCC = function(df, rs.path, colname, featname,
             summarise(pseudo = mean(pseudo)) |>
             group_by(name, sim) |>
             summarise(pseudo = mean(pseudo)) |>
-            separate(name, into = c("Feature", "Dyad", "Session"), sep = "_") |>
+            tidyr::separate(name, into = c("Feature", "Dyad", "Session"), sep = "_") |>
             select(-Session)
         }
         
@@ -316,7 +316,7 @@ featWLCC = function(df, rs.path, colname, featname,
       tibble::rownames_to_column(var = "window") |> #
       mutate(
         window = gsub("\\..*", "", window)
-      ) |> separate(col = name, into = c("Feature", "Dyad", "Session"), sep = "_") |>
+      ) |> tidyr::separate(col = name, into = c("Feature", "Dyad", "Session"), sep = "_") |>
       select(-Session) |>
       tidyr::pivot_longer(cols = starts_with("lag"), names_to = "lag", values_to = "WLCC") |>
       mutate(
