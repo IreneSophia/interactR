@@ -126,10 +126,10 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
       tidyr::pivot_wider(names_from = Actor, values_from = AOI) |>
       filter(actor0 == actor1) |>
       rename(AOI = actor0) |>
-      group_by(Dyad, AOI) |>
+      group_by(Dyad, AOI, Frames.total) |>
       summarise(
-        value = n()*100/Frames.total
-      ) |> 
+        value = n()*100
+      ) |> mutate(value = value/Frames.total) |>
       tidyr::pivot_wider(names_from = AOI,
                          names_glue = "DyadDwell_{AOI}_Total")
     
