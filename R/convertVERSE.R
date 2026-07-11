@@ -68,7 +68,7 @@ extractData = function(df.info, rs.path, timezone, suffix = '',
       colnames(df1) = c("Filename", header)
       
       # now we can combine this data
-      df = rbind(df0 %>% mutate(Actor = "actor0"), df1 %>% mutate(Actor = "actor1")) %>%
+      df = rbind(df0 |> mutate(Actor = "actor0"), df1 |> mutate(Actor = "actor1")) |>
         mutate(
           # merge speaking and listening columns
           Communication = case_when(
@@ -87,30 +87,30 @@ extractData = function(df.info, rs.path, timezone, suffix = '',
     }
     
     # any other information in the df.info is added - needed for cutting data
-    df = df %>% 
-      merge(., df.info)
+    df = df |> 
+      merge(df.info)
     
     # if the df.info contains start and end times, then cut out everything in-between
     if (sum(c("start.use", "end.use") %in% colnames(df.info)) == 2) {
       if (verbose) cat(format(Sys.time(), "%X %Z"), ": Cutting out relevant time window\n")
-      df = df %>%
-        filter(Timestamp >= start.use & Timestamp <= end.use) %>%
+      df = df |>
+        filter(Timestamp >= start.use & Timestamp <= end.use) |>
         select(-start.use, -end.use)
     } else if ("start.use" %in% colnames(df.info)) {
       if (verbose) cat(format(Sys.time(), "%X %Z"), ": Cutting out based on starting point\n")
-      df = df %>%
-        filter(Timestamp >= start.use) %>%
+      df = df |>
+        filter(Timestamp >= start.use) |>
         select(-start.use)
     } else if ("end.use" %in% colnames(df.info)) {
       if (verbose) cat(format(Sys.time(), "%X %Z"), ": Cutting out based on end point\n")
-      df = df %>%
-        filter(Timestamp <= end.use) %>%
+      df = df |>
+        filter(Timestamp <= end.use) |>
         select(-end.use)
     }
     
     # add Frames and size of avatar
-    df = df %>%
-      group_by(Time, Identifier) %>%
+    df = df |>
+      group_by(Time, Identifier) |>
       mutate(
         # add a frame number
         Frame = row_number(),
@@ -121,15 +121,15 @@ extractData = function(df.info, rs.path, timezone, suffix = '',
     # if the df.info contains a number of frames, then only keep that many
     if ("frame.use" %in% colnames(df.info)) {
       if (verbose) cat(format(Sys.time(), "%X %Z"), ": Cutting out number of frames\n")
-      df = df %>%
-        filter(Frame <= frame.use) %>%
+      df = df |>
+        filter(Frame <= frame.use) |>
         select(-frame.use)
     }
     
     # now let's do some data wrangling
     if (verbose) cat(format(Sys.time(), "%X %Z"), ": Adding information\n")
-    df = df %>%
-      group_by(Identifier) %>% 
+    df = df |>
+      group_by(Identifier) |> 
       mutate(
         # extract the starting time of this experiment from the Filename
         Time = as.POSIXct(gsub(".*/(.+)/TrackingDataLog.*", "\\1", Filename), 
@@ -151,48 +151,48 @@ extractData = function(df.info, rs.path, timezone, suffix = '',
       )
     
     if (nos == 2) {
-      df = df %>%
-        arrange(Actor, Identifier, Timestamp) %>%
-        group_by(Time, Timestamp) %>%
+      df = df |>
+        arrange(Actor, Identifier, Timestamp) |>
+        group_by(Time, Timestamp) |>
         mutate(
           # add a Dyad identifier: [Identifier actor0]-[Identifier actor1]
           Dyad     = paste(Identifier, collapse = "-")
-        ) %>% group_by(Dyad, Identifier, Time) %>%
+        ) |> group_by(Dyad, Identifier, Time) |>
         mutate(
           # get the duration between two frames
           Duration = Timestamp - lag(Timestamp)
-        ) %>%
+        ) |>
         select(-Filename)
     } else {
-      df = df %>%
-        arrange(Identifier, Timestamp) %>%
-        group_by(Identifier, Time) %>%
+      df = df |>
+        arrange(Identifier, Timestamp) |>
+        group_by(Identifier, Time) |>
         mutate(
           # get the duration between two frames
           Duration = Timestamp - lag(Timestamp)
-        ) %>%
+        ) |>
         select(-Filename)
     }
     
     # if the df.info contains avatars, then add this info, otherwise set to NA
     if (sum(c("avatar0", "avatar1") %in% colnames(df.info)) == 2) {
-      df = df %>%
-        mutate(Avatar = if_else(Actor == "actor0", avatar0, avatar1)) %>%
+      df = df |>
+        mutate(Avatar = if_else(Actor == "actor0", avatar0, avatar1)) |>
         select(-avatar0, -avatar1)
     } else if (sum("avatar0" %in% colnames(df.info)) == 1) {
-      df = df %>%
+      df = df |>
         rename(Avatar = avatar0)
     } else {
-      df = df %>% mutate(Avatar = NA)
+      df = df |> mutate(Avatar = NA)
     }
     
     # arrange the order of columns
-    df = df %>%
+    df = df |>
       relocate(any_of('Dyad'), Time, Identifier, Avatar, Frame, Timestamp, Duration)
     
     # potentially reset the time to anonymise the data
     if (resetTime) {
-      df = df %>% 
+      df = df |> 
         mutate(Timestamp = as.POSIXct(as.numeric(Timestamp) - as.numeric(Time)),
                Time      = as.POSIXct(0))
     }
@@ -200,11 +200,11 @@ extractData = function(df.info, rs.path, timezone, suffix = '',
     if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
     
     # save the data frame
-    if (save) saveRDS(df %>% ungroup(), file.path(rs.path, sprintf("dataVERSE%s.rds", suffix)))
+    if (save) saveRDS(df |> ungroup(), file.path(rs.path, sprintf("dataVERSE%s.rds", suffix)))
   }
   
   # return the ungrouped dataframe
-  if (return) return(df %>% ungroup())
+  if (return) return(df |> ungroup())
   
 }
 
@@ -277,7 +277,7 @@ extractEvents = function(fl.ls, timezone, type = "list") {
       # grab the VERSE version
       ls.info[[i]]$Version = gsub(".*: (.+)", "\\1", txt[1])
       # include an Events dataframe
-      ls.info[[i]]$Events = data.frame(Event = txt[(grep("^}", txt)+1):length(txt)]) %>% 
+      ls.info[[i]]$Events = data.frame(Event = txt[(grep("^}", txt)+1):length(txt)]) |> 
         mutate(Timestamp = as.POSIXct(substr(Event, 1, 23), 
                                       format="%Y-%m-%d %X",
                                       tz = timezone),
@@ -295,7 +295,7 @@ extractEvents = function(fl.ls, timezone, type = "list") {
       # read in the Event file
       txt = scan(fl.ls[i], what = "", sep = "\n")
       # create the general dataframe
-      df.txt = data.frame(Event = txt[(grep("^}", txt)+1):length(txt)]) %>% 
+      df.txt = data.frame(Event = txt[(grep("^}", txt)+1):length(txt)]) |> 
         mutate(
           # extract the Timestamp from the Event
           Timestamp = as.POSIXct(substr(Event, 1, 23), 
@@ -313,7 +313,7 @@ extractEvents = function(fl.ls, timezone, type = "list") {
         )
       # add the actors / participants, depending on their number
       if (length(grep("\"DefaultAvatar\":", txt)) == 1) {
-        df.txt = df.txt %>% 
+        df.txt = df.txt |> 
           mutate(
             actor0  = gsub(".*\"(.+)\"", "\\1", txt[grep("\"Participants\":", txt)+1]),
             avatar0 = gsub(".*\": \"(.+)\",", "\\1", txt[grep("\"DefaultAvatar\":", txt)[1]]), 
@@ -321,7 +321,7 @@ extractEvents = function(fl.ls, timezone, type = "list") {
             avatar1 = NA
           )
       } else {
-        df.txt = df.txt %>% 
+        df.txt = df.txt |> 
           mutate(
             actor0  = gsub(".*\"(.+)\",", "\\1", txt[grep("\"Participants\":", txt)+1]),
             actor1  = gsub(".*\"(.+)\"", "\\1", txt[grep("\"Participants\":", txt)+2]),

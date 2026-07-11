@@ -7,7 +7,7 @@ Maintainer: Irene Sophia Plank <10planki@gmail.com>
 Description: This package contains functions to extract multimodal and crossmodal features from social interactions. Data extracted from recordings of real-life conversations or collected in the virtual reality environment VERSE. 
 URL: https://github.com/IreneSophia/interactR
 BugReports: https://github.com/IreneSophia/interactR/issues
-Depends: R (>= 4.0.0)
+Depends: R (>= 4.2.0)
 License: GPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

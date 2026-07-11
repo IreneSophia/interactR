@@ -55,9 +55,9 @@ featEFE = function(df, rs.path, suffix = "", verbose = T,
     } else {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Preprocessing facial expressions\n")
       # preprocessing facial expressions
-      df.face = df %>% 
+      df.face = df |> 
         select(Dyad, Identifier, Frame, any_of(c('Time', 'Timestamp', 'Partner', 'Actor', 'Communication')),
-               starts_with("Facial_")) %>%
+               starts_with("Facial_")) |>
         # code as emotions following Aldenhoven et al. (2026, Sensors)
         mutate(
           Anger = rowMeans(across(contains(c("BrowDown", "Eye_Squint", 
@@ -77,33 +77,33 @@ featEFE = function(df, rs.path, suffix = "", verbose = T,
                            rowMeans(across(contains(c("MouthDimpleRight", "MouthSmileRight")))))
         )
       # get a list of columns that don't contain any data
-      ls.cols = df.face %>% 
-        summarise(across(where(is.numeric), sum)) %>%
-        pivot_longer(cols = everything()) %>% 
-        filter(value == 0) %>% pull(name)
+      ls.cols = df.face |> 
+        summarise(across(where(is.numeric), sum)) |>
+        pivot_longer(cols = everything()) |> 
+        filter(value == 0) |> pull(name)
       # remove them from the dataframe
-      df.face = df.face %>%
+      df.face = df.face |>
         select(-all_of(ls.cols))
       # save the preprocessed facial data
       if (!is.null(rs.path)) saveRDS(df.face, flrds)
     }
     # aggregate the emotional expressions
-    df.out = df.face %>% select(-starts_with("Facial_")) %>% 
+    df.out = df.face |> select(-starts_with("Facial_")) |> 
       pivot_longer(cols = c(Anger, Disgust, Joy, Fear, Sadness, Surprise, Contempt), 
-                   names_to = "Emotion", names_prefix = "EFE.") %>% 
-      group_by(Dyad, Identifier, Time, Partner, Emotion) %>% 
-      summarise(value = mean(value)) %>% 
+                   names_to = "Emotion", names_prefix = "EFE.") |> 
+      group_by(Dyad, Identifier, Time, Partner, Emotion) |> 
+      summarise(value = mean(value)) |> 
       pivot_wider(names_from = Emotion, 
                   names_glue = "EFE_{Emotion}_Total")
     # potentially adding values depending on Communication
     if ("Communication" %in% colnames(df.face)) {
       df.out = merge(
         df.out, 
-        df.face %>% select(-starts_with("Facial_")) %>% 
+        df.face |> select(-starts_with("Facial_")) |> 
           pivot_longer(cols = c(Anger, Disgust, Joy, Fear, Sadness, Surprise, Contempt), 
-                       names_to = "Emotion", names_prefix = "EFE.") %>% 
-          group_by(Dyad, Identifier, Time, Partner, Communication, Emotion) %>% 
-          summarise(value = mean(value)) %>% 
+                       names_to = "Emotion", names_prefix = "EFE.") |> 
+          group_by(Dyad, Identifier, Time, Partner, Communication, Emotion) |> 
+          summarise(value = mean(value)) |> 
           pivot_wider(names_from = c(Emotion, Communication), 
                       names_glue = "EFE_{Emotion}_{Communication}"))
     }

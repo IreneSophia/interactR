@@ -26,9 +26,9 @@ plotWLCCcomp = function(df, ncol = 3,
                         cols.cred = c("credible" = "#FFFC80", "not credible" = "white")) {
   
   # get the peak lags
-  df.lag = df %>%
-    group_by(Stat, Feature) %>%
-    filter(observed == max(observed)) %>%
+  df.lag = df |>
+    group_by(Stat, Feature) |>
+    filter(observed == max(observed)) |>
     mutate(
       label = sprintf("Peak: %.2fs", lag),
       ypos  = pseudo - pseudo.sd/2
@@ -36,22 +36,22 @@ plotWLCCcomp = function(df, ncol = 3,
   
   if (length(unique(df$Stat)) > 1) {
     
-    return(df %>%
-             pivot_longer(cols = starts_with(c("observed", "pseudo"))) %>%
+    return(df |>
+             pivot_longer(cols = starts_with(c("observed", "pseudo"))) |>
              mutate(temp = if_else(grepl(".*sd", name), "SD", "mean"),
                     Type = case_when(grepl("observ.*", name) ~ "WLCC", 
                                      Method == "Dyad" ~ "pseudoDyad-WLCC", 
                                      Method == "Seg"  ~ "pseudoSegment-WLCC",
-                                     Method == "Data" ~ "pseudoData-WLCC")) %>%
-             select(-name) %>%
-             pivot_wider(names_from = temp) %>%
-             group_by(Type, Feature) %>%
-             mutate(yTile = mean(mean, na.rm = T)) %>%
-             group_by(Feature, Stat, lag) %>% 
+                                     Method == "Data" ~ "pseudoData-WLCC")) |>
+             select(-name) |>
+             pivot_wider(names_from = temp) |>
+             group_by(Type, Feature) |>
+             mutate(yTile = mean(mean, na.rm = T)) |>
+             group_by(Feature, Stat, lag) |> 
              mutate(credible = case_when(sum(credible == "credible lags") > 0 ~ "credible",
-                                         T ~ "not credible")) %>%
-             ungroup() %>% 
-             ggplot(.) +  
+                                         T ~ "not credible")) |>
+             ungroup() |> 
+             ggplot() +  
              geom_tile(aes(fill = credible, x = lag, y = yTile, height = Inf), alpha = 0.66) +
              geom_ribbon(aes(x = lag, y = mean, group = Type, fill = Type, 
                              ymin = mean - SD, ymax = mean + SD), 
@@ -72,22 +72,22 @@ plotWLCCcomp = function(df, ncol = 3,
     )
   } else {
     
-    return(df %>%
-             pivot_longer(cols = starts_with(c("observed", "pseudo"))) %>%
+    return(df |>
+             pivot_longer(cols = starts_with(c("observed", "pseudo"))) |>
              mutate(temp = if_else(grepl(".*sd", name), "SD", "mean"),
                     Type = case_when(grepl("observ.*", name) ~ "WLCC", 
                                      Method == "Dyad" ~ "pseudoDyad-WLCC", 
                                      Method == "Seg"  ~ "pseudoSegment-WLCC",
-                                     Method == "Data" ~ "pseudoData-WLCC")) %>%
-             select(-name) %>%
-             pivot_wider(names_from = temp) %>%
-             group_by(Type, Feature) %>%
-             mutate(yTile = mean(mean, na.rm = T)) %>%
-             group_by(Feature, Stat, lag) %>% 
+                                     Method == "Data" ~ "pseudoData-WLCC")) |>
+             select(-name) |>
+             pivot_wider(names_from = temp) |>
+             group_by(Type, Feature) |>
+             mutate(yTile = mean(mean, na.rm = T)) |>
+             group_by(Feature, Stat, lag) |> 
              mutate(credible = case_when(sum(credible == "credible lags") > 0 ~ "credible",
-                                         T ~ "not credible")) %>%
-             ungroup() %>% 
-             ggplot(.) +  
+                                         T ~ "not credible")) |>
+             ungroup() |> 
+             ggplot() +  
              geom_tile(aes(fill = credible, x = lag, y = yTile, height = Inf), alpha = 0.66) +
              geom_ribbon(aes(x = lag, y = mean, group = Type, fill = Type, 
                              ymin = mean - SD, ymax = mean + SD), 

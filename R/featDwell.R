@@ -47,22 +47,22 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
     if (!is.null(ls.AOI)) pattern = paste(ls.AOI, collapse = "|")
     
     # create an Actor column containing actor0 and actor1
-    df = df %>%
-      group_by(Dyad, Identifier) %>%
+    df = df |>
+      group_by(Dyad, Identifier) |>
       mutate(
         Actor = if_else(gsub("(.+)-.*", "\\1", Dyad) == Identifier,
                         "actor0", "actor1")
-      ) %>% ungroup()
+      ) |> ungroup()
     
     # if ls.AOI is given, classify according to this
     if (!is.null(ls.AOI)) {
       if ("AOI" %in% colnames(df)) {
-        df = df %>% 
+        df = df |> 
           mutate(
             AOI = coalesce(str_extract(AOI, pattern), "None")
           )
       } else {
-        df = df %>% 
+        df = df |> 
           mutate(
             AOI.left = coalesce(str_extract(AOI.left, pattern), "None"),
             AOI.right = coalesce(str_extract(AOI.right, pattern), "None")
@@ -74,7 +74,7 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
     if ("AOI" %in% colnames(df)) {
       df.dwell = df
     } else {
-      df.dwell = df %>% 
+      df.dwell = df |> 
         mutate(
           AOI = case_when(
             AOI.left == AOI.right ~ AOI.left, 
@@ -86,57 +86,57 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
       }
     
     # aggregate the dwell times
-    df.dwell.agg = df.dwell %>% 
-      group_by(Dyad, Identifier) %>%
+    df.dwell.agg = df.dwell |> 
+      group_by(Dyad, Identifier) |>
       mutate(
         # get the total number of frames
         Frames.total = n()
-      ) %>%
-      group_by(Dyad, AOI, Identifier, Frames.total) %>%
+      ) |>
+      group_by(Dyad, AOI, Identifier, Frames.total) |>
       summarise(
         AOI.frames = n()
-      ) %>% ungroup() %>%
+      ) |> ungroup() |>
       mutate(
         Dwell = AOI.frames * 100 / Frames.total
-      ) %>% select(-AOI.frames, -Frames.total) %>%
+      ) |> select(-AOI.frames, -Frames.total) |>
       pivot_wider(names_from = AOI, values_from = Dwell,
                   names_glue = "{.value}_{AOI}_Total")
     # potentially add the values depending on Communication
     if ("Communication" %in% colnames(df)) {
       df.dwell.agg = merge(
         df.dwell.agg, 
-        df.dwell %>% 
-          group_by(Dyad, Identifier) %>%
+        df.dwell |> 
+          group_by(Dyad, Identifier) |>
           mutate(
             # get the total number of frames
             Frames.total = n()
-          ) %>%
-          group_by(Dyad, AOI, Identifier, Communication, Frames.total) %>%
+          ) |>
+          group_by(Dyad, AOI, Identifier, Communication, Frames.total) |>
           summarise(
             AOI.frames = n()
-          ) %>% ungroup() %>%
+          ) |> ungroup() |>
           mutate(
             Dwell = AOI.frames * 100 / Frames.total
-          ) %>% select(-AOI.frames, -Frames.total) %>%
+          ) |> select(-AOI.frames, -Frames.total) |>
           pivot_wider(names_from = c(AOI, Communication), values_from = Dwell,
                       names_glue = "{.value}_{AOI}_{Communication}")
       )
     }
     
     # joint attention 
-    df.dwell.joint = df.dwell %>%
-      select(Dyad, Actor, Frame, AOI) %>% filter(AOI != "None") %>%
-      pivot_wider(names_from = Actor, values_from = AOI) %>%
-      filter(actor0 == actor1) %>%
-      rename(AOI = actor0) %>%
-      group_by(Dyad, AOI) %>%
+    df.dwell.joint = df.dwell |>
+      select(Dyad, Actor, Frame, AOI) |> filter(AOI != "None") |>
+      pivot_wider(names_from = Actor, values_from = AOI) |>
+      filter(actor0 == actor1) |>
+      rename(AOI = actor0) |>
+      group_by(Dyad, AOI) |>
       summarise(
         value = n()*100/f.total
-      ) %>% pivot_wider(names_from = AOI,
+      ) |> pivot_wider(names_from = AOI,
                         names_glue = "DyadDwell_{AOI}_Total")
     
-    df.out = merge(df.dwell.agg, df.dwell.joint, all.x = T) %>% 
-      replace(is.na(.), 0)
+    df.out = merge(df.dwell.agg, df.dwell.joint, all.x = T) |> 
+      dplyr::coalesce(0)
     
     # save speech dwell dataframe
     if (!is.null(rs.path)) write_csv(df.out, flnm)

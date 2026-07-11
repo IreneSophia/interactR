@@ -87,29 +87,29 @@ featWLCC = function(df, rs.path, colname, featname,
     } else {
       
       # ensure that the dataframe is properly arranged
-      df = df %>% 
+      df = df |> 
         arrange(Dyad, Identifier, Frame)
       
       # check if the data frame contains the actors, otherwise create the column
       if ("Actor" %in% colnames(df)) {
         if (length(symdiff(unique(df$Actor), c("actor0", "actor1"))) > 0) {
           # rewrite the column but keep the original for later
-          df = df %>%
-            group_by(Dyad, Identifier) %>%
+          df = df |>
+            group_by(Dyad, Identifier) |>
             mutate(
               Actor_Original = Actor,
               Actor = if_else(gsub("(.+)-.*", "\\1", Dyad) == Identifier,
                               "actor0", "actor1")
-            ) %>% ungroup()
+            ) |> ungroup()
         } 
       } else {
         # create the column
-        df = df %>%
-          group_by(Dyad, Identifier) %>%
+        df = df |>
+          group_by(Dyad, Identifier) |>
           mutate(
             Actor = if_else(gsub("(.+)-.*", "\\1", Dyad) == Identifier,
                             "actor0", "actor1")
-          ) %>% ungroup()
+          ) |> ungroup()
       }
 
       # extract dyads and number of dyads      
@@ -124,10 +124,10 @@ featWLCC = function(df, rs.path, colname, featname,
         d = dyads[i]
           
         # create fake MEA object
-        mea = MEAfake(df %>% filter(Dyad == d & Actor == "actor0") %>%
-                        select(matches(colname)) %>% pull(), 
-                      df %>% filter(Dyad == d & Actor == "actor1") %>%
-                        select(matches(colname)) %>% pull(), 
+        mea = MEAfake(df |> filter(Dyad == d & Actor == "actor0") |>
+                        select(matches(colname)) |> pull(), 
+                      df |> filter(Dyad == d & Actor == "actor1") |>
+                        select(matches(colname)) |> pull(), 
                       fps, group = featname, id = d,
                       s1Name = "actor0", s2Name = "actor1") 
         
@@ -189,13 +189,13 @@ featWLCC = function(df, rs.path, colname, featname,
         
         # convert to dataframe
         if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Converting pseudoDyad-WLCC to dataframe\n")
-        df.pseudoDyad = getCCF(ls.dyad, type = "fullMatrix") %>% 
-          bind_rows(.id = "name") %>%
-          rownames_to_column(var = "window") %>% #
+        df.pseudoDyad = getCCF(ls.dyad, type = "fullMatrix") |> 
+          bind_rows(.id = "name") |>
+          rownames_to_column(var = "window") |> #
           mutate(
             window = gsub("\\..*", "", window)
-          ) %>% 
-          pivot_longer(cols = starts_with("lag"), names_to = "lag", values_to = "pseudo") %>%
+          ) |> 
+          pivot_longer(cols = starts_with("lag"), names_to = "lag", values_to = "pseudo") |>
           mutate(
             lag  = as.numeric(substr(lag, 4, nchar(lag))),
             Feature = gsub("^(.+)_.*_1_.*_\\|_.*", "\\1", name)
@@ -203,41 +203,41 @@ featWLCC = function(df, rs.path, colname, featname,
         
         # aggregate for overall comparison
         if (method == "peak") {
-          df.pseudoDyad.agg = df.pseudoDyad %>%
-            group_by(window, name, Feature) %>%
-            drop_na() %>% 
+          df.pseudoDyad.agg = df.pseudoDyad |>
+            group_by(window, name, Feature) |>
+            drop_na() |> 
             # summarise by finding the peak
-            summarise(pseudo = max(pseudo)) %>%
-            group_by(name, Feature) %>%
+            summarise(pseudo = max(pseudo)) |>
+            group_by(name, Feature) |>
             summarise(pseudo = mean(pseudo))
         } else {
-          df.pseudoDyad.agg = df.pseudoDyad %>%
-            group_by(window, name, Dyad, Feature) %>%
-            drop_na() %>% 
+          df.pseudoDyad.agg = df.pseudoDyad |>
+            group_by(window, name, Dyad, Feature) |>
+            drop_na() |> 
             # summarise using the mean
-            summarise(pseudo = mean(pseudo)) %>%
-            group_by(name, Feature) %>%
+            summarise(pseudo = mean(pseudo)) |>
+            group_by(name, Feature) |>
             summarise(pseudo = mean(pseudo))
         }
         
         # save the dataframe
-        if (!is.null(rs.path)) saveRDS(df.pseudoDyad.agg %>% ungroup(), sprintf("%s_df-agg.rds", fl.dyad))
+        if (!is.null(rs.path)) saveRDS(df.pseudoDyad.agg |> ungroup(), sprintf("%s_df-agg.rds", fl.dyad))
         
         # aggregate for the lag comparison 
-        df.pseudoDyad = df.pseudoDyad %>% 
-          group_by(name, Feature, lag) %>%
+        df.pseudoDyad = df.pseudoDyad |> 
+          group_by(name, Feature, lag) |>
           # drop NAs 
-          filter(!is.na(pseudo)) %>%
+          filter(!is.na(pseudo)) |>
           summarise(
             mean = mean(pseudo, na.rm = T),
             peak = max(pseudo, na.rm = T)
-          ) %>% 
-          pivot_longer(names_to = "Stat", cols = c(mean, peak), values_to = "pseudo") %>% 
-          ungroup() %>% 
-          filter(!is.na(pseudo)) %>% mutate(Method = 'Dyad')
+          ) |> 
+          pivot_longer(names_to = "Stat", cols = c(mean, peak), values_to = "pseudo") |> 
+          ungroup() |> 
+          filter(!is.na(pseudo)) |> mutate(Method = 'Dyad')
         
         # save the dataframe
-        if (!is.null(rs.path)) saveRDS(df.pseudoDyad %>% ungroup(), sprintf("%s_df.rds", fl.dyad))
+        if (!is.null(rs.path)) saveRDS(df.pseudoDyad |> ungroup(), sprintf("%s_df.rds", fl.dyad))
       }
     }
     
@@ -260,24 +260,24 @@ featWLCC = function(df, rs.path, colname, featname,
       
         # aggregate for overall comparison
         if (method == "peak") {
-          df.pseudoShuff.agg = df.pseudoShuff %>%
-            group_by(window, name, sim) %>%
-            drop_na() %>% 
+          df.pseudoShuff.agg = df.pseudoShuff |>
+            group_by(window, name, sim) |>
+            drop_na() |> 
             # summarise by finding the peak
-            summarise(pseudo = max(pseudo)) %>%
-            group_by(name, sim) %>%
-            summarise(pseudo = mean(pseudo)) %>%
-            separate(name, into = c("Feature", "Dyad", "Session"), sep = "_") %>%
+            summarise(pseudo = max(pseudo)) |>
+            group_by(name, sim) |>
+            summarise(pseudo = mean(pseudo)) |>
+            separate(name, into = c("Feature", "Dyad", "Session"), sep = "_") |>
             select(-Session)
         } else {
-          df.pseudoShuff.agg = df.pseudoShuff %>%
-            group_by(window, name, sim) %>%
-            drop_na() %>% 
+          df.pseudoShuff.agg = df.pseudoShuff |>
+            group_by(window, name, sim) |>
+            drop_na() |> 
             # summarise using the mean
-            summarise(pseudo = mean(pseudo)) %>%
-            group_by(name, sim) %>%
-            summarise(pseudo = mean(pseudo)) %>%
-            separate(name, into = c("Feature", "Dyad", "Session"), sep = "_") %>%
+            summarise(pseudo = mean(pseudo)) |>
+            group_by(name, sim) |>
+            summarise(pseudo = mean(pseudo)) |>
+            separate(name, into = c("Feature", "Dyad", "Session"), sep = "_") |>
             select(-Session)
         }
         
@@ -285,22 +285,22 @@ featWLCC = function(df, rs.path, colname, featname,
         if (!is.null(rs.path)) saveRDS(df.pseudoShuff.agg, paste0(fl.shuffle, "_df-agg.rds"))
         
         # aggregate for lag comparison
-        df.pseudoShuff = df.pseudoShuff %>%
-          group_by(name, sim, lag) %>%
+        df.pseudoShuff = df.pseudoShuff |>
+          group_by(name, sim, lag) |>
           # drop NAs 
-          filter(!is.na(pseudo)) %>%
+          filter(!is.na(pseudo)) |>
           summarise(
             mean = mean(pseudo, na.rm = T),
             peak = max(pseudo, na.rm = T)
-          ) %>% ungroup() %>%
-          pivot_longer(names_to = "Stat", cols = c(mean, peak), values_to = "pseudo") %>% 
-          filter(!is.na(pseudo)) %>% mutate(Method = shuffleMethod) %>%
+          ) |> ungroup() |>
+          pivot_longer(names_to = "Stat", cols = c(mean, peak), values_to = "pseudo") |> 
+          filter(!is.na(pseudo)) |> mutate(Method = shuffleMethod) |>
           mutate(
             Dyad    = gsub(".*_(.+)_.*", "\\1", name),
             Feature = gsub("^(.+)_.*_.*", "\\1", name),
             # reconstruct name with simulation number
             name = sprintf("%s_%s_%03d", Feature, Dyad, sim)
-          ) %>% select(-sim)
+          ) |> select(-sim)
         
         # save the dataframe
         if (!is.null(rs.path)) saveRDS(df.pseudoShuff, paste0(fl.shuffle, "_df.rds"))
@@ -310,14 +310,14 @@ featWLCC = function(df, rs.path, colname, featname,
     # convert to dataframe
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Converting WLCC values to dataframe\n")
     # convert from mea list to dataframe
-    df.ccf = getCCF(ls.ccf, type = "fullMatrix") %>% 
-      bind_rows(.id = "name") %>%
-      rownames_to_column(var = "window") %>% #
+    df.ccf = getCCF(ls.ccf, type = "fullMatrix") |> 
+      bind_rows(.id = "name") |>
+      rownames_to_column(var = "window") |> #
       mutate(
         window = gsub("\\..*", "", window)
-      ) %>% separate(col = name, into = c("Feature", "Dyad", "Session"), sep = "_") %>%
-      select(-Session) %>%
-      pivot_longer(cols = starts_with("lag"), names_to = "lag", values_to = "WLCC") %>%
+      ) |> separate(col = name, into = c("Feature", "Dyad", "Session"), sep = "_") |>
+      select(-Session) |>
+      pivot_longer(cols = starts_with("lag"), names_to = "lag", values_to = "WLCC") |>
       mutate(
         lag  = as.numeric(substr(lag, 4, nchar(lag))),
         Type = case_when(
@@ -326,71 +326,71 @@ featWLCC = function(df, rs.path, colname, featname,
           lag == 0 ~ "simultaneous")
       )
     # save the resulting dataframe
-    if (!is.null(rs.path)) saveRDS(df.ccf %>% ungroup(), paste0(fl.shuffle, "_df.rds"))
+    if (!is.null(rs.path)) saveRDS(df.ccf |> ungroup(), paste0(fl.shuffle, "_df.rds"))
     
     # choose which pseudoWLCC dataframes to use for lag comparison
     if (all(c("df.pseudoDyad", "df.pseudoShuff") %in% ls())) {
       df.pseudo = rbind(
-        df.pseudoShuff %>% ungroup() %>%
+        df.pseudoShuff |> ungroup() |>
           select(Feature, Method, lag, Stat, pseudo),
-        df.pseudoDyad %>%
+        df.pseudoDyad |>
           select(Feature, Method, lag, Stat, pseudo))
     } else if ("df.pseudoDyad" %in% ls()) {
-      df.pseudo = df.pseudoDyad %>%
+      df.pseudo = df.pseudoDyad |>
         select(Feature, Method, lag, Stat, pseudo)
     } else if ("df.pseudoShuff" %in% ls()) (
-      df.pseudo = df.pseudoShuff %>% ungroup() %>%
+      df.pseudo = df.pseudoShuff |> ungroup() |>
         select(Feature, Method, lag, Stat, pseudo)
     )
     # merge it and compare it to the observed WLCC
     if ("df.pseudo" %in% ls()) {
       df.comp = merge(
         # aggregate observed WLCC
-        df.ccf %>% 
-          group_by(Dyad, Feature, lag) %>%
+        df.ccf |> 
+          group_by(Dyad, Feature, lag) |>
           # drop NAs 
-          filter(!is.na(WLCC)) %>%
+          filter(!is.na(WLCC)) |>
           summarise(
             mean = mean(WLCC, na.rm = T),
             peak = max(WLCC, na.rm = T)
-          ) %>%
-          pivot_longer(names_to = "Stat", cols = c(mean, peak)) %>%
-          group_by(Feature, lag, Stat) %>%
+          ) |>
+          pivot_longer(names_to = "Stat", cols = c(mean, peak)) |>
+          group_by(Feature, lag, Stat) |>
           summarise(
             observed = mean(value, na.rm = T),
             observed.sd = sd(value, na.rm = T)
           ),
         df.pseudo
-      ) %>%
-        group_by(Method, Feature, lag, Stat) %>%
+      ) |>
+        group_by(Method, Feature, lag, Stat) |>
         summarise(
           prob = mean(observed > pseudo)*100,
           observed.sd = mean(observed.sd, na.rm = T),
           observed = mean(observed, na.rm = T),
           pseudo.sd = sd(pseudo, na.rm = T),
           pseudo = mean(pseudo, na.rm = T)
-        ) %>% group_by(Feature, lag, Stat) %>%
+        ) |> group_by(Feature, lag, Stat) |>
         mutate(
           count = sum(prob > credibleThreshold)
-        ) %>% ungroup() %>% 
+        ) |> ungroup() |> 
         mutate(
           credible = if_else(prob > credibleThreshold, "credible lags", "not credible")
-        ) %>% ungroup()
-      if (!is.null(rs.path)) write_csv(df.comp %>% ungroup(), paste0(flnm, "_pseudo-comp.csv"))
+        ) |> ungroup()
+      if (!is.null(rs.path)) write_csv(df.comp |> ungroup(), paste0(flnm, "_pseudo-comp.csv"))
     }
     
     # summarise overall WLCC regardless of who is leading / following
     if (method == "peak") {
-      df.ccf.dyad = df.ccf %>% 
-        group_by(Dyad, Feature, window) %>% 
-        drop_na() %>% summarise(WLCC = max(WLCC)) %>%
-        group_by(Dyad, Feature) %>%
+      df.ccf.dyad = df.ccf |> 
+        group_by(Dyad, Feature, window) |> 
+        drop_na() |> summarise(WLCC = max(WLCC)) |>
+        group_by(Dyad, Feature) |>
         summarise(DyadWLCC = mean(WLCC))
     } else {
-      df.ccf.dyad = df.ccf %>% 
-        group_by(Dyad, Feature, window) %>% 
-        drop_na() %>% summarise(WLCC = mean(WLCC)) %>%
-        group_by(Dyad, Feature) %>%
+      df.ccf.dyad = df.ccf |> 
+        group_by(Dyad, Feature, window) |> 
+        drop_na() |> summarise(WLCC = mean(WLCC)) |>
+        group_by(Dyad, Feature) |>
         summarise(DyadWLCC = mean(WLCC))
     }
     
@@ -417,7 +417,7 @@ featWLCC = function(df, rs.path, colname, featname,
     }
     
     # add to the dataframe
-    df.ccf.dyad = df.ccf.dyad %>%
+    df.ccf.dyad = df.ccf.dyad |>
       mutate(
         testShuffle = shuffle,
         testDyad = dyad
@@ -425,22 +425,22 @@ featWLCC = function(df, rs.path, colname, featname,
     
     # aggregate all lags over the windows: first, either peak of each window or average
     if (method == "peak") {
-      df.ccf.agg = df.ccf %>% 
-        group_by(Dyad, Type, Feature, window) %>% 
-        drop_na() %>% summarise(WLCC = max(WLCC))
+      df.ccf.agg = df.ccf |> 
+        group_by(Dyad, Type, Feature, window) |> 
+        drop_na() |> summarise(WLCC = max(WLCC))
     } else {
-      df.ccf.agg = df.ccf %>% 
-        group_by(Dyad, Type, Feature, window) %>% 
-        drop_na() %>% summarise(WLCC = mean(WLCC))
+      df.ccf.agg = df.ccf |> 
+        group_by(Dyad, Type, Feature, window) |> 
+        drop_na() |> summarise(WLCC = mean(WLCC))
     }
       
     # then, average these values for each Dyad and Identifier
     df.out = merge(
       # get the leading of the two interaction partners
-      df.ccf.agg %>% 
-        filter(Type != "simultaneous") %>%
-        group_by(Dyad, Type, Feature) %>% 
-        summarise(WLCC = mean(WLCC)) %>% 
+      df.ccf.agg |> 
+        filter(Type != "simultaneous") |>
+        group_by(Dyad, Type, Feature) |> 
+        summarise(WLCC = mean(WLCC)) |> 
         mutate(
           Identifier = case_when(
             Type == "actor0" ~ gsub("(.+)-.*", "\\1", Dyad), 
@@ -448,7 +448,7 @@ featWLCC = function(df, rs.path, colname, featname,
         ),
       # merge with the dyad WLCC
       df.ccf.dyad, all = T
-    ) %>% ungroup() %>% select(-Type) %>%
+    ) |> ungroup() |> select(-Type) |>
       relocate(Dyad, Identifier, Feature)
     
     # save feature WLCC dataframe
@@ -643,22 +643,22 @@ pseudoWLCC = function(shuffleMethod, mea.orig, rs.path, fl.wlcc,
   
   # convert info to dataframe
   if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Converting pseudo-WLCC to dataframe\n")
-  df.pseudo = getCCF(ls.psync, type = "fullMatrix") %>% 
-    bind_rows(.id = "name") %>%
-    rownames_to_column(var = "window") %>% #
+  df.pseudo = getCCF(ls.psync, type = "fullMatrix") |> 
+    bind_rows(.id = "name") |>
+    rownames_to_column(var = "window") |> #
     mutate(
       window = gsub("\\..*", "", window)
-    ) %>%
+    ) |>
     # add the simulation number
-    group_by(name, window) %>%
-    mutate(sim = row_number()) %>% ungroup() %>%
+    group_by(name, window) |>
+    mutate(sim = row_number()) |> ungroup() |>
     # convert the columns which are the lags into rows
-    pivot_longer(cols = starts_with("lag"), names_to = "lag", values_to = "pseudo") %>% 
+    pivot_longer(cols = starts_with("lag"), names_to = "lag", values_to = "pseudo") |> 
     # extract the timings of the lags
     mutate(
       lag  = as.numeric(substr(lag, 4, nchar(lag)))
       )
   
-  if (return) return(df.pseudo %>% ungroup())
+  if (return) return(df.pseudo |> ungroup())
   
 }

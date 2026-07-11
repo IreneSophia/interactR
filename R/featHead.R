@@ -67,14 +67,14 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Exctracting Zero Crossings from ", paste(colnames, collapse = ", "), "\n")
   
     # preprocess the colnames
-    df = df %>%
-      select(Dyad, Identifier, Frame, any_of(c("Communication", colnames))) %>%
-      group_by(Dyad, Identifier) %>% arrange(Frame) %>%
+    df = df |>
+      select(Dyad, Identifier, Frame, any_of(c("Communication", colnames))) |>
+      group_by(Dyad, Identifier) |> arrange(Frame) |>
       mutate(
         # detrend data with local mean (1 second window)
         across(.cols = all_of(colnames), .fns = list(centred   = ~ .x - aggSlide(.x, mean, fps)),
                .names = "{.col}_{.fn}")
-      ) %>%
+      ) |>
       mutate(
         # compute zero-crossings and downstream filtering on centred data
         across(
@@ -100,39 +100,39 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Aggregating information\n")
     
     # overall ZC information
-    df.agg = df %>% 
-      group_by(Dyad, Identifier) %>%
+    df.agg = df |> 
+      group_by(Dyad, Identifier) |>
       mutate(
         # get the total number of frames
         Frames.total = n()
-      ) %>% 
-      group_by(Dyad, Identifier, Frames.total) %>%
+      ) |> 
+      group_by(Dyad, Identifier, Frames.total) |>
       summarise(
         across(matches(paste0(colnames, "_centred_smooth")), sum)
-      ) %>% ungroup() %>%
+      ) |> ungroup() |>
       mutate(
         across(matches(colnames), ~ .x * 100/Frames.total, .names = "RelativeZC_{.col}")
-      ) %>% select(Dyad, Identifier, matches("Relative.*centred_smooth")) %>%
+      ) |> select(Dyad, Identifier, matches("Relative.*centred_smooth")) |>
       rename_with(~ gsub("_centred_smooth", "_Total", .x), .cols = ends_with("centred_smooth"))
     
     # potentially add the values depending on Communication
     if ("Communication" %in% colnames(df)) {
       df.agg = merge(
         df.agg, 
-        df %>% 
-          group_by(Dyad, Identifier) %>%
+        df |> 
+          group_by(Dyad, Identifier) |>
           mutate(
             # get the total number of frames
             Frames.total = n()
-          ) %>%
-          group_by(Dyad, Identifier, Communication, Frames.total) %>%
+          ) |>
+          group_by(Dyad, Identifier, Communication, Frames.total) |>
           summarise(
             across(matches(paste0(colnames, "_centred_smooth")), sum)
-          ) %>% ungroup() %>%
+          ) |> ungroup() |>
           mutate(
             across(matches(colnames), ~ .x * 100/Frames.total, .names = "RelativeZC_{.col}")
-          ) %>% select(Dyad, Identifier, Communication, matches("Relative.*centred_smooth")) %>%
-          rename_with(~ gsub("_centred_smooth", "", .x), .cols = ends_with("centred_smooth")) %>%
+          ) |> select(Dyad, Identifier, Communication, matches("Relative.*centred_smooth")) |>
+          rename_with(~ gsub("_centred_smooth", "", .x), .cols = ends_with("centred_smooth")) |>
           pivot_wider(names_from = Communication, values_from = matches(colnames),
                       names_glue = "{.value}_{Communication}")
       )
@@ -297,19 +297,19 @@ preproHead = function(df, rs.path, rotnames, tranames, suffix = '',
     df = readRDS(flnm)
   } else {
     # focus on relevant columns
-    df = df %>% 
+    df = df |> 
       select(Dyad, Identifier, Frame, 
              any_of(c("Speaking", "Listening", "Communication")),
-             any_of(c(rotnames, tranames, cornames))) %>%
+             any_of(c(rotnames, tranames, cornames))) |>
       arrange(Dyad, Identifier, Frame)
     
     if (performFixCirc) {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Fixing circularity\n")
-      df = df %>%
-        group_by(Dyad, Identifier) %>%
+      df = df |>
+        group_by(Dyad, Identifier) |>
         # fix circularity based on the algorithm of Hale et al. (2020),
         # default threshold is 270
-        mutate(across(all_of(rotnames), fixCirc, .names = "{.col}_fixCirc")) %>%
+        mutate(across(all_of(rotnames), fixCirc, .names = "{.col}_fixCirc")) |>
         ungroup()
     }
     if (length(cornames) == length(rotnames)) {
@@ -322,11 +322,11 @@ preproHead = function(df, rs.path, rotnames, tranames, suffix = '',
     }
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Detrend translational columns\n")
     fixnames = paste0(rotnames, "_fixCirc")
-    df = df %>%
+    df = df |>
       # de-trended translational and fixCirc values by subtracting mean value
-      group_by(Dyad, Identifier) %>%
-      mutate(across(all_of(c(tranames, fixnames)), ~ .x - mean(.x), .names = "{.col}_detrended")) %>%
-      ungroup() %>% arrange(Dyad, Identifier, Frame)
+      group_by(Dyad, Identifier) |>
+      mutate(across(all_of(c(tranames, fixnames)), ~ .x - mean(.x), .names = "{.col}_detrended")) |>
+      ungroup() |> arrange(Dyad, Identifier, Frame)
     
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Save data\n")
     if (!is.null(rs.path)) saveRDS(df, file = flnm)

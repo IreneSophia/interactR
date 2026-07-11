@@ -46,51 +46,51 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
     if (verbose) cat("----------- Extracting and aggregating Speech features -----------\n")
   
     # read in the praat output capturing pitch and intensity
-    df.pint = read_csv(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv"))) %>%
-      separate(Name, into = c("tmp1", "Dyad", "Identifier", "tmp2"), sep = "_") %>%
+    df.pint = read_csv(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv"))) |>
+      separate(Name, into = c("tmp1", "Dyad", "Identifier", "tmp2"), sep = "_") |>
       select(-tmp1, -tmp2)
     
     # remove all speaking instances that do not have syllables detected - these
     # are most likely just breathing sounds mistaken for speech
-    df.speak = df.speak %>% 
+    df.speak = df.speak |> 
       # focus on speaking where there is at least one syllable
-      filter(nSyll > 0) %>%
-      arrange(Dyad, Start, End) %>%
+      filter(nSyll > 0) |>
+      arrange(Dyad, Start, End) |>
       mutate(
         engulfed = F
       )
     
     # summarise the articulation rate (number of syllables / phonation duration)  
     # and the silence-to-turn ratio (level of the dyad)
-    df = df.speak %>%
-      group_by(Dyad, Identifier) %>%
+    df = df.speak |>
+      group_by(Dyad, Identifier) |>
       summarise(
         nSyll = sum(nSyll),
         PhonationDuration = sum(Duration),
         ArticulationRate = nSyll/PhonationDuration
-      ) %>%
-      full_join(df.pint, by = c("Dyad", "Identifier")) %>%
-      group_by(Dyad) %>%
+      ) |>
+      full_join(df.pint, by = c("Dyad", "Identifier")) |>
+      group_by(Dyad) |>
       mutate(
         # compute silence-to-turn ratio: higher means more silence
         DyadSPCH_SilenceToTurn = (mean(Duration) - sum(PhonationDuration))/sum(PhonationDuration)
-      ) %>% 
-      select(Dyad, Identifier, PitchSD, IntensitySD, ArticulationRate, PhonationDuration, DyadSPCH_SilenceToTurn) %>%
+      ) |> 
+      select(Dyad, Identifier, PitchSD, IntensitySD, ArticulationRate, PhonationDuration, DyadSPCH_SilenceToTurn) |>
       rename_with(~ paste0("SPCH_", .x), .cols = c(PitchSD, IntensitySD, ArticulationRate, PhonationDuration))
     
     # extract the PhonationBalance for each participant [!MISSING]
-    df = df %>%
+    df = df |>
       full_join(
-        df %>% select(Dyad, Identifier, SPCH_PhonationDuration) %>%
+        df |> select(Dyad, Identifier, SPCH_PhonationDuration) |>
           mutate(
             actor = if_else(gsub("(.+)-.*", "\\1", Dyad) == Identifier, "left", "right")
-          ) %>% select(-Identifier) %>%
-          pivot_wider(names_from = actor, values_from = SPCH_PhonationDuration) %>%
+          ) |> select(-Identifier) |>
+          pivot_wider(names_from = actor, values_from = SPCH_PhonationDuration) |>
           mutate(
             tmp   = left/right,
             right = right/left
-          ) %>% select(-left) %>% rename(left = tmp) %>%
-          pivot_longer(cols = c(right, left), names_to = 'Identifier', values_to = 'SPCH_PhonationBalance') %>%
+          ) |> select(-left) |> rename(left = tmp) |>
+          pivot_longer(cols = c(right, left), names_to = 'Identifier', values_to = 'SPCH_PhonationBalance') |>
           mutate(
             Identifier = if_else(Identifier == "right", 
                                  gsub(".*-(.+)", "\\1", Dyad), 
@@ -111,53 +111,53 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
         df.speak$engulfed[i] = T
       } 
     }
-    df.speak = df.speak %>% filter(engulfed == F) %>% select(-c(engulfed))
+    df.speak = df.speak |> filter(engulfed == F) |> select(-c(engulfed))
     
     # identify turns: here, turns are defined as starting with the first sounding
     # instance of a person until the end of the last sounding instance of this 
     # person before a non-engulfed sounding instance of another person
     if (verbose) cat(format(Sys.time(), "%X %Z"), ": Detect turns\n")
-    df.turns = df.speak %>%
-      mutate(rown = row_number()) %>%             # add row number
-      group_by(Dyad, Identifier) %>%              # group by the person speaking
+    df.turns = df.speak |>
+      mutate(rown = row_number()) |>             # add row number
+      group_by(Dyad, Identifier) |>              # group by the person speaking
       mutate(
         tn = cumsum(c(TRUE, diff(rown) > 1))      # always keep the lowest row number of this turn as turn number
-      ) %>%
-      ungroup() %>%
+      ) |>
+      ungroup() |>
       mutate(
         Turn = paste0(Identifier, "_", tn)        # add this turn number to the person speaking
-      ) %>%
-      group_by(Dyad, Identifier, Turn) %>%        # summarise by Dyad, Identifier and Turn
+      ) |>
+      group_by(Dyad, Identifier, Turn) |>        # summarise by Dyad, Identifier and Turn
       summarise(
         StartTurn = min(Start, na.rm = T),        # take the start of the first sounding instance
         EndTurn   = max(End, na.rm = T),          # take the end of the last sounding instance
         DurTurn   = EndTurn - StartTurn           # compute duration of the turn
-      ) %>% 
-      arrange(Dyad, StartTurn) %>%
-      group_by(Dyad) %>%
+      ) |> 
+      arrange(Dyad, StartTurn) |>
+      group_by(Dyad) |>
       mutate(
         Turn = row_number()
-      ) %>%
-      group_by(Dyad) %>%
+      ) |>
+      group_by(Dyad) |>
       mutate(
         TTG = StartTurn - lag(EndTurn)
       )
     
     # aggregate and merge all the information
     if (verbose) cat(format(Sys.time(), "%X %Z"), ": Aggregate and save features\n")
-    df.out = df.turns %>% 
-      group_by(Dyad, Identifier) %>% 
+    df.out = df.turns |> 
+      group_by(Dyad, Identifier) |> 
       summarise(SPCH_TurnGapsMedian = median(TTG, na.rm = T),
-                SPCH_TurnGapsSD     = sd(TTG, na.rm = T)) %>%
-      full_join(df.turns %>% group_by(Dyad) %>% summarise(DyadSPCH_nTurns = max(Turn)),
-                by = 'Dyad') %>%
+                SPCH_TurnGapsSD     = sd(TTG, na.rm = T)) |>
+      full_join(df.turns |> group_by(Dyad) |> summarise(DyadSPCH_nTurns = max(Turn)),
+                by = 'Dyad') |>
       full_join(df, by = c('Dyad', 'Identifier'))
   }
   
   # save the features
   if (!is.null(rs.path)) write_csv(df.out, file = flnm)
   
-  if (return) return(df.out %>% ungroup())
+  if (return) return(df.out |> ungroup())
   
 }
 
@@ -225,7 +225,7 @@ convertGrid = function(ls.files, rs.path, suffix = '', prefix = '', extract = T,
       idx = which(grepl("text = \"[0-9]+\"", txt))
       df.tmp = data.frame(Turn = 1:length(idx),
                           Start = as.numeric(gsub(".*xmin = (.+)", "\\1", txt[idx-2])), 
-                          End   = as.numeric(gsub(".*xmax = (.+)", "\\1", txt[idx-1]))) %>%
+                          End   = as.numeric(gsub(".*xmax = (.+)", "\\1", txt[idx-1]))) |>
         mutate(
           Duration = End - Start, 
           Path = path
@@ -238,7 +238,7 @@ convertGrid = function(ls.files, rs.path, suffix = '', prefix = '', extract = T,
       # add the syllables to the turns
       df.tmp$nSyll = NA
       for (i in 1:nrow(df.tmp)) {
-        df.tmp$nSyll[i] = nrow(df.syll %>% filter(x <= df.tmp$End[i] & x >= df.tmp$Start[i]))
+        df.tmp$nSyll[i] = nrow(df.syll |> filter(x <= df.tmp$End[i] & x >= df.tmp$Start[i]))
       }
       
       # add to the dataframe
@@ -247,18 +247,18 @@ convertGrid = function(ls.files, rs.path, suffix = '', prefix = '', extract = T,
     
     # extract the Dyad and the Identifier
     if (extract) {
-      df.speak = df.speak %>%
+      df.speak = df.speak |>
         mutate(
           Dyad = gsub(sprintf("^%s(.+)_.*_.*", prefix), "\\1", basename(Path)),
           Identifier = gsub(sprintf("^%s.*_(.+)_.*", prefix), "\\1", basename(Path)),
-        ) %>% select(-Path) %>% relocate(Dyad, Identifier)
+        ) |> select(-Path) |> relocate(Dyad, Identifier)
     }
   }
   
   # potentially save to disk
   if (!is.null(rs.path)) saveRDS(df.speak, flnm)
   
-  if (return) return(df.speak %>% ungroup())
+  if (return) return(df.speak |> ungroup())
   
 }
 
@@ -314,27 +314,27 @@ addCommunication = function(df, df.speak, rs.path, suffix = '',
     
     # rename the Listening, Speaking, Communication columns if they exist
     if (any(c("Listening", "Speaking", "Communication") %in% colnames(df))) {
-      df = df %>%
+      df = df |>
         rename_with(~ paste0(.x, "_Original"), 
                     any_of(c("Listening", "Speaking", "Communication")))
     }
     
     # add needed information
-    df.dyad = df %>% ungroup() %>%
-      select(Dyad, Frame, Timestamp) %>% distinct() %>%
-      group_by(Dyad) %>%
+    df.dyad = df |> ungroup() |>
+      select(Dyad, Frame, Timestamp) |> distinct() |>
+      group_by(Dyad) |>
       mutate(
         # add the Timepoint based on the Timestamp
         Timepoint = Timestamp - min(Timestamp),
         actor0speaking = NA,
         actor1speaking = NA
-      ) %>%
+      ) |>
       # extract the Information of the actors
-      separate(Dyad, into = c("actor0", "actor1"), sep = "-", remove = F) %>%
+      separate(Dyad, into = c("actor0", "actor1"), sep = "-", remove = F) |>
       ungroup()
     
     # remove dyads from df.speak that are not in df
-    df.speak = df.speak %>% filter(Dyad %in% unique(df$Dyad))
+    df.speak = df.speak |> filter(Dyad %in% unique(df$Dyad))
     
     # loop through the turns and add the information
     for (i in 1:nrow(df.speak)) { #    
@@ -361,24 +361,24 @@ addCommunication = function(df, df.speak, rs.path, suffix = '',
     if (verbose) cat(format(Sys.time(), "%X %Z"), ": Merging with original dataframe\n")
     
     # fill in the speaking time between startFrame and endFrame
-    df.dyad = df.dyad %>%
-      group_by(Dyad) %>%
-      fill(ends_with("speaking")) %>%
+    df.dyad = df.dyad |>
+      group_by(Dyad) |>
+      fill(ends_with("speaking")) |>
       replace_na(list(actor1speaking = F, actor0speaking = F))
     
     # merge with the original dataframe
-    df = df %>%
+    df = df |>
       merge(., 
             rbind(
-              df.dyad %>% rename(Identifier = actor0, 
+              df.dyad |> rename(Identifier = actor0, 
                                Speaking = actor0speaking,
-                               Listening = actor1speaking) %>%
+                               Listening = actor1speaking) |>
                 select(Dyad, Identifier, Frame, Timepoint, Speaking, Listening),
-              df.dyad %>% rename(Identifier = actor1, 
+              df.dyad |> rename(Identifier = actor1, 
                                  Speaking = actor1speaking,
-                                 Listening = actor0speaking) %>%
+                                 Listening = actor0speaking) |>
                 select(Dyad, Identifier, Frame, Timepoint, Speaking, Listening)),
-            all.x = T) %>%
+            all.x = T) |>
       mutate(
         # merge speaking and listening columns
         Communication = case_when(
@@ -393,7 +393,7 @@ addCommunication = function(df, df.speak, rs.path, suffix = '',
   # save to disk
   if (!is.null(rs.path)) saveRDS(df, flnm)
   
-  if (return) return(df %>% ungroup())
+  if (return) return(df |> ungroup())
   
 }
 
@@ -427,22 +427,22 @@ rewriteGrid = function(ls.files, rs.path, minSyll = 1, maxSyll = 4,
 
     # extract the turns and nSyll, then filter to those that should be removed
     df.speak = convertGrid(path, c(), verbose = F, 
-                           return = T, extract = F) %>%
-      select(-Path) %>%
+                           return = T, extract = F) |>
+      select(-Path) |>
       # exclude all turns that do not fit the nSyll range
-      mutate(exclude = nSyll < minSyll | nSyll > maxSyll) %>%
+      mutate(exclude = nSyll < minSyll | nSyll > maxSyll) |>
       # check whether distance to the neighbouring instances exceeds max.dist
-      arrange(Start) %>%
+      arrange(Start) |>
       mutate(DistanceStart = Start - lag(End, default = -Inf), # never exclude first based on distance to start
              DistanceEnd   = lead(Start, default = Inf) - End,     # never exclude last based on distance to end
              exclude = if_else(exclude == F & (DistanceStart < min.dist | DistanceEnd < min.dist),
-                               T, exclude)) %>%
+                               T, exclude)) |>
       # additionally exclude all that exceed the maximum number of speaking instances
       # arrange by nSyll to keep the ones with the least number of Syllables
-      arrange(nSyll) %>% group_by(exclude) %>%
+      arrange(nSyll) |> group_by(exclude) |>
       mutate(row = row_number(),
-             exclude = if_else(!exclude & row > max.nos, T, exclude)) %>%
-      filter(exclude) %>% arrange(Turn)
+             exclude = if_else(!exclude & row > max.nos, T, exclude)) |>
+      filter(exclude) |> arrange(Turn)
     
     # read in the TextGrid file
     txt = scan(path, what = "", sep = "\n", quiet = T)
