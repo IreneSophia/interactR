@@ -83,15 +83,17 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
             T ~ AOI.left
           )
         )
-      }
+    }
     
-    # aggregate the dwell times
-    df.dwell.agg = df.dwell |> 
+    # add total number of frames
+    df.well = df.well |>
       group_by(Dyad, Identifier) |>
       mutate(
-        # get the total number of frames
         Frames.total = n()
-      ) |>
+      ) |> ungroup()
+    
+    # aggregate the dwell times
+    df.dwell.agg = df.dwell |>
       group_by(Dyad, AOI, Identifier, Frames.total) |>
       summarise(
         AOI.frames = n()
@@ -106,11 +108,6 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
       df.dwell.agg = merge(
         df.dwell.agg, 
         df.dwell |> 
-          group_by(Dyad, Identifier) |>
-          mutate(
-            # get the total number of frames
-            Frames.total = n()
-          ) |>
           group_by(Dyad, AOI, Identifier, Communication, Frames.total) |>
           summarise(
             AOI.frames = n()
@@ -125,13 +122,13 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
     
     # joint attention 
     df.dwell.joint = df.dwell |>
-      select(Dyad, Actor, Frame, AOI) |> filter(AOI != "None") |>
+      select(Dyad, Actor, Frame, AOI, Frames.total) |> filter(AOI != "None") |>
       tidyr::pivot_wider(names_from = Actor, values_from = AOI) |>
       filter(actor0 == actor1) |>
       rename(AOI = actor0) |>
       group_by(Dyad, AOI) |>
       summarise(
-        value = n()*100/f.total
+        value = n()*100/Frames.total
       ) |> 
       tidyr::pivot_wider(names_from = AOI,
                          names_glue = "DyadDwell_{AOI}_Total")
