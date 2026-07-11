@@ -16,9 +16,7 @@
 #' @return A `ggplot` object representing the comparison line plots.
 #' 
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
-#' @import ggplot2
 #' @import dplyr
-#' @import tidyr
 #' @export
 
 plotWLCCcomp = function(df, ncol = 3,
@@ -38,73 +36,73 @@ plotWLCCcomp = function(df, ncol = 3,
   if (length(unique(df$Stat)) > 1) {
     
     return(df |>
-             pivot_longer(cols = starts_with(c("observed", "pseudo"))) |>
+             tidyr::pivot_longer(cols = starts_with(c("observed", "pseudo"))) |>
              mutate(temp = if_else(grepl(".*sd", name), "SD", "mean"),
                     Type = case_when(grepl("observ.*", name) ~ "WLCC", 
                                      Method == "Dyad" ~ "pseudoDyad-WLCC", 
                                      Method == "Seg"  ~ "pseudoSegment-WLCC",
                                      Method == "Data" ~ "pseudoData-WLCC")) |>
              select(-name) |>
-             pivot_wider(names_from = temp) |>
+             tidyr::pivot_wider(names_from = temp) |>
              group_by(Type, Feature) |>
              mutate(yTile = mean(mean, na.rm = T)) |>
              group_by(Feature, Stat, lag) |> 
              mutate(credible = case_when(sum(credible == "credible lags") > 0 ~ "credible",
                                          T ~ "not credible")) |>
              ungroup() |> 
-             ggplot() +  
-             geom_tile(aes(fill = credible, x = lag, y = yTile, height = Inf), alpha = 0.66) +
-             geom_ribbon(aes(x = lag, y = mean, group = Type, fill = Type, 
+             ggplot2::ggplot() +  
+             ggplot2::geom_tile(aes(fill = credible, x = lag, y = yTile, height = Inf), alpha = 0.66) +
+             ggplot2::geom_ribbon(aes(x = lag, y = mean, group = Type, fill = Type, 
                              ymin = mean - SD, ymax = mean + SD), 
                          alpha = 0.5) +
-             geom_line(aes(x = lag, y = mean, group = Type, colour = Type), linewidth = 1) +
-             geom_vline(data = df.lag, aes(xintercept = lag), colour = "black") + 
-             geom_label(data = df.lag, aes(x = lag, y = ypos, label = label),  size = 2.5) + 
-             facet_wrap(Stat ~ Feature, scale = "free_y", ncol = ncol) +  
-             scale_fill_manual(values = c(cols.cred, 
+             ggplot2::geom_line(aes(x = lag, y = mean, group = Type, colour = Type), linewidth = 1) +
+             ggplot2::geom_vline(data = df.lag, aes(xintercept = lag), colour = "black") + 
+             ggplot2::geom_label(data = df.lag, aes(x = lag, y = ypos, label = label),  size = 2.5) + 
+             ggplot2::facet_wrap(Stat ~ Feature, scale = "free_y", ncol = ncol) +  
+             ggplot2::scale_fill_manual(values = c(cols.cred, 
                                           cols.wlcc), 
                                breaks = c("WLCC", "pseudoDyad-WLCC", "pseudoSegment-WLCC", "pseudoData-WLCC", 
                                           "credible")) + 
-             scale_colour_manual(values = cols.wlcc, 
+             ggplot2::scale_colour_manual(values = cols.wlcc, 
                                  guide = "none") +
-             theme_bw() + 
-             theme(legend.position = "bottom", legend.title = element_blank(),
+             ggplot2::theme_bw() + 
+             ggplot2::theme(legend.position = "bottom", legend.title = element_blank(),
                    axis.title.y = element_blank())
     )
   } else {
     
     return(df |>
-             pivot_longer(cols = starts_with(c("observed", "pseudo"))) |>
+             tidyr::pivot_longer(cols = starts_with(c("observed", "pseudo"))) |>
              mutate(temp = if_else(grepl(".*sd", name), "SD", "mean"),
                     Type = case_when(grepl("observ.*", name) ~ "WLCC", 
                                      Method == "Dyad" ~ "pseudoDyad-WLCC", 
                                      Method == "Seg"  ~ "pseudoSegment-WLCC",
                                      Method == "Data" ~ "pseudoData-WLCC")) |>
              select(-name) |>
-             pivot_wider(names_from = temp) |>
+             tidyr::pivot_wider(names_from = temp) |>
              group_by(Type, Feature) |>
              mutate(yTile = mean(mean, na.rm = T)) |>
              group_by(Feature, Stat, lag) |> 
              mutate(credible = case_when(sum(credible == "credible lags") > 0 ~ "credible",
                                          T ~ "not credible")) |>
              ungroup() |> 
-             ggplot() +  
-             geom_tile(aes(fill = credible, x = lag, y = yTile, height = Inf), alpha = 0.66) +
-             geom_ribbon(aes(x = lag, y = mean, group = Type, fill = Type, 
+             ggplot2::ggplot() +  
+             ggplot2::geom_tile(aes(fill = credible, x = lag, y = yTile, height = Inf), alpha = 0.66) +
+             ggplot2::geom_ribbon(aes(x = lag, y = mean, group = Type, fill = Type, 
                              ymin = mean - SD, ymax = mean + SD), 
                          alpha = 0.5) +
-             geom_line(aes(x = lag, y = mean, group = Type, colour = Type), linewidth = 1) +
-             geom_vline(data = df.lag, aes(xintercept = lag), colour = "black") + 
-             geom_label(data = df.lag, aes(x = lag, y = ypos, label = label),  size = 2.5) + 
-             facet_wrap(. ~ Feature, scale = "free_y", ncol = ncol) +  
-             scale_fill_manual(values = c(cols.cred, 
+             ggplot2::geom_line(aes(x = lag, y = mean, group = Type, colour = Type), linewidth = 1) +
+             ggplot2::geom_vline(data = df.lag, aes(xintercept = lag), colour = "black") + 
+             ggplot2::geom_label(data = df.lag, aes(x = lag, y = ypos, label = label),  size = 2.5) + 
+             ggplot2::facet_wrap(. ~ Feature, scale = "free_y", ncol = ncol) +  
+             ggplot2::scale_fill_manual(values = c(cols.cred, 
                                           cols.wlcc), 
                                breaks = c("WLCC", "pseudoDyad-WLCC", "pseudoSegment-WLCC", "pseudoData-WLCC", 
                                           "credible")) + 
-             scale_colour_manual(values = cols.wlcc, 
+             ggplot2::scale_colour_manual(values = cols.wlcc, 
                                  guide = "none") +
-             theme_bw() + 
-             theme(legend.position = "bottom", legend.title = element_blank(),
+             ggplot2::theme_bw() + 
+             ggplot2::theme(legend.position = "bottom", legend.title = element_blank(),
                    axis.title.y = element_blank())
     )
   }
