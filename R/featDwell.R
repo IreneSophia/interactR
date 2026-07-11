@@ -86,7 +86,7 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
     }
     
     # add total number of frames
-    df.well = df.well |>
+    df.dwell = df.dwell |>
       group_by(Dyad, Identifier) |>
       mutate(
         Frames.total = n()
@@ -141,7 +141,7 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
     
   }
   
-  # return speech dwell dataframe
+  # return feature dwell dataframe
   if (return) return(df.out)
 
 }
