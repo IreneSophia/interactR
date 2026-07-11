@@ -57,7 +57,7 @@ featWLCC = function(df, rs.path, colname, featname,
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
-    flnm = flcsv = ''
+    wlcc.path = fl.wlcc = flnm = flcsv = ''
   } else {
     # create filename
     fl.wlcc = sprintf("featWLCC-%s-w%d-l%d-i%d", featname, win, lag, inc)

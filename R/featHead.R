@@ -100,7 +100,7 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Aggregating information\n")
     
     # overall ZC information
-    df.agg = df |> 
+    df.out = df |> 
       group_by(Dyad, Identifier) |>
       mutate(
         # get the total number of frames
@@ -117,8 +117,8 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
     
     # potentially add the values depending on Communication
     if ("Communication" %in% colnames(df)) {
-      df.agg = merge(
-        df.agg, 
+      df.out = merge(
+        df.out, 
         df |> 
           group_by(Dyad, Identifier) |>
           mutate(
