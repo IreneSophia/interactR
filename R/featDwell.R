@@ -19,7 +19,7 @@
 #' @return If `return = TRUE`, returns the dataframe or saves consolidated summary CSV to `rs.path` if provided.
 #' 
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
-#' @import tidyverse
+#' @import dplyr
 #' @export
 #' 
 
@@ -39,7 +39,7 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
   if (!recompute & file.exists(flnm)) {
     if (return) {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading dwell times\n")
-      df.out = read_csv(flnm, show_col_types = F)
+      df.out = readr::read_csv(flnm, show_col_types = F)
     }
   } else {
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Preprocessing dwell times\n")
@@ -99,7 +99,7 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
       mutate(
         Dwell = AOI.frames * 100 / Frames.total
       ) |> select(-AOI.frames, -Frames.total) |>
-      pivot_wider(names_from = AOI, values_from = Dwell,
+      tidyr::pivot_wider(names_from = AOI, values_from = Dwell,
                   names_glue = "{.value}_{AOI}_Total")
     # potentially add the values depending on Communication
     if ("Communication" %in% colnames(df)) {
@@ -118,7 +118,7 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
           mutate(
             Dwell = AOI.frames * 100 / Frames.total
           ) |> select(-AOI.frames, -Frames.total) |>
-          pivot_wider(names_from = c(AOI, Communication), values_from = Dwell,
+          tidyr::pivot_wider(names_from = c(AOI, Communication), values_from = Dwell,
                       names_glue = "{.value}_{AOI}_{Communication}")
       )
     }
@@ -126,20 +126,21 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
     # joint attention 
     df.dwell.joint = df.dwell |>
       select(Dyad, Actor, Frame, AOI) |> filter(AOI != "None") |>
-      pivot_wider(names_from = Actor, values_from = AOI) |>
+      tidyr::pivot_wider(names_from = Actor, values_from = AOI) |>
       filter(actor0 == actor1) |>
       rename(AOI = actor0) |>
       group_by(Dyad, AOI) |>
       summarise(
         value = n()*100/f.total
-      ) |> pivot_wider(names_from = AOI,
-                        names_glue = "DyadDwell_{AOI}_Total")
+      ) |> 
+      tidyr::pivot_wider(names_from = AOI,
+                         names_glue = "DyadDwell_{AOI}_Total")
     
     df.out = merge(df.dwell.agg, df.dwell.joint, all.x = T) |> 
-      dplyr::coalesce(0)
+      coalesce(0)
     
     # save speech dwell dataframe
-    if (!is.null(rs.path)) write_csv(df.out, flnm)
+    if (!is.null(rs.path)) readr::write_csv(df.out, flnm)
     
   }
   
