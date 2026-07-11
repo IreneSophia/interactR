@@ -172,7 +172,7 @@ featWLCC = function(df, rs.path, colname, featname,
     if (pseudoDyad) {
       fl.dyad = sprintf("%s_pseudoDyad_seed%04d-n%04d", flnm, seed, nDyad)
       # if no recompute and the RDS file exists, it is simply loaded
-      if (!recompute & file.exists()) {
+      if (!recompute & file.exists(sprintf("%s_df-agg.rds", fl.dyad))) {
         df.pseudoDyad = readRDS(sprintf("%s_df.rds", fl.dyad))
         df.pseudoDyad.agg = readRDS(sprintf("%s_df-agg.rds", fl.dyad))
       } else {
