@@ -147,7 +147,7 @@ featWLCC = function(df, rs.path, colname, featname,
       if (!is.null(rs.path)) saveRDS(ls.ccf, paste0(flnm, "_ccf.rds"))
       
       # plotting with heatmaps
-      if (plot) {
+      if (plot & !is.null(rs.path)) {
         pdf(file.path(wlcc.path, sprintf("%s.pdf", fl.wlcc)))
         for (j in 1:length(ls.ccf)) {
           # configure heatmap

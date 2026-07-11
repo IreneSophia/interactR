@@ -47,7 +47,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
   
     # read in the praat output capturing pitch and intensity
     df.pint = readr::read_csv(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv"))) |>
-      separate(Name, into = c("tmp1", "Dyad", "Identifier", "tmp2"), sep = "_") |>
+      tidyr::separate(Name, into = c("tmp1", "Dyad", "Identifier", "tmp2"), sep = "_") |>
       select(-tmp1, -tmp2)
     
     # remove all speaking instances that do not have syllables detected - these
@@ -330,7 +330,7 @@ addCommunication = function(df, df.speak, rs.path, suffix = '',
         actor1speaking = NA
       ) |>
       # extract the Information of the actors
-      separate(Dyad, into = c("actor0", "actor1"), sep = "-", remove = F) |>
+      tidyr::separate(Dyad, into = c("actor0", "actor1"), sep = "-", remove = F) |>
       ungroup()
     
     # remove dyads from df.speak that are not in df
