@@ -205,7 +205,7 @@ featWLCC = function(df, rs.path, colname, featname,
         if (method == "peak") {
           df.pseudoDyad.agg = df.pseudoDyad |>
             group_by(window, name, Feature) |>
-            drop_na() |> 
+            tidyr::drop_na() |> 
             # summarise by finding the peak
             summarise(pseudo = max(pseudo)) |>
             group_by(name, Feature) |>
@@ -213,7 +213,7 @@ featWLCC = function(df, rs.path, colname, featname,
         } else {
           df.pseudoDyad.agg = df.pseudoDyad |>
             group_by(window, name, Dyad, Feature) |>
-            drop_na() |> 
+            tidyr::drop_na() |> 
             # summarise using the mean
             summarise(pseudo = mean(pseudo)) |>
             group_by(name, Feature) |>
@@ -262,7 +262,7 @@ featWLCC = function(df, rs.path, colname, featname,
         if (method == "peak") {
           df.pseudoShuff.agg = df.pseudoShuff |>
             group_by(window, name, sim) |>
-            drop_na() |> 
+            tidyr::drop_na() |> 
             # summarise by finding the peak
             summarise(pseudo = max(pseudo)) |>
             group_by(name, sim) |>
@@ -272,7 +272,7 @@ featWLCC = function(df, rs.path, colname, featname,
         } else {
           df.pseudoShuff.agg = df.pseudoShuff |>
             group_by(window, name, sim) |>
-            drop_na() |> 
+            tidyr::drop_na() |> 
             # summarise using the mean
             summarise(pseudo = mean(pseudo)) |>
             group_by(name, sim) |>
@@ -383,13 +383,13 @@ featWLCC = function(df, rs.path, colname, featname,
     if (method == "peak") {
       df.ccf.dyad = df.ccf |> 
         group_by(Dyad, Feature, window) |> 
-        drop_na() |> summarise(WLCC = max(WLCC)) |>
+        tidyr::drop_na() |> summarise(WLCC = max(WLCC)) |>
         group_by(Dyad, Feature) |>
         summarise(DyadWLCC = mean(WLCC))
     } else {
       df.ccf.dyad = df.ccf |> 
         group_by(Dyad, Feature, window) |> 
-        drop_na() |> summarise(WLCC = mean(WLCC)) |>
+        tidyr::drop_na() |> summarise(WLCC = mean(WLCC)) |>
         group_by(Dyad, Feature) |>
         summarise(DyadWLCC = mean(WLCC))
     }
@@ -427,11 +427,11 @@ featWLCC = function(df, rs.path, colname, featname,
     if (method == "peak") {
       df.ccf.agg = df.ccf |> 
         group_by(Dyad, Type, Feature, window) |> 
-        drop_na() |> summarise(WLCC = max(WLCC))
+        tidyr::drop_na() |> summarise(WLCC = max(WLCC))
     } else {
       df.ccf.agg = df.ccf |> 
         group_by(Dyad, Type, Feature, window) |> 
-        drop_na() |> summarise(WLCC = mean(WLCC))
+        tidyr::drop_na() |> summarise(WLCC = mean(WLCC))
     }
       
     # then, average these values for each Dyad and Identifier
