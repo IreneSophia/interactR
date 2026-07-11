@@ -35,17 +35,6 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
     flnm = file.path(rs.path, sprintf("featDwell%s.csv", suffix))
   }
   
-  # combine the AOI list into a pattern
-  if (!is_empty(ls.AOI)) pattern = paste(ls.AOI, collapse = "|")
-  
-  # create an Actor column containing actor0 and actor1
-  df = df %>%
-    group_by(Dyad, Identifier) %>%
-    mutate(
-      Actor = if_else(gsub("(.+)-.*", "\\1", Dyad) == Identifier,
-                      "actor0", "actor1")
-    ) %>% ungroup()
-  
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (return) {
@@ -54,6 +43,17 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
     }
   } else {
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Preprocessing dwell times\n")
+    # combine the AOI list into a pattern
+    if (!is_empty(ls.AOI)) pattern = paste(ls.AOI, collapse = "|")
+    
+    # create an Actor column containing actor0 and actor1
+    df = df %>%
+      group_by(Dyad, Identifier) %>%
+      mutate(
+        Actor = if_else(gsub("(.+)-.*", "\\1", Dyad) == Identifier,
+                        "actor0", "actor1")
+      ) %>% ungroup()
+    
     # if ls.AOI is given, classify according to this
     if (!is_empty(ls.AOI)) {
       if ("AOI" %in% colnames(df)) {
