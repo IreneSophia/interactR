@@ -191,7 +191,7 @@ featWLCC = function(df, rs.path, colname, featname,
         if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Converting pseudoDyad-WLCC to dataframe\n")
         df.pseudoDyad = getCCF(ls.dyad, type = "fullMatrix") |> 
           bind_rows(.id = "name") |>
-          rownames_to_column(var = "window") |> #
+          tibble::rownames_to_column(var = "window") |> #
           mutate(
             window = gsub("\\..*", "", window)
           ) |> 
@@ -312,7 +312,7 @@ featWLCC = function(df, rs.path, colname, featname,
     # convert from mea list to dataframe
     df.ccf = getCCF(ls.ccf, type = "fullMatrix") |> 
       bind_rows(.id = "name") |>
-      rownames_to_column(var = "window") |> #
+      tibble::rownames_to_column(var = "window") |> #
       mutate(
         window = gsub("\\..*", "", window)
       ) |> separate(col = name, into = c("Feature", "Dyad", "Session"), sep = "_") |>
@@ -645,7 +645,7 @@ pseudoWLCC = function(shuffleMethod, mea.orig, rs.path, fl.wlcc,
   if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Converting pseudo-WLCC to dataframe\n")
   df.pseudo = getCCF(ls.psync, type = "fullMatrix") |> 
     bind_rows(.id = "name") |>
-    rownames_to_column(var = "window") |> #
+    tibble::rownames_to_column(var = "window") |> #
     mutate(
       window = gsub("\\..*", "", window)
     ) |>

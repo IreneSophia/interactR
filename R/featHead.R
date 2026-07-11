@@ -273,7 +273,7 @@ rotDiff = function(x, y) {
 #' @return If `return = TRUE`, returns an adjusted movement dataframe. Saves `dataHead[suffix].rds` to `rs.path` if provided.
 #' 
 #' @references Hale et al. (2020). Journal of Nonverbal Behavior.
-#' @import tidyverse
+#' @import dplyr
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
 #' 
