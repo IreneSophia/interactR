@@ -17,7 +17,7 @@
 #'
 #' @return If `return = TRUE`, returns the processed dataframe. Saves `featSpeech[suffix].csv` to disk if `rs.path` is provided.
 #' 
-#' @import tidyverse
+#' @import dplyr
 #' @references de Jong & Wempe (2009). Behavior Research Methods.
 #' @references de Jong, Pacilly & Heeren (2021). Assessment in Education: Principles, Policy and Practice.
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
@@ -39,14 +39,14 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
   if (!recompute & file.exists(flnm)) {
     if (return) {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading speech features\n")
-      df.out = read_csv(flnm, show_col_types = F)
+      df.out = readr::read_csv(flnm, show_col_types = F)
     }
   } else {
     # give some info
     if (verbose) cat("----------- Extracting and aggregating Speech features -----------\n")
   
     # read in the praat output capturing pitch and intensity
-    df.pint = read_csv(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv"))) |>
+    df.pint = readr::read_csv(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv"))) |>
       separate(Name, into = c("tmp1", "Dyad", "Identifier", "tmp2"), sep = "_") |>
       select(-tmp1, -tmp2)
     
@@ -85,12 +85,12 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
           mutate(
             actor = if_else(gsub("(.+)-.*", "\\1", Dyad) == Identifier, "left", "right")
           ) |> select(-Identifier) |>
-          pivot_wider(names_from = actor, values_from = SPCH_PhonationDuration) |>
+          tidyr::pivot_wider(names_from = actor, values_from = SPCH_PhonationDuration) |>
           mutate(
             tmp   = left/right,
             right = right/left
           ) |> select(-left) |> rename(left = tmp) |>
-          pivot_longer(cols = c(right, left), names_to = 'Identifier', values_to = 'SPCH_PhonationBalance') |>
+          tidyr::pivot_longer(cols = c(right, left), names_to = 'Identifier', values_to = 'SPCH_PhonationBalance') |>
           mutate(
             Identifier = if_else(Identifier == "right", 
                                  gsub(".*-(.+)", "\\1", Dyad), 
@@ -155,7 +155,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
   }
   
   # save the features
-  if (!is.null(rs.path)) write_csv(df.out, file = flnm)
+  if (!is.null(rs.path)) readr::write_csv(df.out, file = flnm)
   
   if (return) return(df.out |> ungroup())
   
@@ -184,7 +184,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
 #' @references de Jong & Wempe (2009). Behavior Research Methods.
 #' @references de Jong, Pacilly & Heeren (2021). Assessment in Education: Principles, Policy and Practice.
 #' 
-#' @import tidyverse
+#' @import dplyr
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
 #' 
@@ -286,7 +286,7 @@ convertGrid = function(ls.files, rs.path, suffix = '', prefix = '', extract = T,
 #' @references de Jong & Wempe (2009). Behavior Research Methods.
 #' @references de Jong, Pacilly & Heeren (2021). Assessment in Education: Principles, Policy and Practice.
 #' 
-#' @import tidyverse
+#' @import dplyr
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
 #' 
@@ -416,7 +416,7 @@ addCommunication = function(df, df.speak, rs.path, suffix = '',
 #' @references de Jong & Wempe (2009). Behavior Research Methods.
 #' @references de Jong, Pacilly & Heeren (2021). Assessment in Education: Principles, Policy and Practice.
 #' 
-#' @import tidyverse
+#' @import dplyr
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
 

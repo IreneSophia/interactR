@@ -40,7 +40,7 @@
 #' @references Hale et al. (2020). Journal of Nonverbal Behavior.
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @seealso \code{\link{aggSlide}}, \code{\link{findZCrossing}}
-#' @import tidyverse
+#' @import dplyr
 #' @export
 
 featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
@@ -60,7 +60,7 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
   if (!recompute & file.exists(flnm)) {
     if (return) {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading Zero Crossing features\n")
-      df.out = read_csv(flnm, show_col_types = F)
+      df.out = readr::read_csv(flnm, show_col_types = F)
     }
   } else {
     
@@ -133,13 +133,13 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
             across(matches(colnames), ~ .x * 100/Frames.total, .names = "RelativeZC_{.col}")
           ) |> select(Dyad, Identifier, Communication, matches("Relative.*centred_smooth")) |>
           rename_with(~ gsub("_centred_smooth", "", .x), .cols = ends_with("centred_smooth")) |>
-          pivot_wider(names_from = Communication, values_from = matches(colnames),
+          tidyr::pivot_wider(names_from = Communication, values_from = matches(colnames),
                       names_glue = "{.value}_{Communication}")
       )
     }
     
     # save speech dwell dataframe
-    if (!is.null(rs.path)) write_csv(df.out, flnm)
+    if (!is.null(rs.path)) readr::write_csv(df.out, flnm)
     
   }
   

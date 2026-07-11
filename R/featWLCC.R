@@ -38,7 +38,7 @@
 #'  statistical tables (`_pseudo-comp.csv`), and structural visualization plots (`.pdf`). This bundle
 #'  is only created if `!is.null(rs.path)`.
 #' 
-#' @import tidyverse
+#' @import dplyr
 #' @import rMEA
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
@@ -79,7 +79,7 @@ featWLCC = function(df, rs.path, colname, featname,
   
   # if no recompute and the CSV with aggregated observed WLCC exists, load it
   if (!recompute & file.exists(flcsv)) {
-    df.out = read_csv(flcsv, show_col_types = F)
+    df.out = readr::read_csv(flcsv, show_col_types = F)
   } else {
     # if no recompute and the RDS file exists, it is simply loaded - observed WLCC
     if (!recompute & file.exists(paste0(flnm, "_ccf.rds"))) {
@@ -195,7 +195,7 @@ featWLCC = function(df, rs.path, colname, featname,
           mutate(
             window = gsub("\\..*", "", window)
           ) |> 
-          pivot_longer(cols = starts_with("lag"), names_to = "lag", values_to = "pseudo") |>
+          tidyr::pivot_longer(cols = starts_with("lag"), names_to = "lag", values_to = "pseudo") |>
           mutate(
             lag  = as.numeric(substr(lag, 4, nchar(lag))),
             Feature = gsub("^(.+)_.*_1_.*_\\|_.*", "\\1", name)
@@ -232,7 +232,7 @@ featWLCC = function(df, rs.path, colname, featname,
             mean = mean(pseudo, na.rm = T),
             peak = max(pseudo, na.rm = T)
           ) |> 
-          pivot_longer(names_to = "Stat", cols = c(mean, peak), values_to = "pseudo") |> 
+          tidyr::pivot_longer(names_to = "Stat", cols = c(mean, peak), values_to = "pseudo") |> 
           ungroup() |> 
           filter(!is.na(pseudo)) |> mutate(Method = 'Dyad')
         
@@ -293,7 +293,7 @@ featWLCC = function(df, rs.path, colname, featname,
             mean = mean(pseudo, na.rm = T),
             peak = max(pseudo, na.rm = T)
           ) |> ungroup() |>
-          pivot_longer(names_to = "Stat", cols = c(mean, peak), values_to = "pseudo") |> 
+          tidyr::pivot_longer(names_to = "Stat", cols = c(mean, peak), values_to = "pseudo") |> 
           filter(!is.na(pseudo)) |> mutate(Method = shuffleMethod) |>
           mutate(
             Dyad    = gsub(".*_(.+)_.*", "\\1", name),
@@ -317,7 +317,7 @@ featWLCC = function(df, rs.path, colname, featname,
         window = gsub("\\..*", "", window)
       ) |> separate(col = name, into = c("Feature", "Dyad", "Session"), sep = "_") |>
       select(-Session) |>
-      pivot_longer(cols = starts_with("lag"), names_to = "lag", values_to = "WLCC") |>
+      tidyr::pivot_longer(cols = starts_with("lag"), names_to = "lag", values_to = "WLCC") |>
       mutate(
         lag  = as.numeric(substr(lag, 4, nchar(lag))),
         Type = case_when(
@@ -354,7 +354,7 @@ featWLCC = function(df, rs.path, colname, featname,
             mean = mean(WLCC, na.rm = T),
             peak = max(WLCC, na.rm = T)
           ) |>
-          pivot_longer(names_to = "Stat", cols = c(mean, peak)) |>
+          tidyr::pivot_longer(names_to = "Stat", cols = c(mean, peak)) |>
           group_by(Feature, lag, Stat) |>
           summarise(
             observed = mean(value, na.rm = T),
@@ -376,7 +376,7 @@ featWLCC = function(df, rs.path, colname, featname,
         mutate(
           credible = if_else(prob > credibleThreshold, "credible lags", "not credible")
         ) |> ungroup()
-      if (!is.null(rs.path)) write_csv(df.comp |> ungroup(), paste0(flnm, "_pseudo-comp.csv"))
+      if (!is.null(rs.path)) readr::write_csv(df.comp |> ungroup(), paste0(flnm, "_pseudo-comp.csv"))
     }
     
     # summarise overall WLCC regardless of who is leading / following
@@ -452,7 +452,7 @@ featWLCC = function(df, rs.path, colname, featname,
       relocate(Dyad, Identifier, Feature)
     
     # save feature WLCC dataframe
-    if (!is.null(rs.path)) write_csv(df.out, flcsv)
+    if (!is.null(rs.path)) readr::write_csv(df.out, flcsv)
   }
   
   # return aggregated dataframe
@@ -527,7 +527,7 @@ MEAfake = function(s1, s2, fps, s1Name = "s1Name", s2Name = "s2Name",
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
 #' @import rMEA
-#' @import tidyverse
+#' @import dplyr
 #' 
 
 pseudoWLCC = function(shuffleMethod, mea.orig, rs.path, fl.wlcc, 
@@ -653,7 +653,7 @@ pseudoWLCC = function(shuffleMethod, mea.orig, rs.path, fl.wlcc,
     group_by(name, window) |>
     mutate(sim = row_number()) |> ungroup() |>
     # convert the columns which are the lags into rows
-    pivot_longer(cols = starts_with("lag"), names_to = "lag", values_to = "pseudo") |> 
+    tidyr::pivot_longer(cols = starts_with("lag"), names_to = "lag", values_to = "pseudo") |> 
     # extract the timings of the lags
     mutate(
       lag  = as.numeric(substr(lag, 4, nchar(lag)))
