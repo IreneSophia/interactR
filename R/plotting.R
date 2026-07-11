@@ -18,6 +18,7 @@
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @import ggplot2
 #' @import ggpattern
+#' @import dplyr
 #' @export
 
 plotWLCCcomp = function(df, ncol = 3,
