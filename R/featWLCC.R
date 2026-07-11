@@ -57,7 +57,8 @@ featWLCC = function(df, rs.path, colname, featname,
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
-    wlcc.path = fl.wlcc = flnm = flcsv = ''
+    fl.wlcc = flnm = flcsv = ''
+    wlcc.path = c()
   } else {
     # create filename
     fl.wlcc = sprintf("featWLCC-%s-w%d-l%d-i%d", featname, win, lag, inc)
@@ -557,7 +558,7 @@ pseudoWLCC = function(shuffleMethod, mea.orig, rs.path, fl.wlcc,
     # load the existing list of mea objects
     if (verbose) cat("----------- Loading", basename(savePath), "-----------\n")
     df.pseudo = readRDS(paste0(savePath, '_df.rds'))
-    if (return) return(df.pseudo)
+    if (return) return(df.pseudo) else return(NULL)
   }
   
   # check if the ls exists
