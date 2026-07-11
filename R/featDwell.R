@@ -1,10 +1,3 @@
-# This R script extracts dwell times from gaze data collected in VERSE. 
-# (c) Irene Sophia Plank, 10planki@gmail.com
-
-# if packman is not installed yet, install it
-if(!("pacman" %in% installed.packages()[,"Package"])) install.packages("pacman")
-pacman::p_load(tidyverse)
-
 #' Dwell time extraction from gaze patterns
 #'
 #' This function extracts dwell times and joint attention from gaze hits. The function
@@ -23,6 +16,7 @@ pacman::p_load(tidyverse)
 #' @param recompute Whether existing data is recomputed and overwritten (BOOLEAN, default: FALSE)
 #' @param return Whether the dataframe is returned (BOOLEAN, default: TRUE)
 #' @return csv containing aggregated dwell times saved to disk [Optional] or returned [Optional]
+#' @import tidyverse
 #' @export
 #' 
 

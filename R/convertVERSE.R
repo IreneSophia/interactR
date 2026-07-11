@@ -1,15 +1,3 @@
-# This R script contains helper functions to read in and extract data from the 
-# virtual reality software VERSE. 
-# (c) Irene Sophia Plank, 10planki@gmail.com
-
-# list of packages to be installed but not loaded
-ls = c("pacman", "lubridate", "data.table")
-for (package in ls) {
-  if(!(package %in% installed.packages()[,"Package"])) install.packages(package)
-}
-# then use pacman for all packages that should be loaded - if not installed, installed now
-pacman::p_load(tidyverse, jsonlite)
-
 #' Load tracked data from VERSE environment
 #' 
 #' Utility function to read in VERSE data streams from the TrackingLog.csv
@@ -29,6 +17,7 @@ pacman::p_load(tidyverse, jsonlite)
 #' @param return switch to toggle whether a dataframe is returned (default: TRUE)
 #' @returns dataVERSE[suffix].rds saved to disk in the rs.path [Optional], with a dataframe of the same data potentially returned [Optional]
 #' @seealso [readCSVs()]
+#' @import tidyverse
 #' @export
 #' 
 extractData = function(df.info, rs.path, timezone, suffix = '',
@@ -260,6 +249,7 @@ readCSVs = function(Filename, cols = 1:186) {
 #' "list" (creates a list containing everthing from the Event file) or 
 #' "df" (creates a dataframe with important information and Events)
 #' @return list or dataframe
+#' @import tidyverse
 #' @export
 #' 
 
@@ -274,7 +264,7 @@ extractEvents = function(fl.ls, timezone, type = "list") {
       # read in the Event file
       txt = scan(fl.ls[i], what = "", sep = "\n")
       # extract the json part from it
-      ls.info[[i]] = parse_json(txt[3:grep("^}", txt)])
+      ls.info[[i]] = jsonlite::parse_json(txt[3:grep("^}", txt)])
       # grab the VERSE version
       ls.info[[i]]$Version = gsub(".*: (.+)", "\\1", txt[1])
       # include an Events dataframe
