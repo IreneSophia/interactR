@@ -28,7 +28,7 @@
 #'   Otherwise, returns `NULL` invisibly. Saves `dataEFE[suffix].rds` and `featEFE[suffix].csv` to disk if `rs.path` is provided.
 #' 
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
-#' @import tidyverse
+#' @import dplyr
 #' @references Aldenhoven et al. (2026). Sensors.
 #' @export
 
@@ -47,7 +47,7 @@ featEFE = function(df, rs.path, suffix = "", verbose = T,
   
   # if no recompute and the CSV file exists, it is simply loaded
   if (!recompute & file.exists(flcsv)) {
-    df.out = read_csv(flcsv, show_col_types = F)
+    df.out = readr::read_csv(flcsv, show_col_types = F)
   } else {
     # no recompute and the RDS file exists, it is simply loaded
     if (!recompute & file.exists(flrds)) {
@@ -79,7 +79,7 @@ featEFE = function(df, rs.path, suffix = "", verbose = T,
       # get a list of columns that don't contain any data
       ls.cols = df.face |> 
         summarise(across(where(is.numeric), sum)) |>
-        pivot_longer(cols = everything()) |> 
+        tidyr::pivot_longer(cols = everything()) |> 
         filter(value == 0) |> pull(name)
       # remove them from the dataframe
       df.face = df.face |>
@@ -89,26 +89,26 @@ featEFE = function(df, rs.path, suffix = "", verbose = T,
     }
     # aggregate the emotional expressions
     df.out = df.face |> select(-starts_with("Facial_")) |> 
-      pivot_longer(cols = c(Anger, Disgust, Joy, Fear, Sadness, Surprise, Contempt), 
+      tidyr::pivot_longer(cols = c(Anger, Disgust, Joy, Fear, Sadness, Surprise, Contempt), 
                    names_to = "Emotion", names_prefix = "EFE.") |> 
       group_by(Dyad, Identifier, Time, Partner, Emotion) |> 
       summarise(value = mean(value)) |> 
-      pivot_wider(names_from = Emotion, 
+      tidyr::pivot_wider(names_from = Emotion, 
                   names_glue = "EFE_{Emotion}_Total")
     # potentially adding values depending on Communication
     if ("Communication" %in% colnames(df.face)) {
       df.out = merge(
         df.out, 
         df.face |> select(-starts_with("Facial_")) |> 
-          pivot_longer(cols = c(Anger, Disgust, Joy, Fear, Sadness, Surprise, Contempt), 
+          tidyr::pivot_longer(cols = c(Anger, Disgust, Joy, Fear, Sadness, Surprise, Contempt), 
                        names_to = "Emotion", names_prefix = "EFE.") |> 
           group_by(Dyad, Identifier, Time, Partner, Communication, Emotion) |> 
           summarise(value = mean(value)) |> 
-          pivot_wider(names_from = c(Emotion, Communication), 
+          tidyr::pivot_wider(names_from = c(Emotion, Communication), 
                       names_glue = "EFE_{Emotion}_{Communication}"))
     }
     # save feature face dataframe
-    if (!is.null(rs.path)) write_csv(df.out, flcsv)
+    if (!is.null(rs.path)) readr::write_csv(df.out, flcsv)
   }
   
   # return aggregated dataframe
