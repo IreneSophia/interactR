@@ -22,7 +22,7 @@
 #' @param df Dataframe. The dataset containing the variables to be processed. Must explicitly feature columns `Dyad`, 
 #'   `Identifier`, `Frame`, all columns contained in `colnames`. If `Communication` is a column, zero crossings are
 #'   also aggregated based on its classification. 
-#' @param rs.path Character. Path to destination directory for saved files. If empty (is_empty(rs.path) == TRUE), then nothing is saved.
+#' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param colnames Character vector. The exact name or names of the column(s) in \code{df} from which
 #'   to extract zero-crossing features. 
 #' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
@@ -48,7 +48,7 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
                          verbose = T, recompute = F, return = T) {
   
   # check rs.path
-  if (is_empty(rs.path)) {
+  if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
     flnm = ''
   } else {
@@ -94,7 +94,7 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
       )
     
     # save the data for plotting
-    if (!is_empty(rs.path)) saveRDS(df, file = file.path(rs.path, sprintf("dataZC%s.rds", suffix)))
+    if (!is.null(rs.path)) saveRDS(df, file = file.path(rs.path, sprintf("dataZC%s.rds", suffix)))
   
     # aggregate the ZC information
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Aggregating information\n")
@@ -139,7 +139,7 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
     }
     
     # save speech dwell dataframe
-    if (!is_empty(rs.path)) write_csv(df.out, flnm)
+    if (!is.null(rs.path)) write_csv(df.out, flnm)
     
   }
   
@@ -259,7 +259,7 @@ rotDiff = function(x, y) {
 #'
 #' @param df Dataframe containing head coordinate streams. Requires tracking coordinates alongside core columns `Dyad`, `Identifier` and `Frame`.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
-#'   If empty (`is_empty(rs.path) == TRUE`), nothing is saved to disk.
+#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
 #' @param rotnames Character vector. String labels identifying target rotational columns.
 #' @param tranames Character vector. String labels identifying target translational columns.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
@@ -283,7 +283,7 @@ preproHead = function(df, rs.path, rotnames, tranames, suffix = '',
                       verbose = T, recompute = F, return = F) {
   
   # check rs.path
-  if (is_empty(rs.path)) {
+  if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
     flnm = flrds = ''
   } else {
@@ -329,7 +329,7 @@ preproHead = function(df, rs.path, rotnames, tranames, suffix = '',
       ungroup() %>% arrange(Dyad, Identifier, Frame)
     
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Save data\n")
-    if (!is_empty(rs.path)) saveRDS(df, file = flnm)
+    if (!is.null(rs.path)) saveRDS(df, file = flnm)
     
   }
   

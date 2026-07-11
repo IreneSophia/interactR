@@ -20,10 +20,10 @@ featDwell(
 
 \item{ls.AOI}{List of character vectors. When specified, values isolate targets for AOI classification,
 automatically re-coding undeclared targets to \code{"None"}.
-If empty (\code{is_empty(ls.AOI) == TRUE}), existing classification is used.}
+If empty (\code{is.null(ls.AOI) == TRUE}), existing classification is used.}
 
 \item{rs.path}{Character. Path to the directory where the output files will be saved.
-If empty (\code{is_empty(rs.path) == TRUE}), nothing is saved to disk.}
+If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 

@@ -24,7 +24,7 @@ featZCrossing(
 \code{Identifier}, \code{Frame}, all columns contained in \code{colnames}. If \code{Communication} is a column, zero crossings are
 also aggregated based on its classification.}
 
-\item{rs.path}{Character. Path to destination directory for saved files. If empty (is_empty(rs.path) == TRUE), then nothing is saved.}
+\item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}
 
 \item{colnames}{Character vector. The exact name or names of the column(s) in \code{df} from which
 to extract zero-crossing features.}

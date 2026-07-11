@@ -22,7 +22,7 @@ column \code{Filename} (full path to the CSV file). Can optionally contain param
 defining windows: \code{start.use} (first Timestamp), \code{end.use} (last Timestamp),
 or \code{frame.use} (number of frames starting at \code{start.use} or sequence origin).}
 
-\item{rs.path}{Path to the directory where the output file will be saved, if empty (is_empty(rs.path) == TRUE), then nothing is saved}
+\item{rs.path}{Path to the directory where the output file will be saved, if empty (is.null(rs.path) == TRUE), then nothing is saved}
 
 \item{timezone}{Character. Timezone in which the data collection was conducted.}
 

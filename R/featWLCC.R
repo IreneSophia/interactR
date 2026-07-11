@@ -7,7 +7,7 @@
 #'
 #' @param df Dataframe containing tracking data. Requires the variables `Dyad`, `Identifier`, `Frame` and the target numeric timeline (`colname`). 
 #' @param rs.path Character. Path to destination directory. Files are written inside a generated directory nested under `[rs.path]/featWLCC[suffix]`.
-#'        If empty (is_empty(rs.path) == TRUE), then nothing is saved.
+#'        If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param colname Character. Name of column vector inside `df` to isolate for analysis.
 #' @param featname Character. Descriptive label for feature. Must not contain underscores.
 #' @param win Numeric. Window size in seconds.
@@ -36,7 +36,7 @@
 #' @return Summary dataframe arrays when `return = TRUE`. Creates a structured directory bundle featuring 
 #'  `_ccf.rds`, `_df-agg.csv`, `_df.csv` datasets for observed and pseudo-WLCC, 
 #'  statistical tables (`_pseudo-comp.csv`), and structural visualization plots (`.pdf`). This bundle
-#'  is only created if `!is_empty(rs.path)`.
+#'  is only created if `!is.null(rs.path)`.
 #' 
 #' @import tidyverse
 #' @import rMEA
@@ -55,7 +55,7 @@ featWLCC = function(df, rs.path, colname, featname,
   if (grepl("_", featname)) stop("featname cannot include and underscore")
   
   # check rs.path
-  if (is_empty(rs.path)) {
+  if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
     flnm = flcsv = ''
   } else {
@@ -144,7 +144,7 @@ featWLCC = function(df, rs.path, colname, featname,
       ls.ccf = MEAccf(ls.mea, lagSec = lag, winSec = win, incSec = inc, 
                       r2Z = r2Z, ABS = ABS, cores = parallel) 
       
-      if (!is_empty(rs.path)) saveRDS(ls.ccf, paste0(flnm, "_ccf.rds"))
+      if (!is.null(rs.path)) saveRDS(ls.ccf, paste0(flnm, "_ccf.rds"))
       
       # plotting with heatmaps
       if (plot) {
@@ -185,7 +185,7 @@ featWLCC = function(df, rs.path, colname, featname,
         ls.dyad = MEAccf(ls.dyad, lagSec = lag, winSec = win, incSec = inc, 
                          r2Z = r2Z, ABS = ABS, cores = parallel) 
         # save the outcome
-        if (!is_empty(rs.path)) saveRDS(ls.dyad, sprintf("%s_ccf.rds", fl.dyad))
+        if (!is.null(rs.path)) saveRDS(ls.dyad, sprintf("%s_ccf.rds", fl.dyad))
         
         # convert to dataframe
         if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Converting pseudoDyad-WLCC to dataframe\n")
@@ -221,7 +221,7 @@ featWLCC = function(df, rs.path, colname, featname,
         }
         
         # save the dataframe
-        if (!is_empty(rs.path)) saveRDS(df.pseudoDyad.agg %>% ungroup(), sprintf("%s_df-agg.rds", fl.dyad))
+        if (!is.null(rs.path)) saveRDS(df.pseudoDyad.agg %>% ungroup(), sprintf("%s_df-agg.rds", fl.dyad))
         
         # aggregate for the lag comparison 
         df.pseudoDyad = df.pseudoDyad %>% 
@@ -237,7 +237,7 @@ featWLCC = function(df, rs.path, colname, featname,
           filter(!is.na(pseudo)) %>% mutate(Method = 'Dyad')
         
         # save the dataframe
-        if (!is_empty(rs.path)) saveRDS(df.pseudoDyad %>% ungroup(), sprintf("%s_df.rds", fl.dyad))
+        if (!is.null(rs.path)) saveRDS(df.pseudoDyad %>% ungroup(), sprintf("%s_df.rds", fl.dyad))
       }
     }
     
@@ -282,7 +282,7 @@ featWLCC = function(df, rs.path, colname, featname,
         }
         
         # save the dataframe
-        if (!is_empty(rs.path)) saveRDS(df.pseudoShuff.agg, paste0(fl.shuffle, "_df-agg.rds"))
+        if (!is.null(rs.path)) saveRDS(df.pseudoShuff.agg, paste0(fl.shuffle, "_df-agg.rds"))
         
         # aggregate for lag comparison
         df.pseudoShuff = df.pseudoShuff %>%
@@ -303,7 +303,7 @@ featWLCC = function(df, rs.path, colname, featname,
           ) %>% select(-sim)
         
         # save the dataframe
-        if (!is_empty(rs.path)) saveRDS(df.pseudoShuff, paste0(fl.shuffle, "_df.rds"))
+        if (!is.null(rs.path)) saveRDS(df.pseudoShuff, paste0(fl.shuffle, "_df.rds"))
       }
     }
     
@@ -326,7 +326,7 @@ featWLCC = function(df, rs.path, colname, featname,
           lag == 0 ~ "simultaneous")
       )
     # save the resulting dataframe
-    if (!is_empty(rs.path)) saveRDS(df.ccf %>% ungroup(), paste0(fl.shuffle, "_df.rds"))
+    if (!is.null(rs.path)) saveRDS(df.ccf %>% ungroup(), paste0(fl.shuffle, "_df.rds"))
     
     # choose which pseudoWLCC dataframes to use for lag comparison
     if (all(c("df.pseudoDyad", "df.pseudoShuff") %in% ls())) {
@@ -376,7 +376,7 @@ featWLCC = function(df, rs.path, colname, featname,
         mutate(
           credible = if_else(prob > credibleThreshold, "credible lags", "not credible")
         ) %>% ungroup()
-      if (!is_empty(rs.path)) write_csv(df.comp %>% ungroup(), paste0(flnm, "_pseudo-comp.csv"))
+      if (!is.null(rs.path)) write_csv(df.comp %>% ungroup(), paste0(flnm, "_pseudo-comp.csv"))
     }
     
     # summarise overall WLCC regardless of who is leading / following
@@ -452,7 +452,7 @@ featWLCC = function(df, rs.path, colname, featname,
       relocate(Dyad, Identifier, Feature)
     
     # save feature WLCC dataframe
-    if (!is_empty(rs.path)) write_csv(df.out, flcsv)
+    if (!is.null(rs.path)) write_csv(df.out, flcsv)
   }
   
   # return aggregated dataframe
@@ -507,7 +507,7 @@ MEAfake = function(s1, s2, fps, s1Name = "s1Name", s2Name = "s2Name",
 #' @param shuffleMethod Character string. Specifies the shuffling paradigm; accept options are either `"Data"` or `"Seg"`.
 #' @param mea.orig List containing `MEA` objects (can be created via [MEAfake()]).
 #' @param rs.path Character. Path to destination directory where the output files will be saved.
-#'        If empty (is_empty(rs.path) == TRUE), then nothing is saved.
+#'        If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param fl.wlcc Character. Prefix for files saved to disk.
 #' @param win Numeric. Window size in seconds.
 #' @param inc Numeric. Window increment step in seconds.
@@ -542,7 +542,7 @@ pseudoWLCC = function(shuffleMethod, mea.orig, rs.path, fl.wlcc,
   set.seed(seed)
   
   # check rs.path
-  if (is_empty(rs.path)) {
+  if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
     savePath = flcsv = ''
   } else {
@@ -636,7 +636,7 @@ pseudoWLCC = function(shuffleMethod, mea.orig, rs.path, fl.wlcc,
     }
     
     # save the list for this AU
-    if (!is_empty(rs.path)) saveRDS(ls.psync, paste0(savePath, "_ccf.rds"))
+    if (!is.null(rs.path)) saveRDS(ls.psync, paste0(savePath, "_ccf.rds"))
   } else {
     ls.psync = readRDS(paste0(savePath, "_ccf.rds"))
   }

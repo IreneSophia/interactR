@@ -9,7 +9,7 @@
 #' @param praat.path Character. Path to the directory containing the Praat output files.
 #' @param praat.prefix Character. Prefix used in the Praat script for the output files.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
-#'   If empty (`is_empty(rs.path) == TRUE`), nothing is saved to disk.
+#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -27,7 +27,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
                       verbose = T, recompute = F, return = F) {
   
   # check rs.path
-  if (is_empty(rs.path)) {
+  if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
     flnm = ''
   } else {
@@ -155,7 +155,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
   }
   
   # save the features
-  if (!is_empty(rs.path)) write_csv(df.out, file = flnm)
+  if (!is.null(rs.path)) write_csv(df.out, file = flnm)
   
   if (return) return(df.out %>% ungroup())
   
@@ -169,7 +169,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
 #'
 #' @param ls.files Character vector. Paths for the TextGrid files, including filename and extension.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
-#'   If empty (`is_empty(rs.path) == TRUE`), nothing is saved to disk.
+#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param prefix Character. Prefix for the filename allowing extraction of Dyad and Identifier from filenames. Default is `""`.
 #' @param extract Logical. Whether Dyad and Identifier variables are extracted from the file names.
@@ -192,7 +192,7 @@ convertGrid = function(ls.files, rs.path, suffix = '', prefix = '', extract = T,
                        verbose = T, recompute = F, return = F) {
   
   # check rs.path
-  if (is_empty(rs.path)) {
+  if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
     flnm = ''
   } else {
@@ -256,7 +256,7 @@ convertGrid = function(ls.files, rs.path, suffix = '', prefix = '', extract = T,
   }
   
   # potentially save to disk
-  if (!is_empty(rs.path)) saveRDS(df.speak, flnm)
+  if (!is.null(rs.path)) saveRDS(df.speak, flnm)
   
   if (return) return(df.speak %>% ungroup())
   
@@ -275,7 +275,7 @@ convertGrid = function(ls.files, rs.path, suffix = '', prefix = '', extract = T,
 #'   typically created using [convertGrid()]. 
 #'   Must contain the columns `Dyad`, `Identifier`, `Start`, and `End` (both in seconds).
 #' @param rs.path Character. Path to the directory where the output files will be saved.
-#'   If empty (`is_empty(rs.path) == TRUE`), nothing is saved to disk.
+#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -294,7 +294,7 @@ addCommunication = function(df, df.speak, rs.path, suffix = '',
                             verbose = T, recompute = F, return = T) { 
   
   # check rs.path
-  if (is_empty(rs.path)) {
+  if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
     flnm = ''
   } else {
@@ -391,7 +391,7 @@ addCommunication = function(df, df.speak, rs.path, suffix = '',
   }
   
   # save to disk
-  if (!is_empty(rs.path)) saveRDS(df, flnm)
+  if (!is.null(rs.path)) saveRDS(df, flnm)
   
   if (return) return(df %>% ungroup())
   

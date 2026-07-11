@@ -18,7 +18,7 @@
 #'   If the dataframe contains a `Communication` column, EFEs are also
 #'   aggregated based on Speaking, Listening, Both and None.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
-#'   If empty (`is_empty(rs.path) == TRUE`), nothing is saved to disk.
+#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -36,7 +36,7 @@ featEFE = function(df, rs.path, suffix = "", verbose = T,
                     recompute = F, return = F) {
   
   # check rs.path
-  if (is_empty(rs.path)) {
+  if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
     flcsv = flrds = ''
   } else {
@@ -85,7 +85,7 @@ featEFE = function(df, rs.path, suffix = "", verbose = T,
       df.face = df.face %>%
         select(-all_of(ls.cols))
       # save the preprocessed facial data
-      if (!is_empty(rs.path)) saveRDS(df.face, flrds)
+      if (!is.null(rs.path)) saveRDS(df.face, flrds)
     }
     # aggregate the emotional expressions
     df.out = df.face %>% select(-starts_with("Facial_")) %>% 
@@ -108,7 +108,7 @@ featEFE = function(df, rs.path, suffix = "", verbose = T,
                       names_glue = "EFE_{Emotion}_{Communication}"))
     }
     # save feature face dataframe
-    if (!is_empty(rs.path)) write_csv(df.out, flcsv)
+    if (!is.null(rs.path)) write_csv(df.out, flcsv)
   }
   
   # return aggregated dataframe

@@ -37,7 +37,7 @@ featWLCC(
 \item{df}{Dataframe containing tracking data. Requires the variables \code{Dyad}, \code{Identifier}, \code{Frame} and the target numeric timeline (\code{colname}).}
 
 \item{rs.path}{Character. Path to destination directory. Files are written inside a generated directory nested under \verb{[rs.path]/featWLCC[suffix]}.
-If empty (is_empty(rs.path) == TRUE), then nothing is saved.}
+If empty (is.null(rs.path) == TRUE), then nothing is saved.}
 
 \item{colname}{Character. Name of column vector inside \code{df} to isolate for analysis.}
 
@@ -91,7 +91,7 @@ If empty (is_empty(rs.path) == TRUE), then nothing is saved.}
 Summary dataframe arrays when \code{return = TRUE}. Creates a structured directory bundle featuring
 \verb{_ccf.rds}, \verb{_df-agg.csv}, \verb{_df.csv} datasets for observed and pseudo-WLCC,
 statistical tables (\verb{_pseudo-comp.csv}), and structural visualization plots (\code{.pdf}). This bundle
-is only created if \code{!is_empty(rs.path)}.
+is only created if \code{!is.null(rs.path)}.
 }
 \description{
 Computes empirical and pseudo windowed-lagged cross-correlations using backend tools from \code{rMEA}.

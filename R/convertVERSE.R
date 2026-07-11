@@ -6,7 +6,7 @@
 #'   column `Filename` (full path to the CSV file). Can optionally contain parameters 
 #'   defining windows: `start.use` (first Timestamp), `end.use` (last Timestamp), 
 #'   or `frame.use` (number of frames starting at `start.use` or sequence origin).
-#' @param rs.path Path to the directory where the output file will be saved, if empty (is_empty(rs.path) == TRUE), then nothing is saved
+#' @param rs.path Path to the directory where the output file will be saved, if empty (is.null(rs.path) == TRUE), then nothing is saved
 #' @param timezone Character. Timezone in which the data collection was conducted.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param resetTime Logical. Switch to toggle whether time should be reset to 0 for anonymisation. Default is `FALSE`.
@@ -27,7 +27,7 @@ extractData = function(df.info, rs.path, timezone, suffix = '',
                        verbose = T, recompute = F, return = T) {
   
   # check whether the data should be saved
-  if (is_empty(rs.path)) {
+  if (is.null(rs.path)) {
     save = F
     rs.path = ''
   }

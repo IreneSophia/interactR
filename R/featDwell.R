@@ -8,9 +8,9 @@
 #'   `Identifier`, `Frame`, either `AOI.left` and `AOI.right` or `AOI`.
 #' @param ls.AOI List of character vectors. When specified, values isolate targets for AOI classification, 
 #'   automatically re-coding undeclared targets to `"None"`. 
-#'   If empty (`is_empty(ls.AOI) == TRUE`), existing classification is used.
+#'   If empty (`is.null(ls.AOI) == TRUE`), existing classification is used.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
-#'   If empty (`is_empty(rs.path) == TRUE`), nothing is saved to disk.
+#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -27,7 +27,7 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
                      verbose = T, recompute = F, return = T) {
   
   # check rs.path
-  if (is_empty(rs.path)) {
+  if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
     flnm = ''
   } else {
@@ -44,7 +44,7 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
   } else {
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Preprocessing dwell times\n")
     # combine the AOI list into a pattern
-    if (!is_empty(ls.AOI)) pattern = paste(ls.AOI, collapse = "|")
+    if (!is.null(ls.AOI)) pattern = paste(ls.AOI, collapse = "|")
     
     # create an Actor column containing actor0 and actor1
     df = df %>%
@@ -55,7 +55,7 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
       ) %>% ungroup()
     
     # if ls.AOI is given, classify according to this
-    if (!is_empty(ls.AOI)) {
+    if (!is.null(ls.AOI)) {
       if ("AOI" %in% colnames(df)) {
         df = df %>% 
           mutate(
@@ -139,7 +139,7 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
       replace(is.na(.), 0)
     
     # save speech dwell dataframe
-    if (!is_empty(rs.path)) write_csv(df.out, flnm)
+    if (!is.null(rs.path)) write_csv(df.out, flnm)
     
   }
   

@@ -28,7 +28,7 @@ pseudoWLCC(
 \item{mea.orig}{List containing \code{MEA} objects (can be created via \code{\link[=MEAfake]{MEAfake()}}).}
 
 \item{rs.path}{Character. Path to destination directory where the output files will be saved.
-If empty (is_empty(rs.path) == TRUE), then nothing is saved.}
+If empty (is.null(rs.path) == TRUE), then nothing is saved.}
 
 \item{fl.wlcc}{Character. Prefix for files saved to disk.}
 

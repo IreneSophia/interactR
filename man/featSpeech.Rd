@@ -24,7 +24,7 @@ typically created using \code{\link[=convertGrid]{convertGrid()}}.}
 \item{praat.prefix}{Character. Prefix used in the Praat script for the output files.}
 
 \item{rs.path}{Character. Path to the directory where the output files will be saved.
-If empty (\code{is_empty(rs.path) == TRUE}), nothing is saved to disk.}
+If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 
