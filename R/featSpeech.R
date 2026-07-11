@@ -405,13 +405,12 @@ addCommunication = function(df, df.speak, rs.path, suffix = '',
 #' targeted TextGrids containing only specific syllable-count ranges to ease down-stream validation.
 #'
 #' @param ls.files Character vector. Full system paths and filenames pointing to target TextGrid files.
-#' @param rs.path Character. Path to the directory where filtered results are saved.
 #' @param minSyll Numeric. Minimum syllables a valid sounding instance must contain. Default is `1`.
 #' @param maxSyll Numeric. Maximum syllables a valid sounding instance can contain. Default is `4`.
 #' @param max.nos Numeric. Maximum total number of sounding instances to keep. Default is `Inf`.
 #' @param min.dist Numeric. Minimum distance in seconds required between separate sounding instances. Default is `0`.
 #'
-#' @return Saves reconstructed TextGrid files to disk under `rs.path` named as `[filename]_check-[nos].TextGrid`.
+#' @return Saves reconstructed TextGrid files to disk in the same folder as original file named as `[filename]_check-[nos].TextGrid`.
 #' 
 #' @references de Jong & Wempe (2009). Behavior Research Methods.
 #' @references de Jong, Pacilly & Heeren (2021). Assessment in Education: Principles, Policy and Practice.

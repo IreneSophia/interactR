@@ -16,8 +16,6 @@ rewriteGrid(
 \arguments{
 \item{ls.files}{Character vector. Full system paths and filenames pointing to target TextGrid files.}
 
-\item{rs.path}{Character. Path to the directory where filtered results are saved.}
-
 \item{minSyll}{Numeric. Minimum syllables a valid sounding instance must contain. Default is \code{1}.}
 
 \item{maxSyll}{Numeric. Maximum syllables a valid sounding instance can contain. Default is \code{4}.}
@@ -27,7 +25,7 @@ rewriteGrid(
 \item{min.dist}{Numeric. Minimum distance in seconds required between separate sounding instances. Default is \code{0}.}
 }
 \value{
-Saves reconstructed TextGrid files to disk under \code{rs.path} named as \verb{[filename]_check-[nos].TextGrid}.
+Saves reconstructed TextGrid files to disk in the same folder as original file named as \verb{[filename]_check-[nos].TextGrid}.
 }
 \description{
 The output of the uhm-o-meter requires visual and manual auditory inspection.

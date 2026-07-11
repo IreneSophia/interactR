@@ -164,7 +164,7 @@ featWLCC = function(df, rs.path, colname, featname,
         }
       }
       # dev off for plots
-      if (plot) dev.off()
+      if (plot & !is.null(rs.path)) dev.off()
       
     }
     
