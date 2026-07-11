@@ -46,7 +46,8 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
     if (verbose) cat("----------- Extracting and aggregating Speech features -----------\n")
   
     # read in the praat output capturing pitch and intensity
-    df.pint = readr::read_csv(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv"))) |>
+    df.pint = readr::read_csv(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv")),
+                              show_col_types = F) |>
       tidyr::separate(Name, into = c("tmp1", "Dyad", "Identifier", "tmp2"), sep = "_") |>
       select(-tmp1, -tmp2)
     
@@ -78,7 +79,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
       select(Dyad, Identifier, PitchSD, IntensitySD, ArticulationRate, PhonationDuration, DyadSPCH_SilenceToTurn) |>
       rename_with(~ paste0("SPCH_", .x), .cols = c(PitchSD, IntensitySD, ArticulationRate, PhonationDuration))
     
-    # extract the PhonationBalance for each participant [!MISSING]
+    # extract the PhonationBalance for each participant
     df = df |>
       full_join(
         df |> select(Dyad, Identifier, SPCH_PhonationDuration) |>
@@ -364,7 +365,7 @@ addCommunication = function(df, df.speak, rs.path, suffix = '',
     df.dyad = df.dyad |>
       group_by(Dyad) |>
       fill(ends_with("speaking")) |>
-      replace_na(list(actor1speaking = F, actor0speaking = F))
+      tidyr::replace_na(list(actor1speaking = F, actor0speaking = F))
     
     # merge with the original dataframe
     df = df |>
