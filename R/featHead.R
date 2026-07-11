@@ -19,7 +19,9 @@
 #' systematic naming template (e.g., `[column]_centred`, `[column]_sum`, 
 #' `[column]_rel`, and `[column]_smooth`).
 #'
-#' @param df Dataframe. The dataset containing the variables to be processed. [!MISSING]
+#' @param df Dataframe. The dataset containing the variables to be processed. Must explicitly feature columns `Dyad`, 
+#'   `Identifier`, `Frame`, all columns contained in `colnames`. If `Communication` is a column, zero crossings are
+#'   also aggregated based on its classification. 
 #' @param rs.path Character. Path to destination directory for saved files. If empty (is_empty(rs.path) == TRUE), then nothing is saved.
 #' @param colnames Character vector. The exact name or names of the column(s) in \code{df} from which
 #'   to extract zero-crossing features. 
