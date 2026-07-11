@@ -18,7 +18,7 @@
 #' @return If `return = TRUE`, returns the imported VERSE dataframe. Saves `dataVERSE[suffix].rds` to `rs.path` if provided.
 #' 
 #' @seealso [readCSVs()]
-#' @import tidyverse
+#' @import dplyr
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
 
@@ -258,7 +258,7 @@ readCSVs = function(Filename, cols = 1:186) {
 #' @return A composite `list` or integrated `dataframe` depending on selection assigned to `type`.
 #' 
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
-#' @import tidyverse
+#' @import dplyr
 #' @export
 #' 
 
