@@ -59,13 +59,13 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
       if ("AOI" %in% colnames(df)) {
         df = df |> 
           mutate(
-            AOI = coalesce(str_extract(AOI, pattern), "None")
+            AOI = coalesce(stringr::str_extract(AOI, pattern), "None")
           )
       } else {
         df = df |> 
           mutate(
-            AOI.left = coalesce(str_extract(AOI.left, pattern), "None"),
-            AOI.right = coalesce(str_extract(AOI.right, pattern), "None")
+            AOI.left = coalesce(stringr::str_extract(AOI.left, pattern), "None"),
+            AOI.right = coalesce(stringr::str_extract(AOI.right, pattern), "None")
           )
       }
     }
