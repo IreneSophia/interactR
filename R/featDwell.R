@@ -131,10 +131,11 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
         value = n()*100
       ) |> mutate(value = value/Frames.total) |>
       tidyr::pivot_wider(names_from = AOI,
-                         names_glue = "DyadDwell_{AOI}_Total")
+                         names_glue = "DyadDwell_{AOI}_Total") |>
+      ungroup() |> select(-Frames.total)
     
     df.out = merge(df.dwell.agg, df.dwell.joint, all.x = T) |> 
-      coalesce(0)
+      mutate(across(where(is.numeric), \(x) coalesce(x, 0)))
     
     # save speech dwell dataframe
     if (!is.null(rs.path)) readr::write_csv(df.out, flnm)
