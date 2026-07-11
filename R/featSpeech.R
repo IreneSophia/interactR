@@ -1,0 +1,454 @@
+# Functions to extract features from Speech analysed with praat. 
+# (c) Irene Sophia Plank, 10planki@gmail.com
+
+# if packman is not installed yet, install it
+if(!("pacman" %in% installed.packages()[,"Package"])) install.packages("pacman")
+pacman::p_load(tidyverse)
+
+# Function to aggregate all of the information extracted from featSpeech.praat 
+# which includes the aggregated scores from the uhm-o-meter (de Jong et al. 2021).
+# 
+# Input: 
+#   * df.speak : dataframe containing all info about the sounding instances,
+#                created using convertGrid
+#   * praat.path : path to the directory containing the praat output files
+#   * praat.prefix : prefix used in the praat script for the output files
+#   * rs.path : path to the directory where the output csv will be saved, if 
+#               empty (is_empty(rs.path) == TRUE), then nothing is saved
+#   * suffix : suffix to be added to the file saved to disk (default: '')
+#   * verbose : boolean, whether output is printed to the console (default: TRUE)
+#   * recompute : boolean, whether existing data is recomputed and overwritten (default: FALSE)
+#   * return : boolean, whether the dataframe is returned (default: FALSE)
+# 
+# Output: featSpeech[suffix].csv saved to disk [Optional] or dataframe returned [Optional]
+# 
+featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
+                      verbose = T, recompute = F, return = F) {
+  
+  # check rs.path
+  if (is_empty(rs.path)) {
+    # create empty filename because nothing will be saved
+    flnm = ''
+  } else {
+    # create filename
+    flnm = file.path(rs.path, sprintf("featSpeech%s.csv", suffix))
+  }
+  
+  # if no recompute and the file exists, it is simply loaded
+  if (!recompute & file.exists(flnm)) {
+    if (return) {
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading speech features\n")
+      df.out = read_csv(flnm, show_col_types = F)
+    }
+  } else {
+    # give some info
+    if (verbose) cat("----------- Extracting and aggregating Speech features -----------\n")
+  
+    # read in the praat output capturing pitch and intensity
+    df.pint = read_csv(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv"))) %>%
+      separate(Name, into = c("tmp1", "Dyad", "Identifier", "tmp2"), sep = "_") %>%
+      select(-tmp1, -tmp2)
+    
+    # remove all speaking instances that do not have syllables detected - these
+    # are most likely just breathing sounds mistaken for speech
+    df.speak = df.speak %>% 
+      # focus on speaking where there is at least one syllable
+      filter(nSyll > 0) %>%
+      arrange(Dyad, Start, End) %>%
+      mutate(
+        engulfed = F
+      )
+    
+    # summarise the articulation rate (number of syllables / phonation duration)  
+    # and the silence-to-turn ratio (level of the dyad)
+    df = df.speak %>%
+      group_by(Dyad, Identifier) %>%
+      summarise(
+        nSyll = sum(nSyll),
+        PhonationDuration = sum(Duration),
+        ArticulationRate = nSyll/PhonationDuration
+      ) %>%
+      full_join(df.pint, by = c("Dyad", "Identifier")) %>%
+      group_by(Dyad) %>%
+      mutate(
+        # compute silence-to-turn ratio: higher means more silence
+        DyadSPCH_SilenceToTurn = (mean(Duration) - sum(PhonationDuration))/sum(PhonationDuration)
+      ) %>% 
+      select(Dyad, Identifier, PitchSD, IntensitySD, ArticulationRate, PhonationDuration, DyadSPCH_SilenceToTurn) %>%
+      rename_with(~ paste0("SPCH_", .x), .cols = c(PitchSD, IntensitySD, ArticulationRate, PhonationDuration))
+    
+    # extract the PhonationBalance for each participant [!MISSING]
+    df = df %>%
+      full_join(
+        df %>% select(Dyad, Identifier, SPCH_PhonationDuration) %>%
+          mutate(
+            actor = if_else(gsub("(.+)-.*", "\\1", Dyad) == Identifier, "left", "right")
+          ) %>% select(-Identifier) %>%
+          pivot_wider(names_from = actor, values_from = SPCH_PhonationDuration) %>%
+          mutate(
+            tmp   = left/right,
+            right = right/left
+          ) %>% select(-left) %>% rename(left = tmp) %>%
+          pivot_longer(cols = c(right, left), names_to = 'Identifier', values_to = 'SPCH_PhonationBalance') %>%
+          mutate(
+            Identifier = if_else(Identifier == "right", 
+                                 gsub(".*-(.+)", "\\1", Dyad), 
+                                 gsub("(.+)-.*", "\\1", Dyad))
+          ),
+        by = c("Dyad", "Identifier")
+      )
+    
+    # Determine turns from speaking instances. Specifically, all sounding 
+    # instances that are completely engulfed by the counterpart's sounding  
+    # instance are disregarded. Then, a turn goes from the start of the first 
+    # until the end of the last consecutive sounding instance of one speaker.
+    # we need to get rid of all sounding instance that are completely engulfed in another
+    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Remove engulfed sounds\n")
+    for (i in 2:nrow(df.speak)) {
+      if (sum((df.speak$Start[i] >= df.speak[(df.speak$Dyad == df.speak$Dyad[i]),]$Start) &  
+              (df.speak$End[i]   <= df.speak[(df.speak$Dyad == df.speak$Dyad[i]),]$End)) > 1 ) { 
+        df.speak$engulfed[i] = T
+      } 
+    }
+    df.speak = df.speak %>% filter(engulfed == F) %>% select(-c(engulfed))
+    
+    # identify turns: here, turns are defined as starting with the first sounding
+    # instance of a person until the end of the last sounding instance of this 
+    # person before a non-engulfed sounding instance of another person
+    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Detect turns\n")
+    df.turns = df.speak %>%
+      mutate(rown = row_number()) %>%             # add row number
+      group_by(Dyad, Identifier) %>%              # group by the person speaking
+      mutate(
+        tn = cumsum(c(TRUE, diff(rown) > 1))      # always keep the lowest row number of this turn as turn number
+      ) %>%
+      ungroup() %>%
+      mutate(
+        Turn = paste0(Identifier, "_", tn)        # add this turn number to the person speaking
+      ) %>%
+      group_by(Dyad, Identifier, Turn) %>%        # summarise by Dyad, Identifier and Turn
+      summarise(
+        StartTurn = min(Start, na.rm = T),        # take the start of the first sounding instance
+        EndTurn   = max(End, na.rm = T),          # take the end of the last sounding instance
+        DurTurn   = EndTurn - StartTurn           # compute duration of the turn
+      ) %>% 
+      arrange(Dyad, StartTurn) %>%
+      group_by(Dyad) %>%
+      mutate(
+        Turn = row_number()
+      ) %>%
+      group_by(Dyad) %>%
+      mutate(
+        TTG = StartTurn - lag(EndTurn)
+      )
+    
+    # aggregate and merge all the information
+    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Aggregate and save features\n")
+    df.out = df.turns %>% 
+      group_by(Dyad, Identifier) %>% 
+      summarise(SPCH_TurnGapsMedian = median(TTG, na.rm = T),
+                SPCH_TurnGapsSD     = sd(TTG, na.rm = T)) %>%
+      full_join(df.turns %>% group_by(Dyad) %>% summarise(DyadSPCH_nTurns = max(Turn)),
+                by = 'Dyad') %>%
+      full_join(df, by = c('Dyad', 'Identifier'))
+  }
+  
+  # save the features
+  if (!is_empty(rs.path)) write_csv(df.out, file = flnm)
+  
+  if (return) return(df.out %>% ungroup())
+  
+}
+
+
+# Function to convert the TextGrid output produced by the uhm-o-meter into a 
+# dataframe containing all sounding instances and the number of syllables. 
+# 
+# Input: 
+#   * ls.files : list of paths for the TextGrid files, including filename and extension
+#   * rs.path : path to the directory where the output csv will be saved, if 
+#               empty (is_empty(rs.path) == TRUE), then nothing is saved
+#   * suffix : suffix to be added to the file saved to disk (default: '')
+#   * prefix : prefix for the Filename (default empty string)
+#   * extract : boolean, whether Dyad and Identifier are extracted from Filename (default: T)
+#               needs this Filename structure: "[prefix][Dyad]_[Identifier]_*
+#   * verbose : boolean, whether output is printed to the console (default: T)
+#   * recompute : boolean, whether existing data is recomputed and overwritten (default: FALSE)
+#   * return : boolean, whether the dataframe is returned (default: T)
+# 
+# Output: dataUhm[suffix].rds saved to disk [Optional] or dataframe returned [Optional]
+# 
+convertGrid = function(ls.files, rs.path, suffix = '', prefix = '', extract = T, 
+                       verbose = T, recompute = F, return = F) {
+  
+  # check rs.path
+  if (is_empty(rs.path)) {
+    # create empty filename because nothing will be saved
+    flnm = ''
+  } else {
+    # create filename
+    flnm = file.path(rs.path, sprintf("dataUhm%s.rds", suffix))
+  }
+  
+  # if no recompute and the file exists, it is simply loaded
+  if (!recompute & file.exists(flnm)) {
+    if (return) {
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading sounding instances\n")
+      df.speak = readRDS(flnm)
+    }
+  } else {
+  
+    # give some info
+    if (verbose) cat("----------- Extracting speak df from", length(ls.files), "TextGrids -----------\n")
+    
+    # initialise a dataframe
+    df.speak = data.frame()
+    
+    # loop through the paths
+    for (path in ls.files) {
+      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Converting", basename(path), "\n")
+      
+      # read in the TextGrid file
+      txt = scan(path, what = "", sep = "\n", quiet = T)
+      
+      # create a dataframe with the turns
+      idx = which(grepl("text = \"[0-9]+\"", txt))
+      df.tmp = data.frame(Turn = 1:length(idx),
+                          Start = as.numeric(gsub(".*xmin = (.+)", "\\1", txt[idx-2])), 
+                          End   = as.numeric(gsub(".*xmax = (.+)", "\\1", txt[idx-1]))) %>%
+        mutate(
+          Duration = End - Start, 
+          Path = path
+        )
+      
+      # create a dataframe with syllables
+      idx = which(grepl("mark = \"[0-9]+\"", txt))
+      df.syll = data.frame(x = as.numeric(gsub(".*number = (.+)", "\\1", txt[idx-1])))
+      
+      # add the syllables to the turns
+      df.tmp$nSyll = NA
+      for (i in 1:nrow(df.tmp)) {
+        df.tmp$nSyll[i] = nrow(df.syll %>% filter(x <= df.tmp$End[i] & x >= df.tmp$Start[i]))
+      }
+      
+      # add to the dataframe
+      df.speak = rbind(df.speak, df.tmp)
+    }
+    
+    # extract the Dyad and the Identifier
+    if (extract) {
+      df.speak = df.speak %>%
+        mutate(
+          Dyad = gsub(sprintf("^%s(.+)_.*_.*", prefix), "\\1", basename(Path)),
+          Identifier = gsub(sprintf("^%s.*_(.+)_.*", prefix), "\\1", basename(Path)),
+        ) %>% select(-Path) %>% relocate(Dyad, Identifier)
+    }
+  }
+  
+  # potentially save to disk
+  if (!is_empty(rs.path)) saveRDS(df.speak, flnm)
+  
+  if (return) return(df.speak %>% ungroup())
+  
+}
+
+# This function adds the Listening, Speaking and Communication column
+# based on the speech analysis performed in praat using the uhm-o-meter 
+# developed by de Jong et al. (2021). If these columns already exist in the 
+# data, they will be renamed with the suffix "_Original".
+# 
+# Inputs: 
+#   * df : dataframe containing the tracked data. Must contain the columns Dyad, 
+#               Frame and Timestamp (in POSIX)
+#   * df.speak : dataframe containing the sounding info from the uhm-o-meter,
+#               must contain the columns Dyad, Identifier, Start and End (both in sec)
+#   * rs.path : path to the directory where the output csv will be saved, if 
+#               empty (is_empty(rs.path) == TRUE), then nothing is saved
+#   * suffix : suffix to be added to the file saved to disk (default: '')
+#   * verbose : boolean, whether output is printed to the console (default: TRUE)
+#   * recompute : boolean, whether existing data is recomputed and overwritten (default: FALSE)
+#   * return : boolean, whether the dataframe is returned (default: TRUE)
+# 
+# Output: data[suffix].rds saved to disk [Optional] or dataframe returned [Optional]
+# 
+addCommunication = function(df, df.speak, rs.path, suffix = '',
+                            verbose = T, recompute = F, return = T) { 
+  
+  # check rs.path
+  if (is_empty(rs.path)) {
+    # create empty filename because nothing will be saved
+    flnm = ''
+  } else {
+    # create filename
+    flnm = file.path(rs.path, sprintf("data%s.rds", suffix))
+  }
+  
+  # if no recompute and the file exists, it is simply loaded
+  if (!recompute & file.exists(flnm)) {
+    if (return) {
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading uhm-adjusted data\n")
+      df = readRDS(flnm)
+    }
+  } else {
+    # give some info
+    if (verbose) cat("----------- Adding speaking info from uhm-o-meter to df -----------\n")
+    
+    # rename the Listening, Speaking, Communication columns if they exist
+    if (any(c("Listening", "Speaking", "Communication") %in% colnames(df))) {
+      df = df %>%
+        rename_with(~ paste0(.x, "_Original"), 
+                    any_of(c("Listening", "Speaking", "Communication")))
+    }
+    
+    # add needed information
+    df.dyad = df %>% ungroup() %>%
+      select(Dyad, Frame, Timestamp) %>% distinct() %>%
+      group_by(Dyad) %>%
+      mutate(
+        # add the Timepoint based on the Timestamp
+        Timepoint = Timestamp - min(Timestamp),
+        actor0speaking = NA,
+        actor1speaking = NA
+      ) %>%
+      # extract the Information of the actors
+      separate(Dyad, into = c("actor0", "actor1"), sep = "-", remove = F) %>%
+      ungroup()
+    
+    # remove dyads from df.speak that are not in df
+    df.speak = df.speak %>% filter(Dyad %in% unique(df$Dyad))
+    
+    # loop through the turns and add the information
+    for (i in 1:nrow(df.speak)) { #    
+      
+      # only print every 100 turns
+      if (verbose & (i%%100 == 1)) cat(format(Sys.time(), "%X %Z"), ": Processing turn", i, "of", nrow(df.speak),"\n")
+  
+      d = df.speak$Dyad[i]
+      startFrame = which.min(abs(df.dyad[df.dyad$Dyad == df.speak$Dyad[i],]$Timepoint - 
+                              df.speak$Start[i]))
+      endFrame   = which.min(abs(df.dyad[df.dyad$Dyad == df.speak$Dyad[i],]$Timepoint - 
+                              df.speak$End[i]))
+      if (endFrame < nrow(df.dyad)) endFrame = endFrame + 1
+      if (df.speak$Identifier[i] == df.dyad[df.dyad$Dyad == d & df.dyad$Frame == startFrame,]$actor0) {
+        df.dyad[df.dyad$Dyad == d & df.dyad$Frame == startFrame,]$actor0speaking = TRUE
+        df.dyad[df.dyad$Dyad == d & df.dyad$Frame == endFrame,]$actor0speaking = FALSE
+      } else {
+        df.dyad[df.dyad$Dyad == d & df.dyad$Frame == startFrame,]$actor1speaking = TRUE
+        df.dyad[df.dyad$Dyad == d & df.dyad$Frame == endFrame,]$actor1speaking = FALSE
+      }
+    }
+    
+    # info
+    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Merging with original dataframe\n")
+    
+    # fill in the speaking time between startFrame and endFrame
+    df.dyad = df.dyad %>%
+      group_by(Dyad) %>%
+      fill(ends_with("speaking")) %>%
+      replace_na(list(actor1speaking = F, actor0speaking = F))
+    
+    # merge with the original dataframe
+    df = df %>%
+      merge(., 
+            rbind(
+              df.dyad %>% rename(Identifier = actor0, 
+                               Speaking = actor0speaking,
+                               Listening = actor1speaking) %>%
+                select(Dyad, Identifier, Frame, Timepoint, Speaking, Listening),
+              df.dyad %>% rename(Identifier = actor1, 
+                                 Speaking = actor1speaking,
+                                 Listening = actor0speaking) %>%
+                select(Dyad, Identifier, Frame, Timepoint, Speaking, Listening)),
+            all.x = T) %>%
+      mutate(
+        # merge speaking and listening columns
+        Communication = case_when(
+          Speaking & Listening ~ "Both",
+          Speaking ~ "Speaking",
+          Listening ~ "Listening",
+          T ~ "None"
+        )
+      )
+  }
+  
+  # save to disk
+  if (!is_empty(rs.path)) saveRDS(df, flnm)
+  
+  if (return) return(df %>% ungroup())
+  
+}
+
+# The output of the uhm-o-meter has to be aurally and visually inspected. Most 
+# of the misclassifications affect sounding instances with few nSyll, which 
+# captured loud breathing instead of speaking. One can also set a minimum 
+# distance for the sounding instances that will be checked. How often breathing
+# is captures depends on the placement of the microphone. This function saves an 
+# altered TextGrid which only contains sounding instances within a range of 
+# nSyll making it easier to check exactly those instances. 
+#
+# Input: 
+#  * ls.files : list of path + filenames to the TextGrid files
+#  * rs.path : path to directory where results are saved
+#  * minSyll : minimum syllables which a sounding instance has to contain (default: 1)
+#  * maxSyll : maximum syllables which a sounding instance has to contain (default: 4)
+#  * max.nos : maximum number of sounding instances which should be kept (default: Inf)
+#  * min.dist : minimum distance between sounding instance and others in seconds (default: 0)
+#
+# Output: Rewritten TextGrids saved to disk in rs.path, [filename]_check-[nos].TextGrid
+#
+
+rewriteGrid = function(ls.files, rs.path, minSyll = 1, maxSyll = 4,
+                       max.nos = Inf, min.dist = 0) {
+  
+  for (path in ls.files) {
+
+    # extract the turns and nSyll, then filter to those that should be removed
+    df.speak = convertGrid(path, rs.path, verbose = F, 
+                           return = T, save = F, extract = F) %>%
+      select(-Path) %>%
+      # exclude all turns that do not fit the nSyll range
+      mutate(exclude = nSyll < minSyll | nSyll > maxSyll) %>%
+      # check whether distance to the neighbouring instances exceeds max.dist
+      arrange(Start) %>%
+      mutate(DistanceStart = Start - lag(End, default = -Inf), # never exclude first based on distance to start
+             DistanceEnd   = lead(Start, default = Inf) - End,     # never exclude last based on distance to end
+             exclude = if_else(exclude == F & (DistanceStart < min.dist | DistanceEnd < min.dist),
+                               T, exclude)) %>%
+      # additionally exclude all that exceed the maximum number of speaking instances
+      # arrange by nSyll to keep the ones with the least number of Syllables
+      arrange(nSyll) %>% group_by(exclude) %>%
+      mutate(row = row_number(),
+             exclude = if_else(!exclude & row > max.nos, T, exclude)) %>%
+      filter(exclude) %>% arrange(Turn)
+    
+    # read in the TextGrid file
+    txt = scan(path, what = "", sep = "\n", quiet = T)
+    
+    # extract the indices of all sounding instances
+    idx.txt = which(grepl("text = \"[0-9]+\"", txt))
+    
+    # only keep the ones that are supposed to be deleted
+    idx.rel = idx.txt[df.speak$Turn] 
+    
+    # remove these indices from the txt
+    idx.keep = setdiff(1:length(txt),
+                         # all of the indices for this sounding
+                       c(idx.rel, idx.rel-1, idx.rel-2, idx.rel-3,
+                         # and the following silence
+                         idx.rel+1, idx.rel+2, idx.rel+3, idx.rel+4))
+    txt.new = txt[idx.keep]
+    
+    # adjust interval size
+    noi = length(which(grepl("text = ", txt.new)))
+    idx.intro = which(grepl("intervals: size = ", txt.new))
+    txt.new[idx.intro] = gsub("size = .*", sprintf("size = %d ", noi), txt.new[idx.intro])
+    
+    # save the new TextGrid with number of sounding instances in the name
+    nos = length(which(grepl("text = \"[0-9]+\"", txt.new)))
+    fl = file(gsub(".TextGrid", sprintf("_check-%d.TextGrid", nos), path))
+    writeLines(txt.new, fl)
+    close(fl)
+    
+  }
+
+}
