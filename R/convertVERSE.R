@@ -4,13 +4,13 @@
 #' 
 #' @param df.info Dataframe with one row per file to be read in. Must contain the 
 #'   column `Filename` (full path to the CSV file) and `Time` which is the name
-#'   of the automatically by VERSE created folder. Can optionally contain parameters 
+#'   of the folder automatically by VERSE. Can optionally contain parameters 
 #'   defining windows: `start.use` (first Timestamp), `end.use` (last Timestamp), 
 #'   or `frame.use` (number of frames starting at `start.use` or sequence origin).
 #' @param rs.path Path to the directory where the output file will be saved, if empty (is.null(rs.path) == TRUE), then nothing is saved
 #' @param timezone Character. Timezone in which the data collection was conducted.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
-#' @param resetTime Logical. Switch to toggle whether time should be reset to 0 for anonymisation. Default is `FALSE`.
+#' @param anonymise Logical. Switch to toggle whether Identifiers should be anonymised and Time should be reset to 0 for anonymisation. Default is `FALSE`.
 #' @param nos Numeric. Number of Social Actors in the VERSE environment. Default is `2`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -24,7 +24,7 @@
 #' @export
 
 extractData = function(df.info, rs.path, timezone, suffix = '',
-                       resetTime = F, nos = 2,
+                       anonymise = F, nos = 2,
                        verbose = T, recompute = F, return = T) {
   
   # check whether the data should be saved
@@ -192,11 +192,19 @@ extractData = function(df.info, rs.path, timezone, suffix = '',
     df = df |>
       relocate(any_of('Dyad'), Time, Identifier, Avatar, Frame, Timestamp, Duration)
     
-    # potentially reset the time to anonymise the data
-    if (resetTime) {
+    # potentially anonymise the data
+    if (anonymise) {
+      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Anonymising the data\n")
+      # reset the time to 0
       df = df |> 
         mutate(Timestamp = as.POSIXct(as.numeric(Timestamp) - as.numeric(Time)),
                Time      = as.POSIXct(0))
+      # get all Identifier IDs and rename them with sub-[number]
+      nos = length(unique(df$Identifier))
+      fmt = paste0("sub-%0", nchar(as.character(nos)), "d")
+      recode = sprintf(fmt, 1:nos)
+      names(recode) = unique(df$Identifier)
+      df$Identifier = recode[df$Identifier]
     }
     
     if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")

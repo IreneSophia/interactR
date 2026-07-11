@@ -9,7 +9,7 @@ extractData(
   rs.path,
   timezone,
   suffix = "",
-  resetTime = F,
+  anonymise = F,
   nos = 2,
   verbose = T,
   recompute = F,
@@ -19,7 +19,7 @@ extractData(
 \arguments{
 \item{df.info}{Dataframe with one row per file to be read in. Must contain the
 column \code{Filename} (full path to the CSV file) and \code{Time} which is the name
-of the automatically by VERSE created folder. Can optionally contain parameters
+of the folder automatically by VERSE. Can optionally contain parameters
 defining windows: \code{start.use} (first Timestamp), \code{end.use} (last Timestamp),
 or \code{frame.use} (number of frames starting at \code{start.use} or sequence origin).}
 
@@ -29,7 +29,7 @@ or \code{frame.use} (number of frames starting at \code{start.use} or sequence o
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 
-\item{resetTime}{Logical. Switch to toggle whether time should be reset to 0 for anonymisation. Default is \code{FALSE}.}
+\item{anonymise}{Logical. Switch to toggle whether Identifiers should be anonymised and Time should be reset to 0 for anonymisation. Default is \code{FALSE}.}
 
 \item{nos}{Numeric. Number of Social Actors in the VERSE environment. Default is \code{2}.}
 
