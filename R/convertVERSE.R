@@ -51,7 +51,7 @@ extractData = function(df.info, rs.path, timezone, suffix = '',
       
       # extract the header from on of the files
       header = as.character(
-        read_delim(df.info$Filename[1], delim = ";", col_select = c(1:186), col_names = F,
+        readr::read_delim(df.info$Filename[1], delim = ";", col_select = c(1:186), col_names = F,
                    n_max = 1, show_col_types = F))
       
       # add a column for the conversation Partner and for Listening
