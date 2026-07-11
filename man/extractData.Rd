@@ -18,7 +18,8 @@ extractData(
 }
 \arguments{
 \item{df.info}{Dataframe with one row per file to be read in. Must contain the
-column \code{Filename} (full path to the CSV file). Can optionally contain parameters
+column \code{Filename} (full path to the CSV file) and \code{Time} which is the name
+of the automatically by VERSE created folder. Can optionally contain parameters
 defining windows: \code{start.use} (first Timestamp), \code{end.use} (last Timestamp),
 or \code{frame.use} (number of frames starting at \code{start.use} or sequence origin).}
 

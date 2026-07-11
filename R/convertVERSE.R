@@ -3,7 +3,8 @@
 #' Utility function to read in VERSE data streams from TrackingLog.csv file(s).
 #' 
 #' @param df.info Dataframe with one row per file to be read in. Must contain the 
-#'   column `Filename` (full path to the CSV file). Can optionally contain parameters 
+#'   column `Filename` (full path to the CSV file) and `Time` which is the name
+#'   of the automatically by VERSE created folder. Can optionally contain parameters 
 #'   defining windows: `start.use` (first Timestamp), `end.use` (last Timestamp), 
 #'   or `frame.use` (number of frames starting at `start.use` or sequence origin).
 #' @param rs.path Path to the directory where the output file will be saved, if empty (is.null(rs.path) == TRUE), then nothing is saved
@@ -46,13 +47,12 @@ extractData = function(df.info, rs.path, timezone, suffix = '',
     # give some info
     if (verbose) cat("----------- Extracting data from", nrow(df.info), "VERSE experiments -----------\n")
     
+    # extract the header from one of the files
+    header = as.character(
+      readr::read_delim(df.info$Filename[1], delim = ";", col_select = c(1:186), col_names = F,
+                        n_max = 1, show_col_types = F))
     # check whether dyadic or individual data
     if (nos == 2 ) {
-      
-      # extract the header from on of the files
-      header = as.character(
-        readr::read_delim(df.info$Filename[1], delim = ";", col_select = c(1:186), col_names = F,
-                   n_max = 1, show_col_types = F))
       
       # add a column for the conversation Partner and for Listening
       header = c(header, "Partner", "Listening")
@@ -84,6 +84,8 @@ extractData = function(df.info, rs.path, timezone, suffix = '',
     } else {
       # if it's just one person, you can simply load the data
       df = readCSVs(df.info$Filename)
+      # set the colnames
+      colnames(df) = c("Filename", header)
     }
     
     # any other information in the df.info is added - needed for cutting data
