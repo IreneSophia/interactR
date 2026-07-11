@@ -13,6 +13,7 @@ pseudoWLCC(
   inc = inc,
   lag = lag,
   fps = fps,
+  parallel = T,
   n = 100,
   r2Z = T,
   ABS = T,
@@ -39,6 +40,8 @@ If empty (is.null(rs.path) == TRUE), then nothing is saved.}
 \item{lag}{Numeric. Evaluated cross-correlation lag step in seconds.}
 
 \item{fps}{Numeric. Sampling rate (frames per second).}
+
+\item{parallel}{Logical. Enables multi-core clusters inside the parent \code{MEAccf} routine. Default is \code{TRUE}.}
 
 \item{n}{Numeric. Total quantity of individual permutations for each \code{MEA} object. Default is \code{100}.}
 

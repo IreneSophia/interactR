@@ -513,6 +513,7 @@ MEAfake = function(s1, s2, fps, s1Name = "s1Name", s2Name = "s2Name",
 #' @param inc Numeric. Window increment step in seconds.
 #' @param lag Numeric. Evaluated cross-correlation lag step in seconds.
 #' @param fps Numeric. Sampling rate (frames per second).
+#' @param parallel Logical. Enables multi-core clusters inside the parent `MEAccf` routine. Default is `TRUE`.
 #' @param n Numeric. Total quantity of individual permutations for each `MEA` object. Default is `100`.
 #' @param r2Z Logical. Applies Fisher's Z transformation over raw cross-correlation indexes. Default is `TRUE`.
 #' @param ABS Logical. Maps vectors using absolute values, filtering out directionality Default is `TRUE`.
@@ -531,7 +532,7 @@ MEAfake = function(s1, s2, fps, s1Name = "s1Name", s2Name = "s2Name",
 #' 
 
 pseudoWLCC = function(shuffleMethod, mea.orig, rs.path, fl.wlcc, 
-                      win = win, inc = inc, lag = lag, fps = fps, 
+                      win = win, inc = inc, lag = lag, fps = fps, parallel = T, 
                       n = 100, r2Z = T, ABS = T, seed = 'random',
                       verbose = T, recompute = F, return = T) {
   
