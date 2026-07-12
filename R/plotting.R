@@ -1,3 +1,121 @@
+#' Plot Zero-Crossings Extracted from Time Series Data
+#'
+#' Plot the results from \code{\link{featZCrossing}} for one Dyad. 
+#'
+#' @param df Dataframe. The dataset containing the variables to be processed, created by \code{\link{featZCrossing}}. 
+#'   Must explicitly feature columns `Dyad`, `Identifier`, `Frame` and the column `colname`. 
+#'   If `Communication` is a column, Speaking and Listening information is highlighted.  
+#' @param colname Character. The exact name of the column in \code{df} from which
+#'   to extract and plot zero-crossing features. 
+#' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
+#' @param win Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.
+#' @param minFreq Numeric. The lower cutoff boundary of the targeted frequency band in Hz. Default is \code{1.5}.
+#' @param maxFreq Numeric. The upper cutoff boundary of the targeted frequency band in Hz. Default is \code{7}.
+#' @param winSmooth Numeric. Secondary window scale evaluated in seconds for state smoothing. Default is \code{5}.
+#'
+#' @return ggplot element
+#' 
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @seealso \code{\link{featZCrossing}}
+#' @import dplyr
+#' @import ggplot2
+#' @export
+#' 
+plotZCrossings = function(df, colname, fps, minFreq = 1.5, maxFreq = 6.5, win = 2,
+                          winSmooth = 5, ID.cols = c("#004D40", "#1E88E5")) {
+  
+  # process the dataframe to extract Zero Crossings
+  df = featZCrossing(df, c(), colname, fps, 
+                     win = win, minFreq = minFreq, maxFreq = maxFreq, 
+                     winSmooth = winSmooth, verbose = F) %>%
+    rename_with(~ gsub(colname, "V", .x), .cols = matches(colname))
+  
+  # get the two IDs
+  IDs = unique(df$Identifier)
+  
+  # error if there are more than two
+  if (length(IDs) != 2) stop("This function is for plotting the data of two participants of one dyad.")
+  
+  # get the shift for the raw data  
+  shift = ceiling(abs(min(df$V_centred)) + maxFreq + 1)
+  shift_max = shift + max(df$V_centred)
+  nof = max(df$Frame)
+  
+  # compute the relevant zero crossings
+  df = df |>
+    mutate(
+      # capture which detected crossing is relevant based on frequency band
+      relevant = na_if(V_centred_rel, 0),
+      # need to be adjusted to correspond to the frequency - but how???
+      zc_win  = (V_centred_sum / win),
+      zc_rel = relevant * zc_win
+    )
+  
+  # Communication dataframe for colouring
+  df.speak = df %>% 
+    filter(Identifier == IDs[1]) %>%
+    arrange(Frame) %>%
+    mutate(
+      Communication = case_when(
+        Communication == "Speaking"  ~ sprintf("%s speaking", IDs[1]),
+        Communication == "Listening" ~ sprintf("%s speaking", IDs[2]),
+        T ~ "None"
+      ),
+      run_id = data.table::rleid(Communication)) %>% 
+    group_by(run_id, Communication) %>% 
+    summarise(
+      xmin = min(Frame),
+      xmax = max(Frame),
+      ymin = 0,
+      ymax = shift_max
+    ) %>% ungroup() %>% filter(Communication != "None")
+  df.speak = rbind(df.speak %>% mutate(Identifier = IDs[1]),
+                   df.speak %>% mutate(Identifier = IDs[2]))
+  
+  # loop through both participants
+  df |>
+    ggplot(aes(x = Frame)) +
+    # highlight Communication
+    geom_rect(data = df.speak, 
+              aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, 
+                  fill = Communication),
+              alpha = 0.2, inherit.aes = FALSE) + 
+    # plot the zero crossing signal
+    geom_line(aes(y = zc_win), color = "black", linetype = "dotted") +
+    # plot the frequency limits
+    geom_hline(yintercept = maxFreq, color = "black", linetype = "dashed") +
+    geom_hline(yintercept = minFreq, color = "black", linetype = "dashed")  + 
+    # plot the actual signal shifted above
+    geom_line(aes(y = V_centred + shift, color = Identifier), linetype = "solid") +
+    # highlight zero crossings that fit the frequency band
+    geom_point(aes(y = zc_rel, color = Identifier), shape = 20, na.rm = TRUE) +
+    xlab("Seconds") + 
+    facet_grid(rows = vars(Identifier)) + 
+    scale_x_continuous(
+      breaks = seq(1, nof, length.out = 10),
+      labels = round(seq(1, nof / fps, length.out = 10)),
+      limits = c(1, nof),
+      expand = c(0.02, 0.02)
+    ) +
+    scale_y_continuous(
+      breaks = c(0, 2, 4, 6, 8, shift),
+      labels = c("0", "2", "4", "6", "8", "signal"),
+      limits = c(0, shift_max),
+      expand = c(0, 0)
+    ) + 
+    # set the colours
+    scale_colour_manual(values = ID.cols) + 
+    scale_fill_manual(values = ID.cols) + 
+    theme_bw() + labs(title = colname) + 
+    theme(legend.position = "bottom", legend.title = element_blank(),
+          panel.grid.minor = element_blank(), 
+          axis.title.y = element_blank())
+  
+  # [!MISSING: proper legend]
+  
+  return(p)
+}
+
 #' Plot Comparison of Observed and Pseudo Windowed-Lagged Cross-Correlations
 #'
 #' Generates line plots comparing observed WLCC against various pseudo-WLCC control 

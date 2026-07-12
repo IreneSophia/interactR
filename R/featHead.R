@@ -67,7 +67,7 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
   
     # preprocess the colnames
     df = df |>
-      select(Dyad, Identifier, Frame, any_of(c("Communication", colnames))) |>
+      select(Dyad, Identifier, Frame, any_of(c("Speaking", "Listening", "Communication", colnames))) |>
       group_by(Dyad, Identifier) |> arrange(Frame) |>
       mutate(
         # detrend data with local mean (1 second window)
