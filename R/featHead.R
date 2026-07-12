@@ -124,7 +124,7 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
 #' @import dplyr
 #' @export
 
-featZCrossing = function(df, rs.path, colnames, suffix = "",
+aggZCrossing = function(df, rs.path, colnames, suffix = "",
                          verbose = T, recompute = F, return = T) {
   
   # check rs.path

@@ -3,6 +3,7 @@
 export(MEAfake)
 export(addCommunication)
 export(aggSlide)
+export(aggZCrossing)
 export(convertGrid)
 export(extractData)
 export(extractEvents)
