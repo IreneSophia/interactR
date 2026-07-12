@@ -85,10 +85,14 @@ extractData = function(df.info, rs.path, timezone, suffix = '',
       # if it's just one person, you can simply load the data
       df = readCSVs(df.info$Filename)
       # set the colnames
-      colnames(df) = c("Filename", header)# force the correct timezone
-      Timestamp = lubridate::force_tz(Timestamp, tzone = timezone)
-      # add Actor column for consistency, even though it is only one
-      df = df |> mutate(Actor = "actor0")
+      colnames(df) = c("Filename", header)
+      # add information 
+      df = df |> mutate(
+        # Actor column for consistency, even though it is only one
+        Actor = "actor0",
+        # force the correct timezone
+        Timestamp = lubridate::force_tz(Timestamp, tzone = timezone)
+        )
     }
     
     # any other information in the df.info is added - needed for cutting data
