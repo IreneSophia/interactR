@@ -73,7 +73,7 @@ plotZCrossings = function(df, colname, fps, minFreq = 1.5, maxFreq = 6.5, win = 
                    df.speak %>% mutate(Identifier = IDs[2]))
   
   # loop through both participants
-  df |>
+  p = df |>
     ggplot(aes(x = Frame)) +
     # highlight Communication
     geom_rect(data = df.speak, 
