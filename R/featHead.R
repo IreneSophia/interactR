@@ -20,8 +20,7 @@
 #' `[column]_rel`, and `[column]_smooth`).
 #'
 #' @param df Dataframe. The dataset containing the variables to be processed. Must explicitly feature columns `Dyad`, 
-#'   `Identifier`, `Frame`, all columns contained in `colnames`. If `Communication` is a column, zero crossings are
-#'   also aggregated based on its classification. 
+#'   `Identifier`, `Frame`, all columns contained in `colnames`. 
 #' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param colnames Character vector. The exact name or names of the column(s) in \code{df} from which
 #'   to extract zero-crossing features. 
@@ -35,7 +34,7 @@
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
 #' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
 #'
-#' @return If `return = TRUE`, returns the dataframe or saves consolidated summary CSV and full RDS file to `rs.path` if provided.
+#' @return If `return = TRUE`, returns the dataframe or saves RDS file to `rs.path` if provided.
 #' 
 #' @references Hale et al. (2020). Journal of Nonverbal Behavior.
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
@@ -53,14 +52,14 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
     flnm = ''
   } else {
     # create filename
-    flnm  = file.path(rs.path, sprintf("featZC%s.csv", suffix))
+    flnm  = file.path(rs.path, sprintf("dataZC%s.rds", suffix))
   }
 
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (return) {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading Zero Crossing features\n")
-      df.out = readr::read_csv(flnm, show_col_types = F)
+      df.out = readRDS(flnm)
     }
   } else {
     
@@ -94,8 +93,57 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
       )
     
     # save the data for plotting
-    if (!is.null(rs.path)) saveRDS(df, file = file.path(rs.path, sprintf("dataZC%s.rds", suffix)))
+    if (!is.null(rs.path)) saveRDS(df, file = flnm)
+    
+  }
   
+  if (return) return(df)
+  
+}
+
+#' Agreggate Zero-Crossing Frequency Extracted from Time Series Data
+#'
+#' Aggregates the results from \code{\link{featZCrossing}} to provide one 
+#' absolute and one relative value per Identifier per time series. 
+#'
+#' @param df Dataframe. The dataset containing the variables to be processed, created by \code{\link{featZCrossing}}. 
+#'   Must explicitly feature columns `Dyad`, `Identifier`, `Frame`, all columns contained in `colnames`. 
+#'   If `Communication` is a column, zero crossings are also aggregated based on its classification. 
+#' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
+#' @param colnames Character vector. The exact name or names of the column(s) in \code{df} from which
+#'   to extract zero-crossing features. 
+#' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
+#' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
+#' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
+#' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
+#'
+#' @return If `return = TRUE`, returns the dataframe or saves consolidated summary CSV to `rs.path` if provided.
+#' 
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @seealso \code{\link{featZCrossing}}
+#' @import dplyr
+#' @export
+
+featZCrossing = function(df, rs.path, colnames, suffix = "",
+                         verbose = T, recompute = F, return = T) {
+  
+  # check rs.path
+  if (is.null(rs.path)) {
+    # create empty filename because nothing will be saved
+    flnm = ''
+  } else {
+    # create filename
+    flnm  = file.path(rs.path, sprintf("featZC%s.csv", suffix))
+  }
+  
+  # if no recompute and the file exists, it is simply loaded
+  if (!recompute & file.exists(flnm)) {
+    if (return) {
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading Zero Crossing features\n")
+      df.out = readr::read_csv(flnm, show_col_types = F)
+    }
+  } else {
+    
     # aggregate the ZC information
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Aggregating information\n")
     
@@ -112,8 +160,8 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
       ) |> ungroup() |>
       mutate(
         across(matches(colnames), ~ .x * 100/Frames.total, .names = "RelativeZC_{.col}")
-      ) |> select(Dyad, Identifier, matches("Relative.*centred_smooth")) |>
-      rename_with(~ gsub("_centred_smooth", "_Total", .x), .cols = ends_with("centred_smooth"))
+      ) |> select(Dyad, Identifier, Frames.total, matches("centred_smooth")) |>
+      rename_with(~ gsub("_detrended_centred_smooth", "_Total", .x), .cols = ends_with("centred_smooth"))
     
     # potentially add the values depending on Communication
     if ("Communication" %in% colnames(df)) {
@@ -131,10 +179,10 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
           ) |> ungroup() |>
           mutate(
             across(matches(colnames), ~ .x * 100/Frames.total, .names = "RelativeZC_{.col}")
-          ) |> select(Dyad, Identifier, Communication, matches("Relative.*centred_smooth")) |>
-          rename_with(~ gsub("_centred_smooth", "", .x), .cols = ends_with("centred_smooth")) |>
+          ) |> select(Dyad, Identifier, Frames.total, matches("centred_smooth")) |>
+          rename_with(~ gsub("_detrended_centred_smooth", "_Total", .x), .cols = ends_with("centred_smooth")) |>
           tidyr::pivot_wider(names_from = Communication, values_from = matches(colnames),
-                      names_glue = "{.value}_{Communication}")
+                             names_glue = "{.value}_{Communication}")
       )
     }
     
@@ -328,8 +376,10 @@ preproHead = function(df, rs.path, rotnames, tranames, suffix = '',
       mutate(across(all_of(c(tranames, fixnames)), ~ .x - mean(.x), .names = "{.col}_detrended")) |>
       ungroup() |> arrange(Dyad, Identifier, Frame)
     
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Save data\n")
-    if (!is.null(rs.path)) saveRDS(df, file = flnm)
+    if (!is.null(rs.path)) {
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Save data\n")
+      saveRDS(df, file = flnm)
+      }
     
   }
   

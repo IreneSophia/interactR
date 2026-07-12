@@ -8,30 +8,41 @@ featZCrossing(
   df,
   rs.path,
   colnames,
-  fps,
   suffix = "",
-  win = 2,
-  minFreq = 1.5,
-  maxFreq = 6.5,
-  winSmooth = 5,
+  verbose = T,
+  recompute = F,
+  return = T
+)
+
+featZCrossing(
+  df,
+  rs.path,
+  colnames,
+  suffix = "",
   verbose = T,
   recompute = F,
   return = T
 )
 }
 \arguments{
-\item{df}{Dataframe. The dataset containing the variables to be processed. Must explicitly feature columns \code{Dyad},
-\code{Identifier}, \code{Frame}, all columns contained in \code{colnames}. If \code{Communication} is a column, zero crossings are
-also aggregated based on its classification.}
+\item{df}{Dataframe. The dataset containing the variables to be processed, created by \code{\link{featZCrossing}}.
+Must explicitly feature columns \code{Dyad}, \code{Identifier}, \code{Frame}, all columns contained in \code{colnames}.
+If \code{Communication} is a column, zero crossings are also aggregated based on its classification.}
 
 \item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}
 
 \item{colnames}{Character vector. The exact name or names of the column(s) in \code{df} from which
 to extract zero-crossing features.}
 
-\item{fps}{Numeric. Frame processing rate frequency profile (frames per second) of the dataset.}
-
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
+
+\item{verbose}{Logical. Whether progress and output are printed to the console. Default is \code{TRUE}.}
+
+\item{recompute}{Logical. Whether existing data on disk should be recomputed and overwritten. Default is \code{FALSE}.}
+
+\item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
+
+\item{fps}{Numeric. Frame processing rate frequency profile (frames per second) of the dataset.}
 
 \item{win}{Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.}
 
@@ -40,15 +51,11 @@ to extract zero-crossing features.}
 \item{maxFreq}{Numeric. The upper cutoff boundary of the targeted frequency band in Hz. Default is \code{6.5}.}
 
 \item{winSmooth}{Numeric. Secondary window scale evaluated in seconds for state smoothing. Default is \code{5}.}
-
-\item{verbose}{Logical. Whether progress and output are printed to the console. Default is \code{TRUE}.}
-
-\item{recompute}{Logical. Whether existing data on disk should be recomputed and overwritten. Default is \code{FALSE}.}
-
-\item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
 }
 \value{
-If \code{return = TRUE}, returns the dataframe or saves consolidated summary CSV and full RDS file to \code{rs.path} if provided.
+If \code{return = TRUE}, returns the dataframe or saves RDS file to \code{rs.path} if provided.
+
+If \code{return = TRUE}, returns the dataframe or saves consolidated summary CSV to \code{rs.path} if provided.
 }
 \description{
 Evaluates localised oscillatory characteristics within specified time series
@@ -58,6 +65,9 @@ The function is based on the algorithm presented in Hale et al. (2020) and
 shifts data dynamically against a running local mean, calculates zero-crossing
 frequencies, filters outcomes within a target frequency band and applies a
 smoothing threshold filter across the results.
+
+Aggregates the results from \code{\link{featZCrossing}} to provide one
+absolute and one relative value per Identifier per time series.
 }
 \details{
 The calculation executes sequentially across one or more specified columns:
@@ -77,6 +87,8 @@ Hale et al. (2020). Journal of Nonverbal Behavior.
 }
 \seealso{
 \code{\link{aggSlide}}, \code{\link{findZCrossing}}
+
+\code{\link{featZCrossing}}
 }
 \author{
 Irene Sophia Plank (\email{10planki@gmail.com})
