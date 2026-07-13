@@ -8,7 +8,8 @@ plotZCrossings(
   df,
   colname,
   fps,
-  dyad = T,
+  f.min = NULL,
+  f.max = NULL,
   minFreq = 1.5,
   maxFreq = 6.5,
   win = 2,
@@ -17,8 +18,9 @@ plotZCrossings(
 )
 }
 \arguments{
-\item{df}{Dataframe. The dataset containing the variables to be processed, created by \code{\link{featZCrossing}}.
-Must explicitly feature columns \code{Dyad}, \code{Identifier}, \code{Frame} and the column \code{colname}.
+\item{df}{Dataframe. The dataset containing the variables to be processed, potentially created by \code{\link{preproHead}}.
+Must explicitly feature columns \code{Identifier}, \code{Frame} and the column \code{colname}. This dataframe
+will be processed using \code{\link{featZCrossing}} to extract relevant zero crossings.
 If \code{Communication} is a column, Speaking and Listening information is highlighted.}
 
 \item{colname}{Character. The exact name of the column in \code{df} from which
@@ -26,7 +28,9 @@ to extract and plot zero-crossing features.}
 
 \item{fps}{Numeric. Frame processing rate frequency profile (frames per second) of the dataset.}
 
-\item{dyad}{Logical. Whether \code{df} contains data from a dyad of the same interaction. Default is \code{TRUE}.}
+\item{f.min}{Numeric or NULL. First Frame to be plotted. If \code{NULL} minimum available Frame is used. Default is \code{NULL}.}
+
+\item{f.max}{Numeric or NULL. Last Frame to be plotted. If \code{NULL} maximum available Frame is used. Default is \code{NULL}.}
 
 \item{minFreq}{Numeric. The lower cutoff boundary of the targeted frequency band in Hz. Default is \code{1.5}.}
 
@@ -42,10 +46,10 @@ to extract and plot zero-crossing features.}
 ggplot element
 }
 \description{
-Plot the results from \code{\link{featZCrossing}} for one Dyad.
+Plot the results from \code{\link{featZCrossing}} for one Dyad or one Identifier.
 }
 \seealso{
-\code{\link{featZCrossing}}
+\code{\link{featZCrossing}} \code{\link{preproHead}}
 }
 \author{
 Irene Sophia Plank (\email{10planki@gmail.com})

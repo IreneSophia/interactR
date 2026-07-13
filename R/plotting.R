@@ -1,14 +1,16 @@
 #' Plot Zero-Crossings Extracted from Time Series Data
 #'
-#' Plot the results from \code{\link{featZCrossing}} for one Dyad. 
+#' Plot the results from \code{\link{featZCrossing}} for one Dyad or one Identifier. 
 #'
-#' @param df Dataframe. The dataset containing the variables to be processed, created by \code{\link{featZCrossing}}. 
-#'   Must explicitly feature columns `Dyad`, `Identifier`, `Frame` and the column `colname`. 
+#' @param df Dataframe. The dataset containing the variables to be processed, potentially created by \code{\link{preproHead}}. 
+#'   Must explicitly feature columns `Identifier`, `Frame` and the column `colname`. This dataframe
+#'   will be processed using \code{\link{featZCrossing}} to extract relevant zero crossings. 
 #'   If `Communication` is a column, Speaking and Listening information is highlighted.  
 #' @param colname Character. The exact name of the column in \code{df} from which
 #'   to extract and plot zero-crossing features. 
 #' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
-#' @param dyad Logical. Whether `df` contains data from a dyad of the same interaction. Default is `TRUE`.
+#' @param f.min Numeric or NULL. First Frame to be plotted. If `NULL` minimum available Frame is used. Default is `NULL`.
+#' @param f.max Numeric or NULL. Last Frame to be plotted. If `NULL` maximum available Frame is used. Default is `NULL`.
 #' @param mode Character. Either `Communication` or `ZCrossings`. Default is `Communication`.
 #' @param win Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.
 #' @param minFreq Numeric. The lower cutoff boundary of the targeted frequency band in Hz. Default is \code{1.5}.
@@ -18,12 +20,12 @@
 #' @return ggplot element
 #' 
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
-#' @seealso \code{\link{featZCrossing}}
+#' @seealso \code{\link{featZCrossing}} \code{\link{preproHead}}
 #' @import dplyr
 #' @import ggplot2
 #' @export
 #' 
-plotZCrossings = function(df, colname, fps, dyad = T,
+plotZCrossings = function(df, colname, fps, f.min = NULL, f.max = NULL,
                           minFreq = 1.5, maxFreq = 6.5, win = 2,
                           winSmooth = 5, ID.cols = c("#1E88E5", "#004D40")) {
   
@@ -32,22 +34,26 @@ plotZCrossings = function(df, colname, fps, dyad = T,
     stop("Input mode needs to be Communication or ZCrossings.")
   }
   
-  # process the dataframe to extract Zero Crossings
+  # if none is provided, get the Frame range
+  if (is.null(f.max)) f.max = max(df$Frame)
+  if (is.null(f.min)) f.min = min(df$Frame)
+  
+  # check if Dyad column exists, if not, create it
+  if (!("Dyad") %in% colnames(df)) df = df |> mutate(Dyad = "tmp1-dyad")
+  
+  # process the dataframe to extract Zero Crossings and extract Frames
   df = featZCrossing(df, c(), colname, fps, 
                      win = win, minFreq = minFreq, maxFreq = maxFreq, 
                      winSmooth = winSmooth, verbose = F) |>
-    rename_with(~ gsub(colname, "V", .x), .cols = matches(colname))
+    rename_with(~ gsub(colname, "V", .x), .cols = matches(colname)) |>
+    filter(Frame >= f.min & Frame <= f.max)
   
-  # get the Frame range
-  f.max = max(df$Frame)
-  f.min = min(df$Frame)
+  # check whether dyad or solo
+  IDs = unique(df$Identifier)
+  if (length(IDs) == 2) dyad = TRUE else dyad = FALSE
+  if (length(IDs) > 2 | length(IDs) < 1) stop("Function works with solo (one Identifier) or dyad (two Identifiers) data.")
   
   if (dyad & mode == 'Communication') {
-    # get the two IDs
-    IDs = unique(df$Identifier)
-    
-    # error if there are more than two
-    if (length(IDs) != 2) stop("This function with dyad == T is for plotting the data of two participants of one dyad.")
     
     # get the shift for the raw data  
     shift = ceiling(abs(min(df$V_centred)) + maxFreq + 1)
@@ -123,8 +129,7 @@ plotZCrossings = function(df, colname, fps, dyad = T,
             panel.grid.minor = element_blank(), 
             axis.title.y = element_blank())
   } else if (!dyad & mode == "Communication") {
-    # get participant ID and one colour
-    ID = unique(df$Identifier)
+    # get one colour
     ID.cols = ID.cols[1]
     
     # get the shift for the raw data  
@@ -146,8 +151,8 @@ plotZCrossings = function(df, colname, fps, dyad = T,
       arrange(Frame) |>
       mutate(
         Communication = case_when(
-          Communication == "Speaking"  ~ sprintf("%s speaking", ID),
-          Communication == "Listening" ~ sprintf("%s listening", ID),
+          Communication == "Speaking"  ~ sprintf("%s speaking", IDs),
+          Communication == "Listening" ~ sprintf("%s listening", IDs),
           T ~ "None"
         ),
         run_id = data.table::rleid(Communication)) |> 
@@ -158,7 +163,7 @@ plotZCrossings = function(df, colname, fps, dyad = T,
         ymin = 0,
         ymax = shift_max
       ) |> ungroup() |> filter(Communication != "None") |>
-      mutate(Identifier = ID)
+      mutate(Identifier = IDs)
     
     # loop through both participants
     p = df |>
