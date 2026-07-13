@@ -91,7 +91,7 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
           ),
           .names = "{.col}_{.fn}"
         )
-      )
+      ) |> ungroup()
     
     # save the data for plotting
     if (!is.null(rs.path)) saveRDS(df, file = flnm)
@@ -157,12 +157,11 @@ aggZCrossing = function(df, rs.path, colnames, suffix = "",
       ) |> 
       group_by(Dyad, Identifier, Frames.total) |>
       summarise(
-        across(matches(paste0(colnames, "_centred_smooth")), sum)
+        across(matches(colnames), sum)
       ) |> ungroup() |>
       mutate(
         across(matches(colnames), ~ .x * 100/Frames.total, .names = "RelativeZC_{.col}")
-      ) |> select(Dyad, Identifier, Frames.total, matches("centred_smooth")) |>
-      rename_with(~ gsub("_detrended_centred_smooth", "_Total", .x), .cols = ends_with("centred_smooth"))
+      ) |> select(Dyad, Identifier, Frames.total, matches(colnames))
     
     # potentially add the values depending on Communication
     if ("Communication" %in% colnames(df)) {
@@ -176,12 +175,11 @@ aggZCrossing = function(df, rs.path, colnames, suffix = "",
           ) |>
           group_by(Dyad, Identifier, Communication, Frames.total) |>
           summarise(
-            across(matches(paste0(colnames, "_centred_smooth")), sum)
+            across(matches(colnames), sum)
           ) |> ungroup() |>
           mutate(
             across(matches(colnames), ~ .x * 100/Frames.total, .names = "RelativeZC_{.col}")
-          ) |> select(Dyad, Identifier, Frames.total, matches("centred_smooth")) |>
-          rename_with(~ gsub("_detrended_centred_smooth", "_Total", .x), .cols = ends_with("centred_smooth")) |>
+          ) |> select(Dyad, Identifier, Frames.total, Communication, matches(colnames)) |>
           tidyr::pivot_wider(names_from = Communication, values_from = matches(colnames),
                              names_glue = "{.value}_{Communication}")
       )
@@ -369,7 +367,7 @@ preproHead = function(df, rs.path, rotnames, tranames, suffix = '',
         df[[new_name]] = rotDiff(df[[rotnames[i]]], df[[cornames[i]]])
       }
     }
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Detrend translational columns\n")
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Detrend non-difference columns\n")
     fixnames = paste0(rotnames, "_fixCirc")
     df = df |>
       # de-trended translational and fixCirc values by subtracting mean value
