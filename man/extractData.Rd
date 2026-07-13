@@ -18,8 +18,10 @@ extractData(
 \arguments{
 \item{df.info}{Dataframe with one row per file to be read in. Must contain the
 column \code{Filename} (full path to the CSV file) and \code{Time} which is the name
-of the folder automatically by VERSE. Can optionally contain parameters
-defining windows: \code{start.use} (first Timestamp), \code{end.use} (last Timestamp),
+of the folder automatically by VERSE. All TrackingLogData.csv to which the
+Filenames point have to contain the same number of Social Actors.
+Can optionally contain parameters defining windows:
+\code{start.use} (first Timestamp), \code{end.use} (last Timestamp),
 or \code{frame.use} (number of frames starting at \code{start.use} or sequence origin).}
 
 \item{rs.path}{Path to the directory where the output file will be saved, if empty (is.null(rs.path) == TRUE), then nothing is saved}

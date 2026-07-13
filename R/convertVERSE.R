@@ -4,8 +4,10 @@
 #' 
 #' @param df.info Dataframe with one row per file to be read in. Must contain the 
 #'   column `Filename` (full path to the CSV file) and `Time` which is the name
-#'   of the folder automatically by VERSE. Can optionally contain parameters 
-#'   defining windows: `start.use` (first Timestamp), `end.use` (last Timestamp), 
+#'   of the folder automatically by VERSE. All TrackingLogData.csv to which the 
+#'   Filenames point have to contain the same number of Social Actors.
+#'   Can optionally contain parameters defining windows: 
+#'   `start.use` (first Timestamp), `end.use` (last Timestamp), 
 #'   or `frame.use` (number of frames starting at `start.use` or sequence origin).
 #' @param rs.path Path to the directory where the output file will be saved, if empty (is.null(rs.path) == TRUE), then nothing is saved
 #' @param timezone Character. Timezone in which the data collection was conducted.
