@@ -8,8 +8,8 @@ plotZCrossings(
   df,
   colname,
   fps,
-  f.min = NULL,
-  f.max = NULL,
+  minFrame = NULL,
+  maxFrame = NULL,
   minFreq = 1.5,
   maxFreq = 6.5,
   win = 2,
@@ -21,16 +21,18 @@ plotZCrossings(
 \item{df}{Dataframe. The dataset containing the variables to be processed, potentially created by \code{\link{preproHead}}.
 Must explicitly feature columns \code{Identifier}, \code{Frame} and the column \code{colname}. This dataframe
 will be processed using \code{\link{featZCrossing}} to extract relevant zero crossings.
-If \code{Communication} is a column, Speaking and Listening information is highlighted.}
+If \code{Communication} is a column, Speaking and Listening information is highlighted. If
+no \code{Communication} column is provided, the plot focuses on the different steps to extract
+relevant Zero Crossings from the signal.}
 
 \item{colname}{Character. The exact name of the column in \code{df} from which
 to extract and plot zero-crossing features.}
 
 \item{fps}{Numeric. Frame processing rate frequency profile (frames per second) of the dataset.}
 
-\item{f.min}{Numeric or NULL. First Frame to be plotted. If \code{NULL} minimum available Frame is used. Default is \code{NULL}.}
+\item{minFrame}{Numeric or NULL. First Frame to be plotted. If \code{NULL} minimum available Frame is used. Default is \code{NULL}.}
 
-\item{f.max}{Numeric or NULL. Last Frame to be plotted. If \code{NULL} maximum available Frame is used. Default is \code{NULL}.}
+\item{maxFrame}{Numeric or NULL. Last Frame to be plotted. If \code{NULL} maximum available Frame is used. Default is \code{NULL}.}
 
 \item{minFreq}{Numeric. The lower cutoff boundary of the targeted frequency band in Hz. Default is \code{1.5}.}
 
@@ -39,8 +41,6 @@ to extract and plot zero-crossing features.}
 \item{win}{Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.}
 
 \item{winSmooth}{Numeric. Secondary window scale evaluated in seconds for state smoothing. Default is \code{5}.}
-
-\item{mode}{Character. Either \code{Communication} or \code{ZCrossings}. Default is \code{Communication}.}
 }
 \value{
 ggplot element

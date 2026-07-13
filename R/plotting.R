@@ -5,13 +5,14 @@
 #' @param df Dataframe. The dataset containing the variables to be processed, potentially created by \code{\link{preproHead}}. 
 #'   Must explicitly feature columns `Identifier`, `Frame` and the column `colname`. This dataframe
 #'   will be processed using \code{\link{featZCrossing}} to extract relevant zero crossings. 
-#'   If `Communication` is a column, Speaking and Listening information is highlighted.  
+#'   If `Communication` is a column, Speaking and Listening information is highlighted. If
+#'   no `Communication` column is provided, the plot focuses on the different steps to extract
+#'   relevant Zero Crossings from the signal. 
 #' @param colname Character. The exact name of the column in \code{df} from which
 #'   to extract and plot zero-crossing features. 
 #' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
-#' @param f.min Numeric or NULL. First Frame to be plotted. If `NULL` minimum available Frame is used. Default is `NULL`.
-#' @param f.max Numeric or NULL. Last Frame to be plotted. If `NULL` maximum available Frame is used. Default is `NULL`.
-#' @param mode Character. Either `Communication` or `ZCrossings`. Default is `Communication`.
+#' @param minFrame Numeric or NULL. First Frame to be plotted. If `NULL` minimum available Frame is used. Default is `NULL`.
+#' @param maxFrame Numeric or NULL. Last Frame to be plotted. If `NULL` maximum available Frame is used. Default is `NULL`.
 #' @param win Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.
 #' @param minFreq Numeric. The lower cutoff boundary of the targeted frequency band in Hz. Default is \code{1.5}.
 #' @param maxFreq Numeric. The upper cutoff boundary of the targeted frequency band in Hz. Default is \code{7}.
@@ -25,18 +26,13 @@
 #' @import ggplot2
 #' @export
 #' 
-plotZCrossings = function(df, colname, fps, f.min = NULL, f.max = NULL,
-                          minFreq = 1.5, maxFreq = 6.5, win = 2,
-                          winSmooth = 5, ID.cols = c("#1E88E5", "#004D40")) {
-  
-  # check whether mode is set correctly.
-  if (mode %in% c("Communication", "ZCrossings")) {
-    stop("Input mode needs to be Communication or ZCrossings.")
-  }
+plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL, 
+                          minFreq = 1.5, maxFreq = 6.5, 
+                          win = 2, winSmooth = 5, ID.cols = c("#1E88E5", "#004D40")) {
   
   # if none is provided, get the Frame range
-  if (is.null(f.max)) f.max = max(df$Frame)
-  if (is.null(f.min)) f.min = min(df$Frame)
+  if (is.null(maxFrame)) maxFrame = max(df$Frame)
+  if (is.null(minFrame)) minFrame = min(df$Frame)
   
   # check if Dyad column exists, if not, create it
   if (!("Dyad") %in% colnames(df)) df = df |> mutate(Dyad = "tmp1-dyad")
@@ -46,14 +42,14 @@ plotZCrossings = function(df, colname, fps, f.min = NULL, f.max = NULL,
                      win = win, minFreq = minFreq, maxFreq = maxFreq, 
                      winSmooth = winSmooth, verbose = F) |>
     rename_with(~ gsub(colname, "V", .x), .cols = matches(colname)) |>
-    filter(Frame >= f.min & Frame <= f.max)
+    filter(Frame >= minFrame & Frame <= maxFrame)
   
   # check whether dyad or solo
   IDs = unique(df$Identifier)
   if (length(IDs) == 2) dyad = TRUE else dyad = FALSE
   if (length(IDs) > 2 | length(IDs) < 1) stop("Function works with solo (one Identifier) or dyad (two Identifiers) data.")
   
-  if (dyad & mode == 'Communication') {
+  if (dyad & ('Communication' %in% colnames(df))) {
     
     # get the shift for the raw data  
     shift = ceiling(abs(min(df$V_centred)) + maxFreq + 1)
@@ -110,9 +106,9 @@ plotZCrossings = function(df, colname, fps, f.min = NULL, f.max = NULL,
       xlab("Seconds") + 
       facet_grid(rows = vars(Identifier)) + 
       scale_x_continuous(
-        breaks = seq(f.min, f.max, by = win * fps),
-        labels = round(seq(f.min, f.max / fps, by = win)),
-        limits = c(f.min, f.max),
+        breaks = seq(minFrame, maxFrame, by = win * fps),
+        labels = round(seq(minFrame, maxFrame / fps, by = win)),
+        limits = c(minFrame, maxFrame),
         expand = c(0.02, 0.02)
       ) +
       scale_y_continuous(
@@ -128,7 +124,7 @@ plotZCrossings = function(df, colname, fps, f.min = NULL, f.max = NULL,
       theme(legend.position = "bottom", legend.title = element_blank(),
             panel.grid.minor = element_blank(), 
             axis.title.y = element_blank())
-  } else if (!dyad & mode == "Communication") {
+  } else if (!dyad & ('Communication' %in% colnames(df))) {
     # get one colour
     ID.cols = ID.cols[1]
     
@@ -184,9 +180,9 @@ plotZCrossings = function(df, colname, fps, f.min = NULL, f.max = NULL,
       geom_point(aes(y = zc_rel, color = Identifier), shape = 20, na.rm = TRUE) +
       xlab("Seconds") + 
       scale_x_continuous(
-        breaks = seq(f.min, f.max, by = win * fps),
-        labels = round(seq(f.min, f.max / fps, by = win)),
-        limits = c(f.min, f.max),
+        breaks = seq(minFrame, maxFrame, by = win * fps),
+        labels = round(seq(minFrame, maxFrame / fps, by = win)),
+        limits = c(minFrame, maxFrame),
         expand = c(0.02, 0.02)
       ) +
       scale_y_continuous(
@@ -205,25 +201,38 @@ plotZCrossings = function(df, colname, fps, f.min = NULL, f.max = NULL,
   } else {
     if (!dyad) ID.cols = ID.cols[1]
     p = df |> 
-      ggplot(aes(x = Frame)) + 
+      ggplot(aes(x = Frame, fill = Identifier)) + 
       geom_hline(yintercept = 0, linewidth = 0.5) + 
-      geom_col(aes(y = V_centred_sum), 
-               fill = ID.cols, alpha = 0.3, width = 1) + 
+      geom_col(aes(y = V_centred_sum, alpha = "All"), width = 1) + 
       geom_col(data = df |> filter(V_centred_rel == 1),
-               aes(y = V_centred_sum), 
-               fill = ID.cols, alpha = 0.6, width = 1) + 
-      geom_line(aes(y = V_centred), colour = ID.cols, linewidth = 1) + 
+               aes(y = V_centred_sum, alpha = "Within Frequency Band"), width = 1) + 
+      geom_line(aes(y = V_centred, colour = Identifier, linetype = "Centered"), 
+                linewidth = 1) + 
+      geom_line(aes(y = V, colour = Identifier, linetype = "Input"), 
+                linewidth = 1) + 
       geom_vline(data = df |> filter(V_centred_zc == 1), 
-                 aes(xintercept = Frame), alpha = 0.3, 
-                 linetype = "dashed") + 
+                 aes(xintercept = Frame, linetype = "Zero Crossing"), alpha = 0.3) + 
       scale_x_continuous(
-        breaks = seq(f.min, f.max, by = win*fps),
-        labels = round(seq(f.min, f.max / fps, by = win)),
-        limits = c(f.min, f.max),
+        breaks = seq(minFrame, maxFrame, by = win*fps),
+        labels = round(seq(minFrame, maxFrame / fps, by = win)),
+        limits = c(minFrame, maxFrame),
         expand = c(0.02, 0.02)
-      ) + xlab(sprintf("Seconds (window size %d s)", win)) + 
-      theme_bw() + 
-      theme(axis.title.y = element_blank())
+      ) + 
+      scale_fill_manual(values = ID.cols) + 
+      scale_colour_manual(values = ID.cols) + 
+      scale_alpha_manual(
+        name   = "Sums of Zero Crossings",
+        values = c("All" = 0.3, "Within Frequency Band" = 0.6)
+      ) +
+      scale_linetype_manual(
+        name   = "Signal",
+        values = c("Centered" = "solid", "Input" = "dotted", "Zero Crossing" = "dashed")
+      ) +
+      xlab(sprintf("Seconds (window size %d s)", win)) + 
+      theme_bw() + labs(title = colname) + 
+      theme(axis.title.y = element_blank(),
+            legend.position = "bottom", 
+            legend.direction = "vertical")
     if (dyad) p = p + facet_grid(rows = vars(Identifier))
   }
   
