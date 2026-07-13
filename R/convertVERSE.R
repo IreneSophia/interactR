@@ -11,7 +11,6 @@
 #' @param timezone Character. Timezone in which the data collection was conducted.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param anonymise Logical. Switch to toggle whether Identifiers should be anonymised and Time should be reset to 0 for anonymisation. Default is `FALSE`.
-#' @param nos Numeric. Number of Social Actors in the VERSE environment. Default is `2`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
 #' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
@@ -23,8 +22,7 @@
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
 
-extractData = function(df.info, rs.path, timezone, suffix = '',
-                       anonymise = F, nos = 2,
+extractData = function(df.info, rs.path, timezone, suffix = '', anonymise = F, 
                        verbose = T, recompute = F, return = T) {
   
   # check whether the data should be saved
@@ -49,9 +47,15 @@ extractData = function(df.info, rs.path, timezone, suffix = '',
     
     # extract the header from one of the files
     header = as.character(
-      readr::read_delim(df.info$Filename[1], delim = ";", col_select = c(1:186), col_names = F,
+      readr::read_delim(df.info$Filename[1], delim = ";", col_names = F,
                         n_max = 1, show_col_types = F))
     # check whether dyadic or individual data
+    if (length(header) > 200) nos = 2 else nos = 1
+    
+    # only use the header for one person
+    header = header[1:186]
+    
+    # read in dependent on whether nos = 2 or nos = 1
     if (nos == 2 ) {
       
       # add a column for the conversation Partner and for Listening

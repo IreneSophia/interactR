@@ -10,7 +10,6 @@ extractData(
   timezone,
   suffix = "",
   anonymise = F,
-  nos = 2,
   verbose = T,
   recompute = F,
   return = T
@@ -30,8 +29,6 @@ or \code{frame.use} (number of frames starting at \code{start.use} or sequence o
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 
 \item{anonymise}{Logical. Switch to toggle whether Identifiers should be anonymised and Time should be reset to 0 for anonymisation. Default is \code{FALSE}.}
-
-\item{nos}{Numeric. Number of Social Actors in the VERSE environment. Default is \code{2}.}
 
 \item{verbose}{Logical. Whether progress and output are printed to the console. Default is \code{TRUE}.}
 
