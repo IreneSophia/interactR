@@ -17,6 +17,7 @@
 #' @param minFreq Numeric. The lower cutoff boundary of the targeted frequency band in Hz. Default is \code{1.5}.
 #' @param maxFreq Numeric. The upper cutoff boundary of the targeted frequency band in Hz. Default is \code{7}.
 #' @param winSmooth Numeric. Secondary window scale evaluated in seconds for state smoothing. Default is \code{5}.
+#' @param ID.cols Character vector of hex colours. If there are two Identifiers, then two colours must be provided. Default is colourblind-friendly blue and dark green. 
 #'
 #' @return ggplot element
 #' 

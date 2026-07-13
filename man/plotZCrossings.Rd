@@ -41,6 +41,8 @@ to extract and plot zero-crossing features.}
 \item{win}{Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.}
 
 \item{winSmooth}{Numeric. Secondary window scale evaluated in seconds for state smoothing. Default is \code{5}.}
+
+\item{ID.cols}{Character vector of hex colours. If there are two Identifiers, then two colours must be provided. Default is colourblind-friendly blue and dark green.}
 }
 \value{
 ggplot element
