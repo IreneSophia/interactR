@@ -8,11 +8,12 @@ plotZCrossings(
   df,
   colname,
   fps,
+  dyad = T,
   minFreq = 1.5,
   maxFreq = 6.5,
   win = 2,
   winSmooth = 5,
-  ID.cols = c("#004D40", "#1E88E5")
+  ID.cols = c("#1E88E5", "#004D40")
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ to extract and plot zero-crossing features.}
 
 \item{fps}{Numeric. Frame processing rate frequency profile (frames per second) of the dataset.}
 
+\item{dyad}{Logical. Whether \code{df} contains data from a dyad of the same interaction. Default is \code{TRUE}.}
+
 \item{minFreq}{Numeric. The lower cutoff boundary of the targeted frequency band in Hz. Default is \code{1.5}.}
 
 \item{maxFreq}{Numeric. The upper cutoff boundary of the targeted frequency band in Hz. Default is \code{7}.}
@@ -32,6 +35,8 @@ to extract and plot zero-crossing features.}
 \item{win}{Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.}
 
 \item{winSmooth}{Numeric. Secondary window scale evaluated in seconds for state smoothing. Default is \code{5}.}
+
+\item{mode}{Character. Either \code{Communication} or \code{ZCrossings}. Default is \code{Communication}.}
 }
 \value{
 ggplot element
