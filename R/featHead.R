@@ -79,6 +79,7 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
         across(
           .cols = ends_with("_centred"),
           .fns = list(
+            zc     = ~ findZCrossing(.x),
             sum    = ~ aggSlide(findZCrossing(.x), sum, fps * win) / win,
             rel    = ~ (aggSlide(findZCrossing(.x), sum, fps * win) / win > minFreq * win) & 
               (aggSlide(findZCrossing(.x), sum, fps * win) / win <= maxFreq * win),
