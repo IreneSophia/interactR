@@ -18,7 +18,7 @@ compWT(
 }
 \arguments{
 \item{df}{Dataframe. The dataset containing the variables to be processed.
-Must explicitly feature columns \code{Dyad}, \code{Identifier}, \code{Frame} and the column \code{colname}.}
+Must explicitly feature columns \code{Dyad}, \code{Identifier}, either \code{Frame} or \code{Timestamp} and the column \code{colname}.}
 
 \item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}
 
