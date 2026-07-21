@@ -18,7 +18,8 @@
 #' @param maxFreq Numeric. The upper cutoff boundary of the targeted frequency band in Hz. Default is \code{7}.
 #' @param winCentre Numeric. Seconds for detrending before zero crossings are extracted. Default is \code{0} translating to no detrending
 #' @param winSmooth Numeric. Seconds for state smoothing. Default is \code{0} translating to no smoothing.
-#' @param ID.cols Character vector of hex colours. If there are two Identifiers, then two colours must be provided. Default is colourblind-friendly blue and dark green. 
+#' @param ID.cols Character vector of hex colours. If there are two Identifiers, then two colours must be provided. Default is colourblind-friendly blue and dark green.
+#' @param legend Boolean. Switch for the legend. Default is `TRUE`.
 #'
 #' @return ggplot element
 #' 
@@ -30,7 +31,9 @@
 #' 
 plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL, 
                           minFreq = 1.5, maxFreq = 6.5, win = 2, 
-                          winCentre = 0, winSmooth = 0, ID.cols = c("#1E88E5", "#004D40")) {
+                          winCentre = 0, winSmooth = 0, 
+                          ID.cols = c("#1E88E5", "#004D40"),
+                          legend = T) {
   
   # if none is provided, get the Frame range
   if (is.null(maxFrame)) maxFrame = max(df$Frame)
@@ -246,6 +249,9 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
             legend.direction = "vertical")
     if (dyad) p = p + facet_wrap(. ~ Identifier, nrow = length(IDs))
   }
+  
+  # remove legend if necessary
+  if (!legend) p = p + theme(legend.position = "none")
   
   return(p)
 }

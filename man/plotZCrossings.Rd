@@ -15,7 +15,8 @@ plotZCrossings(
   win = 2,
   winCentre = 0,
   winSmooth = 0,
-  ID.cols = c("#1E88E5", "#004D40")
+  ID.cols = c("#1E88E5", "#004D40"),
+  legend = T
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ to extract and plot zero-crossing features.}
 \item{winSmooth}{Numeric. Seconds for state smoothing. Default is \code{0} translating to no smoothing.}
 
 \item{ID.cols}{Character vector of hex colours. If there are two Identifiers, then two colours must be provided. Default is colourblind-friendly blue and dark green.}
+
+\item{legend}{Boolean. Switch for the legend. Default is \code{TRUE}.}
 }
 \value{
 ggplot element
