@@ -214,8 +214,8 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
     p = df |> 
       ggplot(aes(x = Frame, fill = Identifier)) + 
       geom_hline(yintercept = 0, linewidth = 0.5) + 
-      geom_col(aes(y = V_sum, alpha = "All"), width = 1) + 
-      geom_col(data = df |> filter(V_rel == 1),
+      geom_col(aes(y = V_sum, alpha = "All"), na.rm = T, width = 1) + 
+      geom_col(data = df |> filter(V_rel == 1), na.rm = T,
                aes(y = V_sum, alpha = "Within Frequency Band"), width = 1) + 
       geom_line(aes(y = V/scaleFactor, colour = Identifier, linetype = "Centered"), 
                 linewidth = 1) + 
@@ -253,7 +253,7 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
   # remove legend if necessary
   if (!legend) p = p + theme(legend.position = "none")
   
-  return(p)
+  suppressWarnings(return(p))
 }
 
 #' Plot Comparison of Observed and Pseudo Windowed-Lagged Cross-Correlations
