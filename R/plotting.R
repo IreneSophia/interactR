@@ -55,16 +55,17 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
       filter(Frame >= minFrame & Frame <= maxFrame)
   }
   
+  # get the shift for the raw data / scale for the frequency
+  shift = ceiling(abs(min(df$V)) + maxFreq + 1)
+  shift_max = shift + max(df$V)
+  scaleFactor = ceiling(max(df$V)/(6.5*2))
+  
   # check whether dyad or solo
   IDs = unique(df$Identifier)
   if (length(IDs) == 2) dyad = TRUE else dyad = FALSE
   if (length(IDs) > 2 | length(IDs) < 1) stop("Function works with solo (one Identifier) or dyad (two Identifiers) data.")
   
   if (dyad & ('Communication' %in% colnames(df))) {
-    
-    # get the shift for the raw data
-    shift = ceiling(abs(min(df$V)) + maxFreq + 1)
-    shift_max = shift + max(df$V)
     
     # compute the relevant zero crossings
     df = df |>
@@ -138,10 +139,6 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
   } else if (!dyad & ('Communication' %in% colnames(df))) {
     # get one colour
     ID.cols = ID.cols[1]
-    
-    # get the shift for the raw data  
-    shift = ceiling(abs(min(df$V)) + maxFreq + 1)
-    shift_max = shift + max(df$V)
     
     # compute the relevant zero crossings
     df = df |>
@@ -238,11 +235,14 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
       scale_linetype_manual(
         name   = "Signal",
         values = c("Centered" = "solid", "Input" = "dotted", "Zero Crossing" = "dashed")
+      ) + 
+      scale_y_continuous(
+        name = "Signal", 
+        sec.axis = sec_axis(transform = ~ . / scaleFactor, name = "Hz")
       ) +
       xlab(sprintf("Seconds (window size %d s)", win)) + 
       theme_bw() + labs(title = colname) + 
-      theme(axis.title.y = element_blank(),
-            legend.position = "bottom", 
+      theme(legend.position = "bottom", 
             legend.direction = "vertical")
     if (dyad) p = p + facet_grid(rows = vars(Identifier))
   }
