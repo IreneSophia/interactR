@@ -46,7 +46,7 @@ plotZCrossings = function(df, colname, fps, minDegree,
   if (!("Dyad") %in% colnames(df)) df = df |> mutate(Dyad = "tmp1-dyad")
   
   # process the dataframe to extract Zero Crossings and extract Frames
-  df = featZCrossing(df, c(), colname, fps, 
+  df = featZCrossing(df, c(), colname, fps, minDegree,
                      win = win, minFreq = minFreq, maxFreq = maxFreq, 
                      winCentre = winCentre, winSmooth = winSmooth, verbose = F)
   
