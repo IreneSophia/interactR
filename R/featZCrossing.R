@@ -71,7 +71,7 @@ featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "",
     
     # focus on relevant columns 
     df = df |>
-      select(Dyad, Identifier, Frame, any_of(c("Speaking", "Listening", "Communication", colnames)))
+      select(Dyad, Identifier, Frame, Timestamp, any_of(c("Speaking", "Listening", "Communication", colnames)))
     
     # check whether detrending
     if (winCentre > 0) {
