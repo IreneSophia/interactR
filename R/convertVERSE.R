@@ -225,7 +225,7 @@ extractData = function(df.info, rs.path, timezone, suffix = '', anonymise = F,
     if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
     
     # save the data frame
-    if (save) saveRDS(df |> ungroup(), file.path(rs.path, sprintf("dataVERSE%s.rds", suffix)))
+    if (!is.null(rs.path)) saveRDS(df |> ungroup(), file.path(rs.path, sprintf("dataVERSE%s.rds", suffix)))
   }
   
   # return the ungrouped dataframe
