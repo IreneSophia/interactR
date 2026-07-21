@@ -61,7 +61,7 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
   # get the shift for the raw data / scale for the frequency
   shift = ceiling(abs(min(df$V)) + maxFreq + 1)
   shift_max = shift + max(df$V)
-  scaleFactor = ceiling(max(df$V)/(6.5*2))
+  scaleHz = ceiling(max(df$V)/(maxFreq*2))
   
   # check whether dyad or solo
   IDs = unique(df$Identifier)
@@ -214,12 +214,12 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
     p = df |> 
       ggplot(aes(x = Frame, fill = Identifier)) + 
       geom_hline(yintercept = 0, linewidth = 0.5) + 
-      geom_col(aes(y = V_sum*scaleFactor, alpha = "All"), width = 1) + 
+      geom_col(aes(y = V_sum, alpha = "All"), width = 1) + 
       geom_col(data = df |> filter(V_rel == 1),
-               aes(y = V_sum*scaleFactor, alpha = "Within Frequency Band"), width = 1) + 
-      geom_line(aes(y = V, colour = Identifier, linetype = "Centered"), 
+               aes(y = V_sum, alpha = "Within Frequency Band"), width = 1) + 
+      geom_line(aes(y = V/scaleFactor, colour = Identifier, linetype = "Centered"), 
                 linewidth = 1) + 
-      geom_line(aes(y = V, colour = Identifier, linetype = "Input"), 
+      geom_line(aes(y = V/scaleFactor, colour = Identifier, linetype = "Input"), 
                 linewidth = 1) + 
       geom_vline(data = df |> filter(V_zc == 1), 
                  aes(xintercept = Frame, linetype = "Zero Crossing"), alpha = 0.3) + 
@@ -240,8 +240,8 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
         values = c("Centered" = "solid", "Input" = "dotted", "Zero Crossing" = "dashed")
       ) + 
       scale_y_continuous(
-        name = "Signal", 
-        sec.axis = sec_axis(transform = ~ . / scaleFactor, name = "Hz")
+        name = "Hz", limits = c(-maxFreq*2, maxFreq*2), 
+        sec.axis = sec_axis(transform = ~ . * scaleFactor, name = "Signal")
       ) +
       xlab(sprintf("Seconds (window size %d s)", win)) + 
       theme_bw() + labs(title = colname) + 
