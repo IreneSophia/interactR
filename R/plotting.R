@@ -61,7 +61,7 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
   # get the shift for the raw data / scale for the frequency
   shift = ceiling(abs(min(df$V)) + maxFreq + 1)
   shift_max = shift + max(df$V)
-  scaleHz = ceiling(max(df$V)/(maxFreq*2))
+  scaleFactor = ceiling(max(df$V)/(maxFreq*2))
   
   # check whether dyad or solo
   IDs = unique(df$Identifier)
