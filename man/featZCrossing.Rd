@@ -14,7 +14,7 @@ featZCrossing(
   win = 2,
   minFreq = 1.5,
   maxFreq = 6.5,
-  winCentre = 0,
+  winCentre = NULL,
   winSmooth = 0,
   verbose = T,
   recompute = F,
@@ -43,7 +43,8 @@ Depends on the fps and the specific movement. Setting to negative number leads t
 
 \item{maxFreq}{Numeric. The upper cutoff boundary of the targeted frequency band in Hz. Default is \code{6.5}.}
 
-\item{winCentre}{Numeric. Seconds for detrending before zero crossings are extracted. Default is \code{0} translating to no detrending}
+\item{winCentre}{Numeric. Seconds for detrending before zero crossings are extracted.
+Default is \code{NULL} translating to same size as \code{win}. Setting it to \code{0} translates to no centring.}
 
 \item{winSmooth}{Numeric. Seconds for state smoothing. Default is \code{0} translating to no smoothing.}
 
@@ -60,7 +61,7 @@ If \code{return = TRUE}, returns the dataframe or saves RDS file to \code{rs.pat
 Evaluates localised oscillatory characteristics within specified time series
 channels by quantifying zero-crossing counts over moving windows. This allows
 for the extraction of nodding and head shaking from rotational head movement.
-The function is based on the algorithm presented in Hale et al. (2020) and
+The function is loosely based on the algorithm presented in Hale et al. (2020) and
 shifts data dynamically against a running local mean, calculates zero-crossing
 frequencies, filters outcomes within a target frequency band and applies a
 smoothing threshold filter across the results.

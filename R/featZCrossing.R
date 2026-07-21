@@ -3,7 +3,7 @@
 #' Evaluates localised oscillatory characteristics within specified time series 
 #' channels by quantifying zero-crossing counts over moving windows. This allows
 #' for the extraction of nodding and head shaking from rotational head movement.
-#' The function is based on the algorithm presented in Hale et al. (2020) and
+#' The function is loosely based on the algorithm presented in Hale et al. (2020) and
 #' shifts data dynamically against a running local mean, calculates zero-crossing 
 #' frequencies, filters outcomes within a target frequency band and applies a 
 #' smoothing threshold filter across the results. 
@@ -31,7 +31,8 @@
 #' @param win Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.
 #' @param minFreq Numeric. The lower cutoff boundary of the targeted frequency band in Hz. Default is \code{1.5}.
 #' @param maxFreq Numeric. The upper cutoff boundary of the targeted frequency band in Hz. Default is \code{6.5}.
-#' @param winCentre Numeric. Seconds for detrending before zero crossings are extracted. Default is \code{0} translating to no detrending
+#' @param winCentre Numeric. Seconds for detrending before zero crossings are extracted. 
+#' Default is `NULL` translating to same size as `win`. Setting it to \code{0} translates to no centring.
 #' @param winSmooth Numeric. Seconds for state smoothing. Default is \code{0} translating to no smoothing.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -47,7 +48,7 @@
 
 featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "", 
                          win = 2, minFreq = 1.5, maxFreq = 6.5, 
-                         winCentre = 0, winSmooth = 0, 
+                         winCentre = NULL, winSmooth = 0, 
                          verbose = T, recompute = F, return = T) {
   
   # check rs.path
@@ -59,11 +60,14 @@ featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "",
     flnm  = file.path(rs.path, sprintf("dataZC%s.rds", suffix))
   }
   
+  # adjust winCentre if necessary
+  if (is.null(winCentre)) winCentre = win
+  
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (return) {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading Zero Crossing features\n")
-      df.out = readRDS(flnm)
+      df = readRDS(flnm)
     }
   } else {
     
