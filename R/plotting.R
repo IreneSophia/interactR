@@ -16,7 +16,8 @@
 #' @param win Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.
 #' @param minFreq Numeric. The lower cutoff boundary of the targeted frequency band in Hz. Default is \code{1.5}.
 #' @param maxFreq Numeric. The upper cutoff boundary of the targeted frequency band in Hz. Default is \code{7}.
-#' @param winSmooth Numeric. Secondary window scale evaluated in seconds for state smoothing. Default is \code{5}.
+#' @param winDetrend Numeric. Seconds for detrending before zero crossings are extracted. Default is \code{0} translating to no detrending
+#' @param winSmooth Numeric. Seconds for state smoothing. Default is \code{0} translating to no smoothing.
 #' @param ID.cols Character vector of hex colours. If there are two Identifiers, then two colours must be provided. Default is colourblind-friendly blue and dark green. 
 #'
 #' @return ggplot element
@@ -28,8 +29,8 @@
 #' @export
 #' 
 plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL, 
-                          minFreq = 1.5, maxFreq = 6.5, 
-                          win = 2, winSmooth = 5, ID.cols = c("#1E88E5", "#004D40")) {
+                          minFreq = 1.5, maxFreq = 6.5, win = 2, 
+                          winDetrend = 0, winSmooth = 0, ID.cols = c("#1E88E5", "#004D40")) {
   
   # if none is provided, get the Frame range
   if (is.null(maxFrame)) maxFrame = max(df$Frame)
@@ -41,7 +42,7 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
   # process the dataframe to extract Zero Crossings and extract Frames
   df = featZCrossing(df, c(), colname, fps, 
                      win = win, minFreq = minFreq, maxFreq = maxFreq, 
-                     winSmooth = winSmooth, verbose = F) |>
+                     winDetrend = winDetrend, winSmooth = winSmooth, verbose = F) |>
     rename_with(~ gsub(colname, "V", .x), .cols = matches(colname)) |>
     filter(Frame >= minFrame & Frame <= maxFrame)
   

@@ -13,7 +13,8 @@ plotZCrossings(
   minFreq = 1.5,
   maxFreq = 6.5,
   win = 2,
-  winSmooth = 5,
+  winDetrend = 0,
+  winSmooth = 0,
   ID.cols = c("#1E88E5", "#004D40")
 )
 }
@@ -40,7 +41,9 @@ to extract and plot zero-crossing features.}
 
 \item{win}{Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.}
 
-\item{winSmooth}{Numeric. Secondary window scale evaluated in seconds for state smoothing. Default is \code{5}.}
+\item{winDetrend}{Numeric. Seconds for detrending before zero crossings are extracted. Default is \code{0} translating to no detrending}
+
+\item{winSmooth}{Numeric. Seconds for state smoothing. Default is \code{0} translating to no smoothing.}
 
 \item{ID.cols}{Character vector of hex colours. If there are two Identifiers, then two colours must be provided. Default is colourblind-friendly blue and dark green.}
 }
