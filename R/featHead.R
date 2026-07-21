@@ -184,8 +184,8 @@ featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "",
           .fns = list(
             # extract the zero crossings
             zc     = ~ findZCrossing(.x),
-            # get the difference in rotation
-            diff   = ~ abs(.x - lag(.x)),
+            # get the difference in rotation with 0 for first entry
+            diff   = ~ abs(.x - lag(.x, default = .x)),
             # sum up the ZCrossings across the window and divide by it for frequency
             sum    = ~ aggSlide(findZCrossing(.x), sum, fps * win) / win,
             # compare sum / window to the minimum and maximum frequencies
@@ -195,7 +195,7 @@ featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "",
               # smaller than the maximum frequency
               (aggSlide(findZCrossing(.x), sum, fps * win) / win < maxFreq ) & 
               # difference between frames exceeds minDegree
-              abs(.x - lag(.x)) > minDegree
+              abs(.x - lag(.x, default = .x)) > minDegree
           ),
           .names = "{.col}_{.fn}"
         )
@@ -275,6 +275,9 @@ aggZCrossing = function(df, rs.path, colnames, suffix = "",
         # get the total number of frames
         Frames.total = n()
       ) |> 
+      # get rid of NAs
+      drop_na(all_of(colnames)) |>
+      # aggregate the information
       group_by(Dyad, Identifier, Frames.total) |>
       summarise(
         across(matches(colnames), sum)
