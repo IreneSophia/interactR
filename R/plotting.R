@@ -244,7 +244,7 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
       theme_bw() + labs(title = colname) + 
       theme(legend.position = "bottom", 
             legend.direction = "vertical")
-    if (dyad) p = p + facet_grid(rows = vars(Identifier))
+    if (dyad) p = p + facet_wrap(nrow = length(IDs))
   }
   
   return(p)
