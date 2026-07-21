@@ -13,7 +13,7 @@ featZCrossing(
   win = 2,
   minFreq = 1.5,
   maxFreq = 6.5,
-  winDetrend = 0,
+  winCentre = 0,
   winSmooth = 0,
   verbose = T,
   recompute = F,
@@ -39,7 +39,7 @@ to extract zero-crossing features.}
 
 \item{maxFreq}{Numeric. The upper cutoff boundary of the targeted frequency band in Hz. Default is \code{6.5}.}
 
-\item{winDetrend}{Numeric. Seconds for detrending before zero crossings are extracted. Default is \code{0} translating to no detrending}
+\item{winCentre}{Numeric. Seconds for detrending before zero crossings are extracted. Default is \code{0} translating to no detrending}
 
 \item{winSmooth}{Numeric. Seconds for state smoothing. Default is \code{0} translating to no smoothing.}
 

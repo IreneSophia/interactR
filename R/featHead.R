@@ -118,7 +118,7 @@ compWT = function(df, rs.path, colname, fps, order = 6, suffix = "",
 #' @param win Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.
 #' @param minFreq Numeric. The lower cutoff boundary of the targeted frequency band in Hz. Default is \code{1.5}.
 #' @param maxFreq Numeric. The upper cutoff boundary of the targeted frequency band in Hz. Default is \code{6.5}.
-#' @param winDetrend Numeric. Seconds for detrending before zero crossings are extracted. Default is \code{0} translating to no detrending
+#' @param winCentre Numeric. Seconds for detrending before zero crossings are extracted. Default is \code{0} translating to no detrending
 #' @param winSmooth Numeric. Seconds for state smoothing. Default is \code{0} translating to no smoothing.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -134,7 +134,7 @@ compWT = function(df, rs.path, colname, fps, order = 6, suffix = "",
 
 featZCrossing = function(df, rs.path, colnames, fps, suffix = "", 
                          win = 2, minFreq = 1.5, maxFreq = 6.5, 
-                         winDetrend = 0, winSmooth = 0, 
+                         winCentre = 0, winSmooth = 0, 
                          verbose = T, recompute = F, return = T) {
   
   # check rs.path
@@ -161,15 +161,15 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
       select(Dyad, Identifier, Frame, any_of(c("Speaking", "Listening", "Communication", colnames)))
     
     # check whether detrending
-    if (winDetrend > 0) {
+    if (winCentre > 0) {
       df = df |>
         group_by(Dyad, Identifier) |> arrange(Frame) |>
         mutate(
           # detrend data with local mean (1 second window)
-          across(.cols = all_of(colnames), .fns = list(detrended   = ~ .x - aggSlide(.x, mean, fps * winDetrend)),
+          across(.cols = all_of(colnames), .fns = list(centred   = ~ .x - aggSlide(.x, mean, fps * winCentre)),
                  .names = "{.col}_{.fn}")
         )
-      colnames = paste0(colnames, "_detrended")
+      colnames = paste0(colnames, "_centred")
     }
     # further preprocess the colnames
     df = df |>

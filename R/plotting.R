@@ -16,7 +16,7 @@
 #' @param win Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.
 #' @param minFreq Numeric. The lower cutoff boundary of the targeted frequency band in Hz. Default is \code{1.5}.
 #' @param maxFreq Numeric. The upper cutoff boundary of the targeted frequency band in Hz. Default is \code{7}.
-#' @param winDetrend Numeric. Seconds for detrending before zero crossings are extracted. Default is \code{0} translating to no detrending
+#' @param winCentre Numeric. Seconds for detrending before zero crossings are extracted. Default is \code{0} translating to no detrending
 #' @param winSmooth Numeric. Seconds for state smoothing. Default is \code{0} translating to no smoothing.
 #' @param ID.cols Character vector of hex colours. If there are two Identifiers, then two colours must be provided. Default is colourblind-friendly blue and dark green. 
 #'
@@ -30,7 +30,7 @@
 #' 
 plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL, 
                           minFreq = 1.5, maxFreq = 6.5, win = 2, 
-                          winDetrend = 0, winSmooth = 0, ID.cols = c("#1E88E5", "#004D40")) {
+                          winCentre = 0, winSmooth = 0, ID.cols = c("#1E88E5", "#004D40")) {
   
   # if none is provided, get the Frame range
   if (is.null(maxFrame)) maxFrame = max(df$Frame)
@@ -42,9 +42,18 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
   # process the dataframe to extract Zero Crossings and extract Frames
   df = featZCrossing(df, c(), colname, fps, 
                      win = win, minFreq = minFreq, maxFreq = maxFreq, 
-                     winDetrend = winDetrend, winSmooth = winSmooth, verbose = F) |>
-    rename_with(~ gsub(colname, "V", .x), .cols = matches(colname)) |>
-    filter(Frame >= minFrame & Frame <= maxFrame)
+                     winCentre = winCentre, winSmooth = winSmooth, verbose = F)
+  
+  # rename the columns depending on whether centred or not
+  if (winCentre > 0) {
+    df = df |>
+      rename_with(~ gsub(paste0(colname, "_centred"), "V", .x), .cols = matches(colname)) |>
+      filter(Frame >= minFrame & Frame <= maxFrame)
+  } else {
+    df = df |>
+      rename_with(~ gsub(colname, "V", .x), .cols = matches(colname)) |>
+      filter(Frame >= minFrame & Frame <= maxFrame)
+  }
   
   # check whether dyad or solo
   IDs = unique(df$Identifier)
@@ -53,17 +62,17 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
   
   if (dyad & ('Communication' %in% colnames(df))) {
     
-    # get the shift for the raw data  
-    shift = ceiling(abs(min(df$V_centred)) + maxFreq + 1)
-    shift_max = shift + max(df$V_centred)
+    # get the shift for the raw data
+    shift = ceiling(abs(min(df$V)) + maxFreq + 1)
+    shift_max = shift + max(df$V)
     
     # compute the relevant zero crossings
     df = df |>
       mutate(
         # capture which detected crossing is relevant based on frequency band
-        relevant = na_if(V_centred_rel, 0),
+        relevant = na_if(V_rel, 0),
         # need to be adjusted to correspond to the frequency - but how???
-        zc_win  = (V_centred_sum / win),
+        zc_win  = (V_sum / win),
         zc_rel = relevant * zc_win
       )
     
@@ -102,7 +111,7 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
       geom_hline(yintercept = maxFreq, color = "black", linetype = "dashed") +
       geom_hline(yintercept = minFreq, color = "black", linetype = "dashed")  + 
       # plot the actual signal shifted above
-      geom_line(aes(y = V_centred + shift, color = Identifier), linetype = "solid") +
+      geom_line(aes(y = V + shift, color = Identifier), linetype = "solid") +
       # highlight zero crossings that fit the frequency band
       geom_point(aes(y = zc_rel, color = Identifier), shape = 20, na.rm = TRUE) +
       xlab("Seconds") + 
@@ -131,16 +140,16 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
     ID.cols = ID.cols[1]
     
     # get the shift for the raw data  
-    shift = ceiling(abs(min(df$V_centred)) + maxFreq + 1)
-    shift_max = shift + max(df$V_centred)
+    shift = ceiling(abs(min(df$V)) + maxFreq + 1)
+    shift_max = shift + max(df$V)
     
     # compute the relevant zero crossings
     df = df |>
       mutate(
         # capture which detected crossing is relevant based on frequency band
-        relevant = na_if(V_centred_rel, 0),
+        relevant = na_if(V_rel, 0),
         # need to be adjusted to correspond to the frequency - but how???
-        zc_win  = (V_centred_sum / win),
+        zc_win  = (V_sum / win),
         zc_rel = relevant * zc_win
       )
     
@@ -177,7 +186,7 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
       geom_hline(yintercept = maxFreq, color = "black", linetype = "dashed") +
       geom_hline(yintercept = minFreq, color = "black", linetype = "dashed")  + 
       # plot the actual signal shifted above
-      geom_line(aes(y = V_centred + shift, color = Identifier), linetype = "solid") +
+      geom_line(aes(y = V + shift, color = Identifier), linetype = "solid") +
       # highlight zero crossings that fit the frequency band
       geom_point(aes(y = zc_rel, color = Identifier), shape = 20, na.rm = TRUE) +
       xlab("Seconds") + 
@@ -205,14 +214,14 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
     p = df |> 
       ggplot(aes(x = Frame, fill = Identifier)) + 
       geom_hline(yintercept = 0, linewidth = 0.5) + 
-      geom_col(aes(y = V_centred_sum, alpha = "All"), width = 1) + 
-      geom_col(data = df |> filter(V_centred_rel == 1),
-               aes(y = V_centred_sum, alpha = "Within Frequency Band"), width = 1) + 
-      geom_line(aes(y = V_centred, colour = Identifier, linetype = "Centered"), 
+      geom_col(aes(y = V_sum, alpha = "All"), width = 1) + 
+      geom_col(data = df |> filter(V_rel == 1),
+               aes(y = V_sum, alpha = "Within Frequency Band"), width = 1) + 
+      geom_line(aes(y = V, colour = Identifier, linetype = "Centered"), 
                 linewidth = 1) + 
       geom_line(aes(y = V, colour = Identifier, linetype = "Input"), 
                 linewidth = 1) + 
-      geom_vline(data = df |> filter(V_centred_zc == 1), 
+      geom_vline(data = df |> filter(V_zc == 1), 
                  aes(xintercept = Frame, linetype = "Zero Crossing"), alpha = 0.3) + 
       scale_x_continuous(
         breaks = seq(minFrame, maxFrame, by = win*fps),
