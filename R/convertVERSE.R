@@ -31,6 +31,8 @@ extractData = function(df.info, rs.path, timezone, suffix = '', anonymise = F,
   if (is.null(rs.path)) {
     save = F
     rs.path = ''
+  } else {
+    save = T
   }
   
   # if no recompute and the file exists, it is simply loaded
@@ -225,7 +227,7 @@ extractData = function(df.info, rs.path, timezone, suffix = '', anonymise = F,
     if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
     
     # save the data frame
-    if (!is.null(rs.path)) saveRDS(df |> ungroup(), file.path(rs.path, sprintf("dataVERSE%s.rds", suffix)))
+    if (save) saveRDS(df |> ungroup(), file.path(rs.path, sprintf("dataVERSE%s.rds", suffix)))
   }
   
   # return the ungrouped dataframe
