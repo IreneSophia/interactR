@@ -118,7 +118,7 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
       facet_grid(rows = vars(Identifier)) + 
       scale_x_continuous(
         breaks = seq(minFrame, maxFrame, by = win * fps),
-        labels = round(seq(minFrame, maxFrame / fps, by = win)),
+        labels = round(seq(minFrame / fps, maxFrame / fps, by = win)),
         limits = c(minFrame, maxFrame),
         expand = c(0.02, 0.02)
       ) +
@@ -192,7 +192,7 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
       xlab("Seconds") + 
       scale_x_continuous(
         breaks = seq(minFrame, maxFrame, by = win * fps),
-        labels = round(seq(minFrame, maxFrame / fps, by = win)),
+        labels = round(seq(minFrame / fps, maxFrame / fps, by = win)),
         limits = c(minFrame, maxFrame),
         expand = c(0.02, 0.02)
       ) +
@@ -225,7 +225,7 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
                  aes(xintercept = Frame, linetype = "Zero Crossing"), alpha = 0.3) + 
       scale_x_continuous(
         breaks = seq(minFrame, maxFrame, by = win*fps),
-        labels = round(seq(minFrame, maxFrame / fps, by = win)),
+        labels = round(seq(minFrame / fps, maxFrame / fps, by = win)),
         limits = c(minFrame, maxFrame),
         expand = c(0.02, 0.02)
       ) + 
