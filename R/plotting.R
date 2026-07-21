@@ -214,9 +214,9 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
     p = df |> 
       ggplot(aes(x = Frame, fill = Identifier)) + 
       geom_hline(yintercept = 0, linewidth = 0.5) + 
-      geom_col(aes(y = V_sum, alpha = "All"), width = 1) + 
+      geom_col(aes(y = V_sum*scaleFactor, alpha = "All"), width = 1) + 
       geom_col(data = df |> filter(V_rel == 1),
-               aes(y = V_sum, alpha = "Within Frequency Band"), width = 1) + 
+               aes(y = V_sum*scaleFactor, alpha = "Within Frequency Band"), width = 1) + 
       geom_line(aes(y = V, colour = Identifier, linetype = "Centered"), 
                 linewidth = 1) + 
       geom_line(aes(y = V, colour = Identifier, linetype = "Input"), 
@@ -233,7 +233,7 @@ plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL,
       scale_colour_manual(values = ID.cols) + 
       scale_alpha_manual(
         name   = "Sums of Zero Crossings",
-        values = c("All" = 0.3, "Within Frequency Band" = 0.6)
+        values = c("All" = 0.2, "Within Frequency Band" = 0.6)
       ) +
       scale_linetype_manual(
         name   = "Signal",
