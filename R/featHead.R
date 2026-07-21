@@ -455,7 +455,7 @@ preproHead = function(df, rs.path, rotnames, tranames, suffix = '',
   } else {
     # focus on relevant columns
     df = df |> 
-      select(Dyad, Identifier, Frame, 
+      select(Dyad, Identifier, Frame, Timestamp, Time,
              any_of(c("Speaking", "Listening", "Communication")),
              any_of(c(rotnames, tranames, cornames))) |>
       arrange(Dyad, Identifier, Frame)
