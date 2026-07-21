@@ -12,7 +12,7 @@
 #'   to extract and plot zero-crossing features. 
 #' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
 #' @param minDegree Numeric. How many degree of rotational difference are needed for the movement to be considered relevant. 
-#' Depends on the fps and the specific movement.
+#' Depends on the fps and the specific movement. Setting to negative number leads to no thresholding based on degrees. 
 #' @param minFrame Numeric or NULL. First Frame to be plotted. If `NULL` minimum available Frame is used. Default is `NULL`.
 #' @param maxFrame Numeric or NULL. Last Frame to be plotted. If `NULL` maximum available Frame is used. Default is `NULL`.
 #' @param win Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.

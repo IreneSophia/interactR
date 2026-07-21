@@ -115,7 +115,7 @@ compWT = function(df, rs.path, colname, fps, order = 6, suffix = "",
 #'   to extract zero-crossing features. 
 #' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
 #' @param minDegree Numeric. How many degree of rotational difference are needed for the movement to be considered relevant. 
-#' Depends on the fps and the specific movement.
+#' Depends on the fps and the specific movement. Setting to negative number leads to no thresholding based on degrees. 
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param win Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.
 #' @param minFreq Numeric. The lower cutoff boundary of the targeted frequency band in Hz. Default is \code{1.5}.

@@ -33,7 +33,7 @@ to extract zero-crossing features.}
 \item{fps}{Numeric. Frame processing rate frequency profile (frames per second) of the dataset.}
 
 \item{minDegree}{Numeric. How many degree of rotational difference are needed for the movement to be considered relevant.
-Depends on the fps and the specific movement.}
+Depends on the fps and the specific movement. Setting to negative number leads to no thresholding based on degrees.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 
