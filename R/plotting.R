@@ -11,6 +11,8 @@
 #' @param colname Character. The exact name of the column in \code{df} from which
 #'   to extract and plot zero-crossing features. 
 #' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
+#' @param minDegree Numeric. How many degree of rotational difference are needed for the movement to be considered relevant. 
+#' Depends on the fps and the specific movement.
 #' @param minFrame Numeric or NULL. First Frame to be plotted. If `NULL` minimum available Frame is used. Default is `NULL`.
 #' @param maxFrame Numeric or NULL. Last Frame to be plotted. If `NULL` maximum available Frame is used. Default is `NULL`.
 #' @param win Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.
@@ -29,7 +31,8 @@
 #' @import ggplot2
 #' @export
 #' 
-plotZCrossings = function(df, colname, fps, minFrame = NULL, maxFrame = NULL, 
+plotZCrossings = function(df, colname, fps, minDegree, 
+                          minFrame = NULL, maxFrame = NULL, 
                           minFreq = 1.5, maxFreq = 6.5, win = 2, 
                           winCentre = 0, winSmooth = 0, 
                           ID.cols = c("#1E88E5", "#004D40"),

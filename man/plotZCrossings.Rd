@@ -8,6 +8,7 @@ plotZCrossings(
   df,
   colname,
   fps,
+  minDegree,
   minFrame = NULL,
   maxFrame = NULL,
   minFreq = 1.5,
@@ -31,6 +32,9 @@ relevant Zero Crossings from the signal.}
 to extract and plot zero-crossing features.}
 
 \item{fps}{Numeric. Frame processing rate frequency profile (frames per second) of the dataset.}
+
+\item{minDegree}{Numeric. How many degree of rotational difference are needed for the movement to be considered relevant.
+Depends on the fps and the specific movement.}
 
 \item{minFrame}{Numeric or NULL. First Frame to be plotted. If \code{NULL} minimum available Frame is used. Default is \code{NULL}.}
 

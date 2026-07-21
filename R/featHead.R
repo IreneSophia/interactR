@@ -114,6 +114,8 @@ compWT = function(df, rs.path, colname, fps, order = 6, suffix = "",
 #' @param colnames Character vector. The exact name or names of the column(s) in \code{df} from which
 #'   to extract zero-crossing features. 
 #' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
+#' @param minDegree Numeric. How many degree of rotational difference are needed for the movement to be considered relevant. 
+#' Depends on the fps and the specific movement.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param win Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.
 #' @param minFreq Numeric. The lower cutoff boundary of the targeted frequency band in Hz. Default is \code{1.5}.
@@ -132,7 +134,7 @@ compWT = function(df, rs.path, colname, fps, order = 6, suffix = "",
 #' @import dplyr
 #' @export
 
-featZCrossing = function(df, rs.path, colnames, fps, suffix = "", 
+featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "", 
                          win = 2, minFreq = 1.5, maxFreq = 6.5, 
                          winCentre = 0, winSmooth = 0, 
                          verbose = T, recompute = F, return = T) {
@@ -145,7 +147,7 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
     # create filename
     flnm  = file.path(rs.path, sprintf("dataZC%s.rds", suffix))
   }
-
+  
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (return) {
@@ -155,7 +157,7 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
   } else {
     
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Exctracting Zero Crossings from ", paste(colnames, collapse = ", "), "\n")
-  
+    
     # focus on relevant columns 
     df = df |>
       select(Dyad, Identifier, Frame, any_of(c("Speaking", "Listening", "Communication", colnames)))
@@ -163,7 +165,7 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
     # check whether detrending
     if (winCentre > 0) {
       df = df |>
-        group_by(Dyad, Identifier) |> arrange(Frame) |>
+        group_by(Dyad, Identifier) |> arrange(Dyad, Identifier, Frame) |>
         mutate(
           # detrend data with local mean (1 second window)
           across(.cols = all_of(colnames), .fns = list(centred   = ~ .x - aggSlide(.x, mean, fps * winCentre)),
@@ -171,21 +173,29 @@ featZCrossing = function(df, rs.path, colnames, fps, suffix = "",
         )
       colnames = paste0(colnames, "_centred")
     }
+    
     # further preprocess the colnames
     df = df |>
-      group_by(Dyad, Identifier) |> arrange(Frame) |>
+      group_by(Dyad, Identifier) |> arrange(Dyad, Identifier, Frame) |>
       mutate(
         # compute zero-crossings and downstream filtering on data
         across(
-          .cols = colnames,
+          .cols = all_of(colnames),
           .fns = list(
             # extract the zero crossings
             zc     = ~ findZCrossing(.x),
+            # get the difference in rotation
+            diff   = ~ abs(.x - lag(.x)),
             # sum up the ZCrossings across the window and divide by it for frequency
             sum    = ~ aggSlide(findZCrossing(.x), sum, fps * win) / win,
             # compare sum / window to the minimum and maximum frequencies
-            rel    = ~ (aggSlide(findZCrossing(.x), sum, fps * win) / win > minFreq ) & 
-              (aggSlide(findZCrossing(.x), sum, fps * win) / win <= maxFreq )
+            rel    = ~ 
+              # larger than the minimum frequencey
+              (aggSlide(findZCrossing(.x), sum, fps * win) / win > minFreq ) & 
+              # smaller than the maximum frequency
+              (aggSlide(findZCrossing(.x), sum, fps * win) / win < maxFreq ) & 
+              # difference between frames exceeds minDegree
+              abs(.x - lag(.x)) > minDegree
           ),
           .names = "{.col}_{.fn}"
         )
