@@ -2,7 +2,7 @@
 % Please edit documentation in R/featSpeech.R
 \name{addCommunication}
 \alias{addCommunication}
-\title{Add Conversational States Based on Speech Profiles}
+\title{Add Conversational States Based on Praat Output}
 \usage{
 addCommunication(
   df,

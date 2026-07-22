@@ -6,6 +6,20 @@
 #' While these are based on the ARKit52 system collected in the VERSE environment, 
 #' similar facial expressions can also be extracted using computer vision (e.g., OpenFace),
 #' provided the column names are adjusted to fit the system described below.
+#' 
+#' #' @details 
+#' Emotions are aggregates as the mean of the following Facial Expressions:
+#' 1. **Anger:** `"Facial_BrowDown.*"`, `"Facial_.*Eye_Squint"`, `"Facial_.*Eye_Wide"`, 
+#'   `"Facial_MouthPucker"`
+#' 2. **Disgust:** `"Facial_BrowDown.*"`, `"Facial_MouthFrown.*"`, `"Facial_MouthLowerDown.*"`, 
+#'   `"Facial_NoseSneer.*"`
+#' 3. **Joy:** `"Facial_CheekSquint.*"`, `"Facial_MouthSmile.*"`
+#' 4. **Fear:** `"Facial_BrowDown.*"`, `"Facial_BrowInnerUp"`, `"Facial_BrowOuterUp.*"`, 
+#'   `"Facial_.*Eye_Squint"`, `"Facial_.*Eye_Wide"`, `"Facial_JawOpen"`, `"Facial_MouthStretch.*"`
+#' 5. **Sadness:** `"Facial_BrowDown.*"`, `"Facial_BrowInnerUp"`, `"Facial_MouthFrown.*"`
+#' 6. **Surprise:** `"Facial_BrowInnerUp"`, `"Facial_BrowOuterUp.*"`, `"Facial_.*Eye_Wide"`, 
+#'   `"Facial_JawOpen"`
+#' 7. **Contempt:** Difference between sides in `"Facial_MouthDimple.*"`, `"Facial_MouthSmile.*"`
 #'
 #' @param df Dataframe containing the facial data. Must contain the columns `Dyad`, 
 #'   `Identifier`, `Time` and `Frame`, as well as columns with ARKit52 values. 
@@ -34,6 +48,20 @@
 
 featEFE = function(df, rs.path, suffix = "", verbose = T,
                     recompute = F, return = F) {
+  
+  checkDF(df, c("Dyad", "Identifier", "Frame", "Time"))
+  
+  # check the facial columns
+  if (colnames(df |> select(contains(c("Facial_BrowDown.*", "Facial_.*Eye_Squint", "Facial_.*Eye_Wide", 
+                                       "Facial_MouthPucker", "Facial_MouthFrown.*", "Facial_MouthLowerDown.*", 
+                                       "Facial_NoseSneer.*", "Facial_CheekSquint.*", "Facial_MouthSmile.*", 
+                                       "Facial_BrowInnerUp", "Facial_BrowOuterUp.*", "Facial_JawOpen", 
+                                       "Facial_MouthStretch.*", "Facial_MouthDimple.*")))) < 25) {
+    warning("Dataframe df is containing less columns for extracting the emotions than expected.\n",
+            "If you aggregated across both sides of the face, this can be expected and is potentially no need to worry.\n",
+            "To be sure, please check the documentation of the function to assess whether you have\n",
+            "enough information to meaningfully interpret each emotion.")
+  }
   
   # check rs.path
   if (is.null(rs.path)) {

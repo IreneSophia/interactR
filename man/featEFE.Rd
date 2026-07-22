@@ -40,6 +40,23 @@ While these are based on the ARKit52 system collected in the VERSE environment,
 similar facial expressions can also be extracted using computer vision (e.g., OpenFace),
 provided the column names are adjusted to fit the system described below.
 }
+\details{
+#' @details
+Emotions are aggregates as the mean of the following Facial Expressions:
+\enumerate{
+\item \strong{Anger:} \code{"Facial_BrowDown.*"}, \code{"Facial_.*Eye_Squint"}, \code{"Facial_.*Eye_Wide"},
+\code{"Facial_MouthPucker"}
+\item \strong{Disgust:} \code{"Facial_BrowDown.*"}, \code{"Facial_MouthFrown.*"}, \code{"Facial_MouthLowerDown.*"},
+\code{"Facial_NoseSneer.*"}
+\item \strong{Joy:} \code{"Facial_CheekSquint.*"}, \code{"Facial_MouthSmile.*"}
+\item \strong{Fear:} \code{"Facial_BrowDown.*"}, \code{"Facial_BrowInnerUp"}, \code{"Facial_BrowOuterUp.*"},
+\code{"Facial_.*Eye_Squint"}, \code{"Facial_.*Eye_Wide"}, \code{"Facial_JawOpen"}, \code{"Facial_MouthStretch.*"}
+\item \strong{Sadness:} \code{"Facial_BrowDown.*"}, \code{"Facial_BrowInnerUp"}, \code{"Facial_MouthFrown.*"}
+\item \strong{Surprise:} \code{"Facial_BrowInnerUp"}, \code{"Facial_BrowOuterUp.*"}, \code{"Facial_.*Eye_Wide"},
+\code{"Facial_JawOpen"}
+\item \strong{Contempt:} Difference between sides in \code{"Facial_MouthDimple.*"}, \code{"Facial_MouthSmile.*"}
+}
+}
 \references{
 Aldenhoven et al. (2026). Sensors.
 }

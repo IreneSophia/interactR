@@ -26,6 +26,12 @@
 featDwell = function(df, ls.AOI, rs.path, suffix = "", 
                      verbose = T, recompute = F, return = T) {
   
+  checkDF(df, c("Dyad", "Identifier", "Frame", "Time"))
+  
+  if (!("AOI" %in% colnames(df)) & !all(c("AOI.left", "AOI.right") %in% colnames(df))) {
+    stop("Dataframe df must contain either column AOI or columns AOI.left & AOI.right")
+  }
+  
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved

@@ -52,6 +52,8 @@ featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "",
                          winCentre = NULL, winSmooth = 0, 
                          verbose = T, recompute = F, return = T) {
   
+  checkDF(df, c("Dyad", "Identifier", "Time", "Frame", "Timestamp", colnames))
+  
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
@@ -164,6 +166,8 @@ featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "",
 
 aggZCrossing = function(df, rs.path, colnames, suffix = "",
                         verbose = T, recompute = F, return = T) {
+  
+  checkDF(df, c("Dyad", "Identifier", "Time", "Frame", colnames))
   
   # check rs.path
   if (is.null(rs.path)) {

@@ -25,6 +25,8 @@ plotWLCCcomp = function(df, ncol = 3,
                                       "pseudoDyad-WLCC" = "#CAE1FF", "pseudoData-WLCC" = "#C9A0DC"), 
                         cols.cred = c("credible" = "#FFFC80", "not credible" = "white")) {
   
+  checkDF(df, c("Method", "Feature", "lag", "Stat", "prob", "observed.sd", "observed", "pseudo.sd", "pseudo", "count", "credible"))
+  
   # get the peak lags
   df.lag = df |>
     group_by(Stat, Feature) |>

@@ -23,6 +23,8 @@
 compWT = function(df, rs.path, colname, fps, order = 6, suffix = "", 
                   verbose = T, recompute = F, return = T) {
   
+  checkDF(df, c("Dyad", "Identifier", "Time", "Frame", "Timestamp", colname))
+    
   # extract the individual Identifiers
   ls.IDs = unique(df$Identifier)
   nos    = length(ls.IDs)

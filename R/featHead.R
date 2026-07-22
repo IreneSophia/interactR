@@ -4,7 +4,7 @@
 #' Gestures are classified exclusively as nodding, head shaking or nothing for each Frame.
 #'
 #' @param df Dataframe. The dataset containing the variables to be processed, potentially created by \code{\link{preproHead}}. 
-#'   Must explicitly feature columns `Identifier`, `Frame` and the columns `colNodding` and `colShaking`. This dataframe
+#'   Must explicitly feature columns `Dyad`, `Identifier`, `Time`, `Frame` and the columns `colNodding` and `colShaking`. This dataframe
 #'   will be processed using \code{\link{featHeadGestures}} to extract nodding and head shaking, assuming that only one can happen at a time. 
 #' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param colNodding Character. The exact name of the column in \code{df} from which
@@ -38,6 +38,8 @@ featHeadGestures = function(df, rs.path, colNodding, colShaking, fps, minDegree,
                             win = 2, minFreq = 1.5, maxFreq = 6.5, 
                             winCentre = NULL, winSmooth = 0, 
                             verbose = T, recompute = F, return = T) {
+  
+  checkDF(df, c("Dyad", "Identifier", "Frame", "Time", colNodding, colShaking))
   
   # check rs.path
   if (is.null(rs.path)) {
@@ -163,7 +165,8 @@ rotDiff = function(x, y) {
 #' or baseline-adjusted using corresponding body segments. Circularity corrected and translational trajectories are detrended.
 #'
 #' @param df Dataframe containing head coordinate streams. Requires tracking coordinates alongside 
-#' core columns `Dyad`, `Identifier`, `Time`, `Timestamp` and `Frame`.
+#' core columns `Dyad`, `Identifier`, `Time`, `Timestamp` and `Frame` as well as all columns
+#' specified to be processed.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
 #'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
 #' @param rotnames Character vector. String labels identifying target rotational columns.
@@ -187,6 +190,9 @@ rotDiff = function(x, y) {
 preproHead = function(df, rs.path, rotnames, tranames, suffix = '',
                       performFixCirc = T, cornames = c(),
                       verbose = T, recompute = F, return = F) {
+  
+  checkDF(df, c("Dyad", "Identifier", "Frame", "Time", "Timestamp", 
+                rotnames, tranames, cornames))
   
   # check rs.path
   if (is.null(rs.path)) {

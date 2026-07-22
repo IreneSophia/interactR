@@ -19,7 +19,8 @@ featSpeech(
 \item{df.speak}{Dataframe containing all information about the sounding instances,
 typically created using \code{\link[=convertGrid]{convertGrid()}}.}
 
-\item{praat.path}{Character. Path to the directory containing the Praat output files.}
+\item{praat.path}{Character. Path to the directory containing the Praat output files.
+Needs to contain a file of the name \verb{[praat.prefix]_pitchIntensity.csv}.}
 
 \item{praat.prefix}{Character. Prefix used in the Praat script for the output files.}
 
@@ -38,8 +39,15 @@ If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk.}
 If \code{return = TRUE}, returns the processed dataframe. Saves \verb{featSpeech[suffix].csv} to disk if \code{rs.path} is provided.
 }
 \description{
-This function aggregates all of the information extracted from \code{featSpeech.praat},
-which includes the aggregated scores from the uhm-o-meter (de Jong et al., 2021).
+This function aggregates all of the speech information. There two options:
+\enumerate{
+\item Information extracted from \code{featSpeech.praat}, which includes the aggregated
+scores from the uhm-o-meter (de Jong et al., 2021). This option is chosen by
+providing \code{praat.path} and \code{praat.prefix}.
+\item Information based on VERSE audio tracking. If \code{is.null(praat.path) == TRUE},
+the columns Speaking and Listening from VERSE are used to compute available
+features. \verb{[!MISSING]}
+}
 }
 \references{
 de Jong & Wempe (2009). Behavior Research Methods.

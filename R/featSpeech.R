@@ -1,12 +1,18 @@
 
 #' Aggregate Acoustic Information Extracted via Praat
 #'
-#' This function aggregates all of the information extracted from `featSpeech.praat`, 
-#' which includes the aggregated scores from the uhm-o-meter (de Jong et al., 2021).
+#' This function aggregates all of the speech information. There two options: 
+#' 1. Information extracted from `featSpeech.praat`, which includes the aggregated 
+#'    scores from the uhm-o-meter (de Jong et al., 2021). This option is chosen by
+#'    providing `praat.path` and `praat.prefix`.
+#' 2. Information based on VERSE audio tracking. If `is.null(praat.path) == TRUE`,
+#'    the columns Speaking and Listening from VERSE are used to compute available
+#'    features. `[!MISSING]`
 #'
 #' @param df.speak Dataframe containing all information about the sounding instances,
 #'   typically created using [convertGrid()].
 #' @param praat.path Character. Path to the directory containing the Praat output files.
+#' Needs to contain a file of the name `[praat.prefix]_pitchIntensity.csv`.
 #' @param praat.prefix Character. Prefix used in the Praat script for the output files.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
 #'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
@@ -25,6 +31,12 @@
 
 featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
                       verbose = T, recompute = F, return = F) {
+  
+  checkDF(df.speak, c("Dyad", "Identifier", "Turn", "Start", "End", "Duration", "nSyll"))
+  
+  if (!file.exists(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv")))) {
+    stop("Specified praat path and prefix do not lead to file ", paste0(praat.prefix, "_pitchIntensity.csv"))
+  }
   
   # check rs.path
   if (is.null(rs.path)) {
@@ -263,14 +275,14 @@ convertGrid = function(ls.files, rs.path, suffix = '', prefix = '', extract = T,
   
 }
 
-#' Add Conversational States Based on Speech Profiles
+#' Add Conversational States Based on Praat Output
 #'
 #' This function adds the `Listening`, `Speaking`, and `Communication` state columns
 #' based on speech analysis performed in Praat using the uhm-o-meter developed by 
 #' de Jong et al. (2021). If these columns already exist in the dataset, they will 
 #' be dynamically renamed with the suffix `"_Original"`.
 #'
-#' @param df Dataframe containing the tracked data. Must contain the columns `Dyad`, 
+#' @param df Dataframe containing the tracked data. Must contain the columns `Dyad`,
 #'   `Time`, `Frame` and `Timestamp` (in POSIX format).
 #' @param df.speak Dataframe containing all information about the sounding instances,
 #'   typically created using [convertGrid()]. 
@@ -293,6 +305,9 @@ convertGrid = function(ls.files, rs.path, suffix = '', prefix = '', extract = T,
 #' 
 addCommunication = function(df, df.speak, rs.path, suffix = '',
                             verbose = T, recompute = F, return = T) { 
+  
+  checkDF(df, c("Dyad", "Time", "Frame", "Timestamp"))
+  checkDF(df.speak, c("Dyad", "Identifier", "Start", "End"))
   
   # check rs.path
   if (is.null(rs.path)) {

@@ -41,6 +41,8 @@ plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
                             winCentre = NULL, winSmooth = 0, 
                             ID.cols = c("#1E88E5", "#004D40"),
                             legend = T) {
+
+  checkDF(df, c("Identifier", "Frame", colNodding, colShaking))
   
   # if none is provided, get the Frame range
   if (is.null(maxFrame)) maxFrame = max(df$Frame)

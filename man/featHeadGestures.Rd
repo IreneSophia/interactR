@@ -24,7 +24,7 @@ featHeadGestures(
 }
 \arguments{
 \item{df}{Dataframe. The dataset containing the variables to be processed, potentially created by \code{\link{preproHead}}.
-Must explicitly feature columns \code{Identifier}, \code{Frame} and the columns \code{colNodding} and \code{colShaking}. This dataframe
+Must explicitly feature columns \code{Dyad}, \code{Identifier}, \code{Time}, \code{Frame} and the columns \code{colNodding} and \code{colShaking}. This dataframe
 will be processed using \code{\link{featHeadGestures}} to extract nodding and head shaking, assuming that only one can happen at a time.}
 
 \item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}
