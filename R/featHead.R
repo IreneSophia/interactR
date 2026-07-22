@@ -20,7 +20,8 @@
 #' @param maxFreq Numeric. The upper cutoff boundary of the targeted frequency band in Hz. Default is \code{6.5}.
 #' @param winCentre Numeric. Seconds for detrending before zero crossings are extracted. 
 #' Default is `NULL` translating to same size as `win`. Setting it to \code{0} translates to no centring.
-#' @param winSmooth Numeric. Seconds for state smoothing. Default is \code{0} translating to no smoothing.
+#' @param winSmooth Numeric. Seconds for smoothing to remove noise based on majority presence - only if head gesture is 
+#' present in more than half of this time window, this translates to true. Default is \code{0} translating to no smoothing.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
 #' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.

@@ -20,7 +20,8 @@
 #' @param maxFreq Numeric. The upper cutoff boundary of the targeted frequency band in Hz. Default is \code{7}.
 #' @param winCentre Numeric. Seconds for detrending before zero crossings are extracted. 
 #' Default is `NULL` translating to same size as `win`. Setting it to \code{0} translates to no centring.
-#' @param winSmooth Numeric. Seconds for state smoothing. Default is \code{0} translating to no smoothing.
+#' @param winSmooth Numeric. Seconds for smoothing to remove noise based on majority presence - only if relevant ZCrossings are 
+#' present in more than half of this time window, this translates to true. Default is \code{0} translating to no smoothing.
 #' @param ID.cols Character vector of hex colours. If there are two Identifiers, then two colours must be provided. Default is colourblind-friendly blue and dark green.
 #' @param legend Boolean. Switch for the legend. Default is `TRUE`.
 #'

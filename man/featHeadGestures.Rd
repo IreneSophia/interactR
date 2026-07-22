@@ -51,7 +51,8 @@ Depends on the fps and the specific movement. Setting to negative number leads t
 \item{winCentre}{Numeric. Seconds for detrending before zero crossings are extracted.
 Default is \code{NULL} translating to same size as \code{win}. Setting it to \code{0} translates to no centring.}
 
-\item{winSmooth}{Numeric. Seconds for state smoothing. Default is \code{0} translating to no smoothing.}
+\item{winSmooth}{Numeric. Seconds for smoothing to remove noise based on majority presence - only if head gesture is
+present in more than half of this time window, this translates to true. Default is \code{0} translating to no smoothing.}
 
 \item{verbose}{Logical. Whether progress and output are printed to the console. Default is \code{TRUE}.}
 
