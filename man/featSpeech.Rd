@@ -17,10 +17,12 @@ featSpeech(
 }
 \arguments{
 \item{df.speak}{Dataframe containing all information about the sounding instances,
-typically created using \code{\link[=convertGrid]{convertGrid()}}.}
+typically created using \code{\link[=convertGrid]{convertGrid()}} for option 1 or a VERSE dataframe for option 2
+with columns \code{Dyad}, \code{Time}, \code{Identifier}, \code{Frame}, \code{Timestamp} and \code{Speaking}.}
 
 \item{praat.path}{Character. Path to the directory containing the Praat output files.
-Needs to contain a file of the name \verb{[praat.prefix]_pitchIntensity.csv}.}
+Needs to contain a file of the name \verb{[praat.prefix]_pitchIntensity.csv} or be empty
+such that \code{is.null(praat.path) == TRUE}.}
 
 \item{praat.prefix}{Character. Prefix used in the Praat script for the output files.}
 
@@ -45,8 +47,8 @@ This function aggregates all of the speech information. There two options:
 scores from the uhm-o-meter (de Jong et al., 2021). This option is chosen by
 providing \code{praat.path} and \code{praat.prefix}.
 \item Information based on VERSE audio tracking. If \code{is.null(praat.path) == TRUE},
-the columns Speaking and Listening from VERSE are used to compute available
-features. \verb{[!MISSING]}
+the columns \code{Speaking} and \code{Listening} from VERSE are used to compute available
+features.
 }
 }
 \references{

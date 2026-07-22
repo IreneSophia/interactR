@@ -6,13 +6,15 @@
 #'    scores from the uhm-o-meter (de Jong et al., 2021). This option is chosen by
 #'    providing `praat.path` and `praat.prefix`.
 #' 2. Information based on VERSE audio tracking. If `is.null(praat.path) == TRUE`,
-#'    the columns Speaking and Listening from VERSE are used to compute available
-#'    features. `[!MISSING]`
+#'    the columns `Speaking` and `Listening` from VERSE are used to compute available
+#'    features. 
 #'
 #' @param df.speak Dataframe containing all information about the sounding instances,
-#'   typically created using [convertGrid()].
+#'   typically created using [convertGrid()] for option 1 or a VERSE dataframe for option 2
+#'   with columns `Dyad`, `Time`, `Identifier`, `Frame`, `Timestamp` and `Speaking`.
 #' @param praat.path Character. Path to the directory containing the Praat output files.
-#' Needs to contain a file of the name `[praat.prefix]_pitchIntensity.csv`.
+#'   Needs to contain a file of the name `[praat.prefix]_pitchIntensity.csv` or be empty
+#'   such that `is.null(praat.path) == TRUE`.
 #' @param praat.prefix Character. Prefix used in the Praat script for the output files.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
 #'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
@@ -32,12 +34,6 @@
 featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
                       verbose = T, recompute = F, return = F) {
   
-  checkDF(df.speak, c("Dyad", "Identifier", "Turn", "Start", "End", "Duration", "nSyll"))
-  
-  if (!file.exists(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv")))) {
-    stop("Specified praat path and prefix do not lead to file ", paste0(praat.prefix, "_pitchIntensity.csv"))
-  }
-  
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
@@ -54,24 +50,66 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
       df.out = readr::read_csv(flnm, show_col_types = F)
     }
   } else {
-    # give some info
-    if (verbose) cat("----------- Extracting and aggregating Speech features -----------\n")
   
-    # read in the praat output capturing pitch and intensity
-    df.pint = readr::read_csv(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv")),
-                              show_col_types = F) |>
-      tidyr::separate(Name, into = c("tmp1", "Dyad", "Identifier", "tmp2"), sep = "_") |>
-      select(-tmp1, -tmp2)
+      if (!is.null(praat.path)) {
+        # OPTION 1: ASSUMING PRAAT DATAFRAME
+      
+        checkDF(df.speak, c("Dyad", "Identifier", "Turn", "Start", "End", "Duration", "nSyll"))
+        
+        if (!file.exists(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv")))) {
+          stop("Specified praat path and prefix do not lead to file ", paste0(praat.prefix, "_pitchIntensity.csv"))
+        }
     
-    # remove all speaking instances that do not have syllables detected - these
-    # are most likely just breathing sounds mistaken for speech
-    df.speak = df.speak |> 
-      # focus on speaking where there is at least one syllable
-      filter(nSyll > 0) |>
-      arrange(Dyad, Start, End) |>
-      mutate(
-        engulfed = F
-      )
+      # give some info
+      if (verbose) cat("----------- Extracting and aggregating Speech features -----------\n")
+    
+      # read in the praat output capturing pitch and intensity
+      df.pint = readr::read_csv(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv")),
+                                show_col_types = F) |>
+        tidyr::separate(Name, into = c("tmp1", "Dyad", "Identifier", "tmp2"), sep = "_") |>
+        select(-tmp1, -tmp2)
+      
+      # remove all speaking instances that do not have syllables detected - these
+      # are most likely just breathing sounds mistaken for speech
+      df.speak = df.speak |> 
+        # focus on speaking where there is at least one syllable
+        filter(nSyll > 0)
+      
+    }
+    else {
+      # OPTION 2: ASSUMING VERSE DATAFRAME
+      
+      cols = c("Dyad", "Identifier", "Time", "Frame", "Timestamp", "Speaking")
+      checkDF(df.speak, cols)
+      
+      # focus on the relevant columns
+      df.speak = df.speak |> select(all_of(cols)) |>
+        arrange(Dyad, Identifier, Time, Timestamp) |>
+        # number consecutive Frames belonging to one sounding or silence instances
+        group_by(Dyad, Identifier, Time) |>
+        mutate(run_id = consecutive_id(Speaking),
+               Exp.Start = min(Timestamp), 
+               Exp.End   = max(Timestamp),
+               Exp.Duration = as.numeric(Exp.End - Exp.Start, unit = "secs"),
+               Timestamp = Timestamp - Exp.Start) |>
+        # only keep the sounding instances
+        filter(Speaking) |>
+        # reset the numbering to only capture sounding instances
+        mutate(Turn = consecutive_id(run_id)) |>
+        # aggregate the information for each turn
+        group_by(Dyad, Identifier, Time, Turn, Exp.Duration) |>
+        summarise(
+          Start = as.numeric(min(Timestamp), unit = "secs"),
+          End   = as.numeric(max(Timestamp), unit = "secs"),
+          Duration = End - Start,
+          nSyll = NA
+        ) |> ungroup()
+      
+      df.pint = df.speak |>
+        select(Dyad, Identifier, Time, Exp.Duration) |>
+        distinct() |> rename(Duration = Exp.Duration)
+      
+    }
     
     # summarise the articulation rate (number of syllables / phonation duration)  
     # and the silence-to-turn ratio (level of the dyad)
@@ -88,8 +126,8 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
         # compute silence-to-turn ratio: higher means more silence
         DyadSPCH_SilenceToTurn = (mean(Duration) - sum(PhonationDuration))/sum(PhonationDuration)
       ) |> 
-      select(Dyad, Identifier, PitchSD, IntensitySD, ArticulationRate, PhonationDuration, DyadSPCH_SilenceToTurn) |>
-      rename_with(~ paste0("SPCH_", .x), .cols = c(PitchSD, IntensitySD, ArticulationRate, PhonationDuration))
+      select(Dyad, Identifier, any_of(c('PitchSD', 'IntensitySD')), ArticulationRate, PhonationDuration, DyadSPCH_SilenceToTurn) |>
+      rename_with(~ paste0("SPCH_", .x), .cols = any_of(c('PitchSD', 'IntensitySD', 'ArticulationRate', 'PhonationDuration')))
     
     # extract the PhonationBalance for each participant
     df = df |>
@@ -112,49 +150,8 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
         by = c("Dyad", "Identifier")
       )
     
-    # Determine turns from speaking instances. Specifically, all sounding 
-    # instances that are completely engulfed by the counterpart's sounding  
-    # instance are disregarded. Then, a turn goes from the start of the first 
-    # until the end of the last consecutive sounding instance of one speaker.
-    # we need to get rid of all sounding instance that are completely engulfed in another
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Remove engulfed sounds\n")
-    for (i in 2:nrow(df.speak)) {
-      if (sum((df.speak$Start[i] >= df.speak[(df.speak$Dyad == df.speak$Dyad[i]),]$Start) &  
-              (df.speak$End[i]   <= df.speak[(df.speak$Dyad == df.speak$Dyad[i]),]$End)) > 1 ) { 
-        df.speak$engulfed[i] = T
-      } 
-    }
-    df.speak = df.speak |> filter(engulfed == F) |> select(-c(engulfed))
-    
-    # identify turns: here, turns are defined as starting with the first sounding
-    # instance of a person until the end of the last sounding instance of this 
-    # person before a non-engulfed sounding instance of another person
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Detect turns\n")
-    df.turns = df.speak |>
-      mutate(rown = row_number()) |>             # add row number
-      group_by(Dyad, Identifier) |>              # group by the person speaking
-      mutate(
-        tn = cumsum(c(TRUE, diff(rown) > 1))      # always keep the lowest row number of this turn as turn number
-      ) |>
-      ungroup() |>
-      mutate(
-        Turn = paste0(Identifier, "_", tn)        # add this turn number to the person speaking
-      ) |>
-      group_by(Dyad, Identifier, Turn) |>        # summarise by Dyad, Identifier and Turn
-      summarise(
-        StartTurn = min(Start, na.rm = T),        # take the start of the first sounding instance
-        EndTurn   = max(End, na.rm = T),          # take the end of the last sounding instance
-        DurTurn   = EndTurn - StartTurn           # compute duration of the turn
-      ) |> 
-      arrange(Dyad, StartTurn) |>
-      group_by(Dyad) |>
-      mutate(
-        Turn = row_number()
-      ) |>
-      group_by(Dyad) |>
-      mutate(
-        TTG = StartTurn - lag(EndTurn)
-      )
+    # use the function to detect turns
+    df.speak = detectTurns(df.speak, verbose = verbose)
     
     # aggregate and merge all the information
     if (verbose) cat(format(Sys.time(), "%X %Z"), ": Aggregate and save features\n")
@@ -164,13 +161,91 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
                 SPCH_TurnGapsSD     = sd(TTG, na.rm = T)) |>
       full_join(df.turns |> group_by(Dyad) |> summarise(DyadSPCH_nTurns = max(Turn)),
                 by = 'Dyad') |>
-      full_join(df, by = c('Dyad', 'Identifier'))
+      full_join(df, by = c('Dyad', 'Identifier')) |>
+      select(where(~ any(!is.na(.x))))
+    
   }
   
   # save the features
   if (!is.null(rs.path)) readr::write_csv(df.out, file = flnm)
   
   if (return) return(df.out |> ungroup())
+  
+}
+
+#' Detect Turns based on Sounding Instances
+#'
+#' This function takes a datframe containing sounding instances and detects turns -
+#' continuous sounding instances by one speaker.  Specifically, all sounding 
+#' instances that are completely engulfed by the counterpart's sounding  
+#' instance are disregarded. Then, a turn goes from the start of the first 
+#' until the end of the last consecutive sounding instance of one speaker.
+#'
+#' @param df.speak Dataframe containing all information about the sounding instances,
+#'   can be created using [convertGrid()] and needs to contain the columns
+#'   `Dyad`, `Identifier`, `Turn`, `Start`, `End` and `Duration`.
+#' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
+#'
+#' @return Dataframe containing all turns. 
+#' 
+#' @import dplyr
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @export
+#' 
+
+detectTurns = function(df.speak, verbose = T) {
+  
+  checkDF(df.speak, c("Dyad", "Identifier", "Turn", "Start", "End", "Duration"))
+  
+  # ensure that the dataframe is properly arranged
+  df.speak = df.speak |>
+    arrange(Dyad, Start, End) |>
+    mutate(
+      engulfed = F
+    )
+  
+  # we need to get rid of all sounding instance that are completely engulfed in another
+  if (verbose) cat(format(Sys.time(), "%X %Z"), ": Remove engulfed sounds\n")
+  for (i in 2:nrow(df.speak)) {
+    if (sum((df.speak$Start[i] >= df.speak[(df.speak$Dyad == df.speak$Dyad[i]),]$Start) &  
+            (df.speak$End[i]   <= df.speak[(df.speak$Dyad == df.speak$Dyad[i]),]$End)) > 1 ) { 
+      df.speak$engulfed[i] = T
+    } 
+  }
+  df.speak = df.speak |> filter(engulfed == F) |> select(-c(engulfed))
+  
+  # identify turns: here, turns are defined as starting with the first sounding
+  # instance of a person until the end of the last sounding instance of this 
+  # person before a non-engulfed sounding instance of another person
+  if (verbose) cat(format(Sys.time(), "%X %Z"), ": Detect turns\n")
+  df.turns = df.speak |>
+    ungroup() |>
+    mutate(rown = row_number()) |>             # add row number
+    group_by(Dyad, Identifier) |>              # group by the person speaking
+    mutate(
+      tn = cumsum(c(TRUE, diff(rown) > 1))      # always keep the lowest row number of this turn as turn number
+    ) |>
+    ungroup() |>
+    mutate(
+      Turn = paste0(Identifier, "_", tn)        # add this turn number to the person speaking
+    ) |>
+    group_by(Dyad, Identifier, Turn) |>        # summarise by Dyad, Identifier and Turn
+    summarise(
+      StartTurn = min(Start, na.rm = T),        # take the start of the first sounding instance
+      EndTurn   = max(End, na.rm = T),          # take the end of the last sounding instance
+      DurTurn   = EndTurn - StartTurn           # compute duration of the turn
+    ) |> 
+    arrange(Dyad, StartTurn) |>
+    group_by(Dyad) |>
+    mutate(
+      Turn = row_number()
+    ) |>
+    group_by(Dyad) |>
+    mutate(
+      TTG = StartTurn - lag(EndTurn)
+    )
+  
+  return(df.turns)
   
 }
 
