@@ -20,7 +20,8 @@
 #' @param win Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.
 #' @param minFreq Numeric. The lower cutoff boundary of the targeted frequency band in Hz. Default is \code{1.5}.
 #' @param maxFreq Numeric. The upper cutoff boundary of the targeted frequency band in Hz. Default is \code{7}.
-#' @param winCentre Numeric. Seconds for detrending before zero crossings are extracted. Default is \code{0} translating to no detrending.
+#' @param winCentre Numeric. Seconds for detrending before zero crossings are extracted. 
+#' Default is `NULL` translating to same size as `win`. Setting it to \code{0} translates to no centring.
 #' @param winSmooth Numeric. Seconds for state smoothing. Default is \code{0} translating to no smoothing.
 #' @param ID.cols Character vector of hex colours. If there are two Identifiers, then two colours must be provided. Default is colourblind-friendly blue and dark green.
 #' @param legend Boolean. Switch for the legend. Default is `TRUE`.
@@ -36,7 +37,7 @@
 plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree, 
                             minFrame = NULL, maxFrame = NULL, 
                             minFreq = 1.5, maxFreq = 6.5, win = 2, 
-                            winCentre = 0, winSmooth = 0, 
+                            winCentre = NULL, winSmooth = 0, 
                             ID.cols = c("#1E88E5", "#004D40"),
                             legend = T) {
   

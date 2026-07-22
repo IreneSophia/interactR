@@ -35,7 +35,7 @@
 featHeadGestures = function(df, rs.path, colNodding, colShaking, fps, minDegree, 
                             suffix = "", 
                             win = 2, minFreq = 1.5, maxFreq = 6.5, 
-                            winCentre = 0, winSmooth = 0, 
+                            winCentre = NULL, winSmooth = 0, 
                             verbose = T, recompute = F, return = T) {
   
   # check rs.path

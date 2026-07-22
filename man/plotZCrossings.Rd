@@ -14,7 +14,7 @@ plotZCrossings(
   minFreq = 1.5,
   maxFreq = 6.5,
   win = 2,
-  winCentre = 0,
+  winCentre = NULL,
   winSmooth = 0,
   ID.cols = c("#1E88E5", "#004D40"),
   legend = T
@@ -46,7 +46,8 @@ Depends on the fps and the specific movement. Setting to negative number leads t
 
 \item{win}{Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.}
 
-\item{winCentre}{Numeric. Seconds for detrending before zero crossings are extracted. Default is \code{0} translating to no detrending}
+\item{winCentre}{Numeric. Seconds for detrending before zero crossings are extracted.
+Default is \code{NULL} translating to same size as \code{win}. Setting it to \code{0} translates to no centring.}
 
 \item{winSmooth}{Numeric. Seconds for state smoothing. Default is \code{0} translating to no smoothing.}
 
