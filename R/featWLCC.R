@@ -27,7 +27,7 @@
 #' @param method Character. Perform either peak extraction (`"peak"`) or window averages (`"mean"`) for observed WLCC. Default is `"peak"`.
 #' @param r2Z Logical. Applies Fisher's Z transformation over raw cross-correlation indexes. Default is `TRUE`.
 #' @param ABS Logical. Maps vectors using absolute values, filtering out directionality of WlCC. Default is `TRUE`.
-#' @param seed Universal flag supporting reproducibility. Takes an integer seed or `"random"`. Default is `"random"`.
+#' @param seed Character or Numeric. Seed supporting reproducibility. Takes an integer seed or `"random"`. Default is `"random"`.
 #' @param plot Logical. Generates PDF evaluation outputs in the output folder. Default is `TRUE`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.

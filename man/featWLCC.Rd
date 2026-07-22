@@ -77,7 +77,7 @@ If empty (is.null(rs.path) == TRUE), then nothing is saved.}
 
 \item{ABS}{Logical. Maps vectors using absolute values, filtering out directionality of WlCC. Default is \code{TRUE}.}
 
-\item{seed}{Universal flag supporting reproducibility. Takes an integer seed or \code{"random"}. Default is \code{"random"}.}
+\item{seed}{Character or Numeric. Seed supporting reproducibility. Takes an integer seed or \code{"random"}. Default is \code{"random"}.}
 
 \item{plot}{Logical. Generates PDF evaluation outputs in the output folder. Default is \code{TRUE}.}
 
