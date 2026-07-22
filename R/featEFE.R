@@ -8,7 +8,7 @@
 #' provided the column names are adjusted to fit the system described below.
 #'
 #' @param df Dataframe containing the facial data. Must contain the columns `Dyad`, 
-#'   `Identifier` and `Frame`, as well as columns with ARKit52 values. 
+#'   `Identifier`, `Time` and `Frame`, as well as columns with ARKit52 values. 
 #'   Specifically, the algorithm uses the following patterns (`.*` denotes sides):
 #'   `"Facial_BrowDown.*"`, `"Facial_.*Eye_Squint"`, `"Facial_.*Eye_Wide"`, 
 #'   `"Facial_MouthPucker"`, `"Facial_MouthFrown.*"`, `"Facial_MouthLowerDown.*"`, 
@@ -56,7 +56,7 @@ featEFE = function(df, rs.path, suffix = "", verbose = T,
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Preprocessing facial expressions\n")
       # preprocessing facial expressions
       df.face = df |> 
-        select(Dyad, Identifier, Frame, any_of(c('Time', 'Timestamp', 'Partner', 'Actor', 'Communication')),
+        select(Dyad, Identifier, Time, Frame, any_of(c('Time', 'Timestamp', 'Partner', 'Actor', 'Communication')),
                starts_with("Facial_")) |>
         # code as emotions following Aldenhoven et al. (2026, Sensors)
         mutate(

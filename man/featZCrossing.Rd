@@ -23,7 +23,7 @@ featZCrossing(
 }
 \arguments{
 \item{df}{Dataframe. The dataset containing the variables to be processed. Must explicitly feature columns \code{Dyad},
-\code{Identifier}, \code{Frame}, all columns contained in \code{colnames}.}
+\code{Identifier}, \code{Frame}, \code{Timestamp}, \code{Time} as well as all columns contained in \code{colnames}.}
 
 \item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}
 

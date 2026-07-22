@@ -161,7 +161,8 @@ rotDiff = function(x, y) {
 #' Preprocesses spatial head trajectory streams. Rotational paths are scrubbed of wrap-around geometric circularity 
 #' or baseline-adjusted using corresponding body segments. Circularity corrected and translational trajectories are detrended.
 #'
-#' @param df Dataframe containing head coordinate streams. Requires tracking coordinates alongside core columns `Dyad`, `Identifier` and `Frame`.
+#' @param df Dataframe containing head coordinate streams. Requires tracking coordinates alongside 
+#' core columns `Dyad`, `Identifier`, `Time`, `Timestamp` and `Frame`.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
 #'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
 #' @param rotnames Character vector. String labels identifying target rotational columns.
@@ -210,7 +211,7 @@ preproHead = function(df, rs.path, rotnames, tranames, suffix = '',
     if (performFixCirc) {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Fixing circularity\n")
       df = df |>
-        group_by(Dyad, Identifier) |>
+        group_by(Dyad, Identifier, Time) |>
         # fix circularity based on the algorithm of Hale et al. (2020),
         # default threshold is 270
         mutate(across(all_of(rotnames), fixCirc, .names = "{.col}_fixCirc")) |>
@@ -228,7 +229,7 @@ preproHead = function(df, rs.path, rotnames, tranames, suffix = '',
     fixnames = paste0(rotnames, "_fixCirc")
     df = df |>
       # de-trended translational and fixCirc values by subtracting mean value
-      group_by(Dyad, Identifier) |>
+      group_by(Dyad, Identifier, Time) |>
       mutate(across(all_of(c(tranames, fixnames)), ~ .x - mean(.x), .names = "{.col}_detrended")) |>
       ungroup() |> arrange(Dyad, Identifier, Frame)
     

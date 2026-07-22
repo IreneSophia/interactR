@@ -20,7 +20,7 @@
 #' `[column]_rel`, and `[column]_smooth`).
 #'
 #' @param df Dataframe. The dataset containing the variables to be processed. Must explicitly feature columns `Dyad`, 
-#'   `Identifier`, `Frame`, all columns contained in `colnames`. 
+#'   `Identifier`, `Frame`, `Timestamp`, `Time` as well as all columns contained in `colnames`. 
 #' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param colnames Character vector. The exact name or names of the column(s) in \code{df} from which
 #'   to extract zero-crossing features. 
@@ -75,12 +75,13 @@ featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "",
     
     # focus on relevant columns 
     df = df |>
-      select(Dyad, Identifier, Frame, Timestamp, any_of(c("Speaking", "Listening", "Communication", colnames)))
+      select(Dyad, Identifier, Frame, Time, Timestamp, 
+             any_of(c("Speaking", "Listening", "Communication", colnames)))
     
     # check whether detrending
     if (winCentre > 0) {
       df = df |>
-        group_by(Dyad, Identifier) |> arrange(Dyad, Identifier, Frame) |>
+        group_by(Dyad, Identifier, Time) |> arrange(Dyad, Identifier, Frame) |>
         mutate(
           # detrend data with local mean (1 second window)
           across(.cols = all_of(colnames), .fns = list(centred   = ~ .x - aggSlide(.x, mean, fps * winCentre)),
@@ -91,7 +92,7 @@ featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "",
     
     # further preprocess the colnames
     df = df |>
-      group_by(Dyad, Identifier) |> arrange(Dyad, Identifier, Frame) |>
+      group_by(Dyad, Identifier, Time) |> arrange(Dyad, Identifier, Frame) |>
       mutate(
         # compute zero-crossings and downstream filtering on data
         across(
@@ -143,7 +144,7 @@ featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "",
 #' absolute and one relative value per Identifier per time series. 
 #'
 #' @param df Dataframe. The dataset containing the variables to be processed, created by \code{\link{featZCrossing}}. 
-#'   Must explicitly feature columns `Dyad`, `Identifier`, `Frame`, all columns contained in `colnames`. 
+#'   Must explicitly feature columns `Dyad`, `Identifier`, `Frame`, `Time`, all columns contained in `colnames`. 
 #'   If `Communication` is a column, zero crossings are also aggregated based on its classification. 
 #' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param colnames Character vector. The exact name or names of the column(s) in \code{df} from which
@@ -185,7 +186,7 @@ aggZCrossing = function(df, rs.path, colnames, suffix = "",
     
     # overall ZC information
     df.out = df |> 
-      group_by(Dyad, Identifier) |>
+      group_by(Dyad, Identifier, Time) |>
       mutate(
         # get the total number of frames
         Frames.total = n()
@@ -193,31 +194,31 @@ aggZCrossing = function(df, rs.path, colnames, suffix = "",
       # get rid of NAs
       drop_na(all_of(colnames)) |>
       # aggregate the information
-      group_by(Dyad, Identifier, Frames.total) |>
+      group_by(Dyad, Identifier, Time, Frames.total) |>
       summarise(
         across(matches(colnames), sum)
       ) |> ungroup() |>
       mutate(
         across(matches(colnames), ~ .x * 100/Frames.total, .names = "RelativeZC_{.col}")
-      ) |> select(Dyad, Identifier, Frames.total, matches(colnames))
+      ) |> select(Dyad, Identifier, Time, Frames.total, matches(colnames))
     
     # potentially add the values depending on Communication
     if ("Communication" %in% colnames(df)) {
       df.out = merge(
         df.out, 
         df |> 
-          group_by(Dyad, Identifier) |>
+          group_by(Dyad, Identifier, Time) |>
           mutate(
             # get the total number of frames
             Frames.total = n()
           ) |>
-          group_by(Dyad, Identifier, Communication, Frames.total) |>
+          group_by(Dyad, Identifier, Time, Communication, Frames.total) |>
           summarise(
             across(matches(colnames), sum)
           ) |> ungroup() |>
           mutate(
             across(matches(colnames), ~ .x * 100/Frames.total, .names = "RelativeZC_{.col}")
-          ) |> select(Dyad, Identifier, Frames.total, Communication, matches(colnames)) |>
+          ) |> select(Dyad, Identifier, Time, Frames.total, Communication, matches(colnames)) |>
           tidyr::pivot_wider(names_from = Communication, values_from = matches(colnames),
                              names_glue = "{.value}_{Communication}")
       )

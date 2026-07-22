@@ -16,7 +16,7 @@ featDwell(
 }
 \arguments{
 \item{df}{Dataframe containing tracking data streams. Must explicitly feature columns \code{Dyad},
-\code{Identifier}, \code{Frame}, either \code{AOI.left} and \code{AOI.right} or \code{AOI}.}
+\code{Identifier}, \code{Frame}, \code{Time}, either \code{AOI.left} and \code{AOI.right} or \code{AOI}.}
 
 \item{ls.AOI}{List of character vectors. When specified, values isolate targets for AOI classification,
 automatically re-coding undeclared targets to \code{"None"}.

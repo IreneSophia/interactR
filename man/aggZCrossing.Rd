@@ -16,7 +16,7 @@ aggZCrossing(
 }
 \arguments{
 \item{df}{Dataframe. The dataset containing the variables to be processed, created by \code{\link{featZCrossing}}.
-Must explicitly feature columns \code{Dyad}, \code{Identifier}, \code{Frame}, all columns contained in \code{colnames}.
+Must explicitly feature columns \code{Dyad}, \code{Identifier}, \code{Frame}, \code{Time}, all columns contained in \code{colnames}.
 If \code{Communication} is a column, zero crossings are also aggregated based on its classification.}
 
 \item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}

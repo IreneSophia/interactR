@@ -8,7 +8,7 @@ featEFE(df, rs.path, suffix = "", verbose = T, recompute = F, return = F)
 }
 \arguments{
 \item{df}{Dataframe containing the facial data. Must contain the columns \code{Dyad},
-\code{Identifier} and \code{Frame}, as well as columns with ARKit52 values.
+\code{Identifier}, \code{Time} and \code{Frame}, as well as columns with ARKit52 values.
 Specifically, the algorithm uses the following patterns (\verb{.*} denotes sides):
 \code{"Facial_BrowDown.*"}, \code{"Facial_.*Eye_Squint"}, \code{"Facial_.*Eye_Wide"},
 \code{"Facial_MouthPucker"}, \code{"Facial_MouthFrown.*"}, \code{"Facial_MouthLowerDown.*"},

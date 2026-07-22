@@ -16,7 +16,7 @@ addCommunication(
 }
 \arguments{
 \item{df}{Dataframe containing the tracked data. Must contain the columns \code{Dyad},
-\code{Frame} and \code{Timestamp} (in POSIX format).}
+\code{Time}, \code{Frame} and \code{Timestamp} (in POSIX format).}
 
 \item{df.speak}{Dataframe containing all information about the sounding instances,
 typically created using \code{\link[=convertGrid]{convertGrid()}}.

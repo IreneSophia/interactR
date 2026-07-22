@@ -271,7 +271,7 @@ convertGrid = function(ls.files, rs.path, suffix = '', prefix = '', extract = T,
 #' be dynamically renamed with the suffix `"_Original"`.
 #'
 #' @param df Dataframe containing the tracked data. Must contain the columns `Dyad`, 
-#'   `Frame` and `Timestamp` (in POSIX format).
+#'   `Time`, `Frame` and `Timestamp` (in POSIX format).
 #' @param df.speak Dataframe containing all information about the sounding instances,
 #'   typically created using [convertGrid()]. 
 #'   Must contain the columns `Dyad`, `Identifier`, `Start`, and `End` (both in seconds).
@@ -322,8 +322,8 @@ addCommunication = function(df, df.speak, rs.path, suffix = '',
     
     # add needed information
     df.dyad = df |> ungroup() |>
-      select(Dyad, Frame, Timestamp) |> distinct() |>
-      group_by(Dyad) |>
+      select(Dyad, Time, Frame, Timestamp) |> distinct() |>
+      group_by(Dyad, Time) |>
       mutate(
         # add the Timepoint based on the Timestamp
         Timepoint = Timestamp - min(Timestamp),
@@ -363,7 +363,7 @@ addCommunication = function(df, df.speak, rs.path, suffix = '',
     
     # fill in the speaking time between startFrame and endFrame
     df.dyad = df.dyad |>
-      group_by(Dyad) |>
+      group_by(Dyad, Time) |>
       tidyr::fill(ends_with("speaking")) |>
       tidyr::replace_na(list(actor1speaking = F, actor0speaking = F))
     
@@ -373,11 +373,11 @@ addCommunication = function(df, df.speak, rs.path, suffix = '',
               df.dyad |> rename(Identifier = actor0, 
                                Speaking = actor0speaking,
                                Listening = actor1speaking) |>
-                select(Dyad, Identifier, Frame, Timepoint, Speaking, Listening),
+                select(Dyad, Time, Identifier, Frame, Timepoint, Speaking, Listening),
               df.dyad |> rename(Identifier = actor1, 
                                  Speaking = actor1speaking,
                                  Listening = actor0speaking) |>
-                select(Dyad, Identifier, Frame, Timepoint, Speaking, Listening)),
+                select(Dyad, Time, Identifier, Frame, Timepoint, Speaking, Listening)),
             all.x = T) |>
       mutate(
         # merge speaking and listening columns

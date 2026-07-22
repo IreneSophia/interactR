@@ -18,7 +18,8 @@ preproHead(
 )
 }
 \arguments{
-\item{df}{Dataframe containing head coordinate streams. Requires tracking coordinates alongside core columns \code{Dyad}, \code{Identifier} and \code{Frame}.}
+\item{df}{Dataframe containing head coordinate streams. Requires tracking coordinates alongside
+core columns \code{Dyad}, \code{Identifier}, \code{Time}, \code{Timestamp} and \code{Frame}.}
 
 \item{rs.path}{Character. Path to the directory where the output files will be saved.
 If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk.}

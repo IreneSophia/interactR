@@ -5,7 +5,7 @@
 #' AOIs can be captured separately for eyes in `AOI.left` and `AOI.right` or in one column `AOI`.
 #'
 #' @param df Dataframe containing tracking data streams. Must explicitly feature columns `Dyad`, 
-#'   `Identifier`, `Frame`, either `AOI.left` and `AOI.right` or `AOI`.
+#'   `Identifier`, `Frame`, `Time`, either `AOI.left` and `AOI.right` or `AOI`.
 #' @param ls.AOI List of character vectors. When specified, values isolate targets for AOI classification, 
 #'   automatically re-coding undeclared targets to `"None"`. 
 #'   If empty (`is.null(ls.AOI) == TRUE`), existing classification is used.
@@ -48,7 +48,7 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
     
     # create an Actor column containing actor0 and actor1
     df = df |>
-      group_by(Dyad, Identifier) |>
+      group_by(Dyad, Identifier, Time) |>
       mutate(
         Actor = if_else(gsub("(.+)-.*", "\\1", Dyad) == Identifier,
                         "actor0", "actor1")
@@ -87,14 +87,14 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
     
     # add total number of frames
     df.dwell = df.dwell |>
-      group_by(Dyad, Identifier) |>
+      group_by(Dyad, Identifier, Time) |>
       mutate(
         Frames.total = n()
       ) |> ungroup()
     
     # aggregate the dwell times
     df.dwell.agg = df.dwell |>
-      group_by(Dyad, AOI, Identifier, Frames.total) |>
+      group_by(Dyad, Time, AOI, Identifier, Frames.total) |>
       summarise(
         AOI.frames = n()
       ) |> ungroup() |>
@@ -108,7 +108,7 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
       df.dwell.agg = merge(
         df.dwell.agg, 
         df.dwell |> 
-          group_by(Dyad, AOI, Identifier, Communication, Frames.total) |>
+          group_by(Dyad, Time, AOI, Identifier, Communication, Frames.total) |>
           summarise(
             AOI.frames = n()
           ) |> ungroup() |>
@@ -122,11 +122,11 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
     
     # joint attention 
     df.dwell.joint = df.dwell |>
-      select(Dyad, Actor, Frame, AOI, Frames.total) |> filter(AOI != "None") |>
+      select(Dyad, Time, Actor, Frame, AOI, Frames.total) |> filter(AOI != "None") |>
       tidyr::pivot_wider(names_from = Actor, values_from = AOI) |>
       filter(actor0 == actor1) |>
       rename(AOI = actor0) |>
-      group_by(Dyad, AOI, Frames.total) |>
+      group_by(Dyad, Time, AOI, Frames.total) |>
       summarise(
         value = n()*100
       ) |> mutate(value = value/Frames.total) |>
