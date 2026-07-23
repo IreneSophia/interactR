@@ -27,7 +27,7 @@
 extractData = function(df.info, rs.path, timezone, suffix = '', anonymise = F, 
                        verbose = T, recompute = F, return = T) {
   
-  checkDF(df, c("Filename", "Time"))
+  checkDF(df.info, c("Filename", "Time"))
   
   # check whether the data should be saved
   if (is.null(rs.path)) {
