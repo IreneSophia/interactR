@@ -34,10 +34,8 @@
 #' @export
 
 compWTC = function(df, rs.path, colname, fps, order = 8, suffix = "", 
-                   nsim = 400, pseudoDyad = F, nDyads = NULL, 
+                   nsim = 400, pseudoDyad = F, nDyads = NULL, seed = "random",
                    verbose = T, recompute = F, return = T) {
-  
-  
   
   # get a random seed
   if (!is.numeric(seed)) {

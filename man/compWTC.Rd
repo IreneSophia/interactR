@@ -14,6 +14,7 @@ compWTC(
   nsim = 400,
   pseudoDyad = F,
   nDyads = NULL,
+  seed = "random",
   verbose = T,
   recompute = F,
   return = T
@@ -37,6 +38,8 @@ For each Dyad, there must be exactly two Identifiers in the data.}
 \item{pseudoDyad}{Logical. Flags whether to generate pseudo-WTC benchmarks using dyad shuffling
 instead of observed WTC Default is \code{FALSE}.}
 
+\item{seed}{Character or Numeric. Seed supporting reproducibility. Takes an integer seed or \code{"random"}. Default is \code{"random"}.}
+
 \item{verbose}{Logical. Whether progress and output are printed to the console. Default is \code{TRUE}.}
 
 \item{recompute}{Logical. Whether existing data on disk should be recomputed and overwritten. Default is \code{FALSE}.}
@@ -47,8 +50,6 @@ instead of observed WTC Default is \code{FALSE}.}
 
 \item{nDyad}{Numeric. Total number of synthetic dyad simulations to execute when \code{pseudoDyad = TRUE}.
 Default is \code{NULL} which is converted into the number of real dyads.}
-
-\item{seed}{Character or Numeric. Seed supporting reproducibility. Takes an integer seed or \code{"random"}. Default is \code{"random"}.}
 }
 \value{
 If \code{return = TRUE}, returns dataframe with the results. If provided, the dataframe and the full list are saved as rds to \code{rs.path}.

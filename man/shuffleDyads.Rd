@@ -21,7 +21,7 @@ Time value. Default is \code{TRUE} corresponding to the exclusion.}
 is \code{FALSE}, allowing left Identifiers to be assigned to right Identifier
 in the pseudo-dyads.}
 
-\item{nsim}{Numeric. Number of pseudo-dyads to be returned. Default is \code{100}.}
+\item{nsim}{Numeric. Maximum number of pseudo-dyads to be returned. Default is \code{100}.}
 }
 \value{
 Returns a dataframe with pseudo-dyads, including the information of

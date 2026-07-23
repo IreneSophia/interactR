@@ -35,7 +35,7 @@ checkDF = function(df, colnames) {
 #' @param inOrder Logical. Flags whether to keep assignment of Identifiers. Default
 #'   is `FALSE`, allowing left Identifiers to be assigned to right Identifier
 #'   in the pseudo-dyads.
-#' @param nsim Numeric. Number of pseudo-dyads to be returned. Default is `100`.
+#' @param nsim Numeric. Maximum number of pseudo-dyads to be returned. Default is `100`.
 #'
 #' @return Returns a dataframe with pseudo-dyads, including the information of
 #'   `Dyad`, now consisting of both original dyad IDs, `Identifier`, `Time` as well as
@@ -114,7 +114,7 @@ shuffleDyads = function(df, seed = NULL, considerTime = T, inOrder = F, nsim = 1
            Time = as.POSIXct(Time, tz = timezone))
   
   # select nsim random dyads
-  df.out = df.out[sample.int(nrow(df.out), nsim, replace = F),]
+  if (nsim < nrow(df.out)) df.out = df.out[sample.int(nrow(df.out), nsim, replace = F),]
   
   return(df.out)
   
