@@ -16,8 +16,10 @@
 #' @param nsim. Numeric. Number of Monte Carlo randomisations for computing WTC. Default is `400`.
 #' @param pseudoDyad Logical. Flags whether to generate pseudo-WTC benchmarks using dyad shuffling 
 #'   instead of observed WTC Default is `FALSE`.
-#' @param nDyad Numeric. Total number of synthetic dyad simulations to execute when `pseudoDyad = TRUE`. 
+#' @param nDyads Numeric. Total number of synthetic dyad simulations to execute when `pseudoDyad = TRUE`. 
 #'   Default is `NULL` which is converted into the number of real dyads.
+#' @param shuffleMethod Character. Either `"Identifier"` or `"Dyad"`. If the first, then 
+#'    the function [shuffleIdentifier()] is used, otherwise [shuffleDyads()].
 #' @param seed Character or Numeric. Seed supporting reproducibility. Takes an integer seed or `"random"`. Default is `"random"`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -34,7 +36,8 @@
 #' @export
 #' 
 extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "", 
-                      nsim = 400, pseudoDyad = F, nDyads = NULL, seed = "random",
+                      nsim = 400, pseudoDyad = F, nDyads = NULL, 
+                      shuffleMethod = "Identifier", seed = "random",
                       verbose = T, recompute = F, return = T) {
   
   # get a random seed
@@ -74,16 +77,18 @@ extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
     # if pseudoDyad, then create a random list of combinations
     if (pseudoDyad) {
       # check if nDyad needs to be set
-      if (is.null(nDyad)) nDyad = length(unique(df$Dyad))
+      if (is.null(nDyads)) nDyads = length(unique(df$Dyad))
       # get a list of shuffled dyads: either out of all options
-      if (nDyads > length(unique(df$Dyad))) {
+      if (shuffleMethod == "Dyad") {
         # randomly draw from all possible options if large nDyads
         df.dyad = shuffleDyads(df |> select(Dyad, Time, Identifier) |> distinct(),
-                               seed = seed, nsim = nDyad)
-      } else {
+                               seed = seed, nsim = nDyads)
+      } else if (shuffleMethod == "Identifier") {
         # shuffle the right Identifier
         df.dyad = shuffleIdentifier(df |> select(Dyad, Time, Identifier) |> distinct(), 
-                                    seed = seed, side = "right", nsim = nDyad)
+                                    seed = seed, side = "right", nsim = nDyads)
+      } else {
+        stop("shuffleMethod must be 'Identifier' or 'Dyad'.")
       }
     } else {
       # get a list of real dyads - one row per dyad same as with pseudo

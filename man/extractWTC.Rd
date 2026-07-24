@@ -14,6 +14,7 @@ extractWTC(
   nsim = 400,
   pseudoDyad = F,
   nDyads = NULL,
+  shuffleMethod = "Identifier",
   seed = "random",
   verbose = T,
   recompute = F,
@@ -38,6 +39,12 @@ For each Dyad, there must be exactly two Identifiers in the data.}
 \item{pseudoDyad}{Logical. Flags whether to generate pseudo-WTC benchmarks using dyad shuffling
 instead of observed WTC Default is \code{FALSE}.}
 
+\item{nDyads}{Numeric. Total number of synthetic dyad simulations to execute when \code{pseudoDyad = TRUE}.
+Default is \code{NULL} which is converted into the number of real dyads.}
+
+\item{shuffleMethod}{Character. Either \code{"Identifier"} or \code{"Dyad"}. If the first, then
+the function \code{\link[=shuffleIdentifier]{shuffleIdentifier()}} is used, otherwise \code{\link[=shuffleDyads]{shuffleDyads()}}.}
+
 \item{seed}{Character or Numeric. Seed supporting reproducibility. Takes an integer seed or \code{"random"}. Default is \code{"random"}.}
 
 \item{verbose}{Logical. Whether progress and output are printed to the console. Default is \code{TRUE}.}
@@ -47,9 +54,6 @@ instead of observed WTC Default is \code{FALSE}.}
 \item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
 
 \item{nsim.}{Numeric. Number of Monte Carlo randomisations for computing WTC. Default is \code{400}.}
-
-\item{nDyad}{Numeric. Total number of synthetic dyad simulations to execute when \code{pseudoDyad = TRUE}.
-Default is \code{NULL} which is converted into the number of real dyads.}
 }
 \value{
 If \code{return = TRUE}, returns list with the results. If provided, the full list is saved as rds to \code{rs.path}.
