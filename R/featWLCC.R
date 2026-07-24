@@ -327,7 +327,7 @@ featWLCC = function(df, rs.path, colname, featname,
           lag == 0 ~ "simultaneous")
       )
     # save the resulting dataframe
-    if (!is.null(rs.path)) saveRDS(df.ccf |> ungroup(), paste0(fl.shuffle, "_df.rds"))
+    if (!is.null(rs.path)) saveRDS(df.ccf |> ungroup(), paste0(fl.wlcc, "_df.rds"))
     
     # choose which pseudoWLCC dataframes to use for lag comparison
     if (all(c("df.pseudoDyad", "df.pseudoShuff") %in% ls())) {
