@@ -55,16 +55,14 @@ Default is \code{NULL} which is converted into the number of real dyads.}
 If \code{return = TRUE}, returns dataframe with the results. If provided, the dataframe and the full list are saved as rds to \code{rs.path}.
 }
 \description{
-Uses the \code{\link{biwavelet::wtc}} function to compute the wavelet coherence
-for a given column for a dyad. Optionally creates pseudo coherence based
+Uses the \code{\link{biwavelet::wtc}} function to compute the Wavelet Coherence
+and Phase for a given column for a dyad. Optionally creates pseudo coherence based
 on Dyad shuffling. Observed and pseudo coherence can be compared using \verb{[!MISSING]}
 }
 \references{
 Issartel et al. (2006): A Practical Guide to Time—Frequency Analysis
 in the Study of Human Motor Behavior: The Contribution of Wavelet Transform,
 Journal of Motor Behavior, 38(2), 139-159.
-Veleda, D., Montagne, R., & Araujo, M. (2012). Cross-wavelet bias corrected
-by normalizing scales. Journal of Atmospheric and Oceanic Technology, 29(9), 1401-1408.
 }
 \author{
 Irene Sophia Plank (\email{10planki@gmail.com})

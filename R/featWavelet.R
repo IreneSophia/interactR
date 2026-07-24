@@ -1,7 +1,7 @@
 #' Compute Wavelet Coherence for Time-course Data
 #'
-#' Uses the \code{\link{biwavelet::wtc}} function to compute the wavelet coherence
-#' for a given column for a dyad. Optionally creates pseudo coherence based 
+#' Uses the \code{\link{biwavelet::wtc}} function to compute the Wavelet Coherence
+#' and Phase for a given column for a dyad. Optionally creates pseudo coherence based 
 #' on Dyad shuffling. Observed and pseudo coherence can be compared using `[!MISSING]`
 #'
 #' @param df Dataframe. The dataset containing the variables to be processed. 
@@ -28,10 +28,9 @@
 #' @references Issartel et al. (2006): A Practical Guide to Time—Frequency Analysis 
 #'    in the Study of Human Motor Behavior: The Contribution of Wavelet Transform, 
 #'    Journal of Motor Behavior, 38(2), 139-159.
-#'    Veleda, D., Montagne, R., & Araujo, M. (2012). Cross-wavelet bias corrected 
-#'    by normalizing scales. Journal of Atmospheric and Oceanic Technology, 29(9), 1401-1408.
 #' @import dplyr
 #' @export
+#' 
 
 compWTC = function(df, rs.path, colname, fps, order = 8, suffix = "", 
                    nsim = 400, pseudoDyad = F, nDyads = NULL, seed = "random",
@@ -68,13 +67,11 @@ compWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Exctracting WTC features from ", colname, "\n")
     
     # check whether all columns in dataframe
-    cols = c("Dyad", "Identifier", "Time", colname)
+    cols = c("Dyad", "Identifier", "Time", "Frame", colname)
     checkDF(df, cols)
     
-    # check if either Frame or Timestamp
-    if (!("Frame" %in% colnames(df)) & !("Timestamp" %in% colnames(df))) {
-      stop("Dataframe needs to contain either Timestamp or Frame")
-    }
+    # create df.out
+    df.out = data.frame()
     
     # if pseudoDyad, then create a random list of combinations
     if (pseudoDyad) {
@@ -84,20 +81,22 @@ compWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
       if (nDyads > length(unique(df$Dyad))) {
         # randomly draw from all possible options if large nDyads
         df.dyad = shuffleDyads(df |> select(Dyad, Time, Identifier) |> distinct(),
-                     seed = seed, nsim = nDyad)
+                               seed = seed, nsim = nDyad)
       } else {
         # shuffle the right Identifier
         df.dyad = shuffleIdentifier(df |> select(Dyad, Time, Identifier) |> distinct(), 
                                     seed = seed, side = "right", nsim = nDyad)
       }
     } else {
-      # get a list of real dyads
+      # get a list of real dyads - one row per dyad same as with pseudo
       df.dyad = df |>
-        select(Dyad, Time, Identifier) |> 
+        select(Dyad, Time) |> 
         distinct() |>
         mutate(
-          side  = if_else(gsub("(.+)-.*", "\\1", Dyad) == Identifier, "left", "right")
-        )
+          left_Identifier  = gsub("(.+)-.*", "\\1", Dyad),
+          right_Identifier  = gsub("(.+)-.*", "\\1", Dyad),
+          left_Time = Time
+        ) |> rename(right_Time = Time)
     }
     
     # set the seed
@@ -111,57 +110,36 @@ compWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
     df = df |>
       select(all_of(cols), any_of(c("Frame", "Timestamp")))
     
-    # extract the timeseries from either Timestamp or Frame + fps
-    if ("Timestamp" %in% colnames(df)) {
-      df = df |> group_by(Dyad, Identifier, Time) |> 
-        arrange(Timestamp) |>
-        mutate(start = min(Timestamp), 
-               Timecourse = Timestamp - start,
-               Duration = Timecourse - lag(Timecourse)) |>
-        select(-start)
-    } else {
-      df = df |> group_by(Dyad, Identifier, Time) |> 
-        arrange(Frame) |>
-        mutate(Timecourse = Frame/fps,
-               Duration   = 1/fps)
-    }
+    # extract the timeseries from Frame + fps
+    df = df |> group_by(Dyad, Identifier, Time) |> 
+      arrange(Frame) |>
+      mutate(Timecourse = Frame/fps,
+             Duration   = 1/fps)
     
     # loop through the Dyads
-    ls.dyads = unique(df.dyad$Dyad)
-    for (i in 1:length(ls.dyads)) {
+    for (i in 1:nrow(df.dyad)) {
       
-      # get the info for this dyad
-      ID.left = df.dyad |> 
-        filter(Dyad == ls.dyads[i] & side == "left") |> pull(Identifier)
-      t.left  = df.dyad |> 
-        filter(Dyad == ls.dyads[i] & side == "left") |> pull(Time)
-      ID.right = df.dyad |> 
-        filter(Dyad == ls.dyads[i] & side == "right") |> pull(Identifier)
-      t.right  = df.dyad |> 
-        filter(Dyad == ls.dyads[i] & side == "right") |> pull(Time)
-      
-      # check if two valid IDs
-      if ((nchar(ID.right) == 0) | (nchar(ID.left) == 0)) stop("This function requires exactly two Identifiers per Dyad.")
-      # check if two valid times
-      if ((nchar(t.right) == 0) | (nchar(t.left) == 0)) stop("One Identifier is missing a valid Time.")
+      # check whether all information here
+      if (sum(is.na(df.dyad[i,])) > 0) stop("Dyad ", df.dyad$Dyad[i], " is missing crucial information (Dyad, Time or Identifier)")
       
       # check if time is the same or if it is pseudo - both cases take left time
-      if ((t.left == t.right) | pseudoDyad) {
-        t = t.left
+      if ((df.dyad$left_Time[i] == df.dyad$right_Time[i]) | pseudoDyad) {
+        t = df.dyad$left_Time[i]
       } else {
         stop("Different Time without dyad shuffling!")
       }
       
-      # get the timestep
-      dt = mean(df |> filter(Dyad == ls.dyads[i]) |> pull(Duration), na.rm = T)
+      # get the average timestep in seconds
+      dt = as.numeric(mean(df |> filter(Dyad == df.dyad$Dyad[i] & Time == t) |> pull(Duration), na.rm = T),
+                      unit = "secs")
       
       # extract data into a vector
-      data1 = df |> filter(Identifier == ID.left  & Time == t.left)  |> arrange(Timecourse) |> pull(colname)
-      data2 = df |> filter(Identifier == ID.right & Time == t.right) |> arrange(Timecourse) |> pull(colname)
+      data1 = df |> filter(Identifier == df.dyad$left_Identifier[i]  & Time == df.dyad$left_Time[i])  |> arrange(Timecourse) |> pull(colname)
+      data2 = df |> filter(Identifier == df.dyad$right_Identifier[i] & Time == df.dyad$right_Time[i]) |> arrange(Timecourse) |> pull(colname)
       
       # extract the time into a vector
-      time1 = df |> filter(Identifier == ID.left  & Time == t.left)  |> arrange(Timecourse) |> pull(Timecourse)
-      time2 = df |> filter(Identifier == ID.right & Time == t.right) |> arrange(Timecourse) |> pull(Timecourse)
+      time1 = df |> filter(Identifier == df.dyad$left_Identifier[i]  & Time == df.dyad$left_Time[i])  |> arrange(Timecourse) |> pull(Timecourse)
+      time2 = df |> filter(Identifier == df.dyad$right_Identifier[i] & Time == df.dyad$right_Time[i]) |> arrange(Timecourse) |> pull(Timecourse)
       
       # configuration for wavelet transformation
       S0 = 2 * dt # smallest scale, set here to Nyquist limit
@@ -179,25 +157,28 @@ compWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
                            param = order)
       
       # convert wavelet coherence into dataframe
-      df.out = data.frame(wtc[["rsq"]]) |>
-        mutate(Period = wtc[["period"]]) |>
-        tidyr::pivot_longer(cols = starts_with("X"), values_to = "Rsq") |>
-        merge(data.frame(wtc[["phase"]]) |>
-                mutate(Period = wtc[["period"]]) |>
-                tidyr::pivot_longer(cols = starts_with("X"), values_to = "Phase")) |>
-        arrange(name) |>
-        mutate(
-          Timecourse = rep(wtc[["t"]], each = length(wtc[["period"]])),
-          COI   = rep(wtc[["coi"]], each = length(wtc[["period"]])),
-          Frame = as.numeric(gsub("X", "", name)),
-          Frequency = 1 / Period,
-          WithinCOI = Period < COI 
-        ) |> select(-name) |>
-        mutate(
-          Dyad = ls.dyads[i],
-          Time = t,
-          pseudoDyad = pseudoDyad
-        )
+      df.out = rbind(
+        df.out, 
+        data.frame(wtc[["rsq"]]) |>
+          mutate(Period = wtc[["period"]]) |>
+          tidyr::pivot_longer(cols = starts_with("X"), values_to = "Rsq") |>
+          merge(data.frame(wtc[["phase"]]) |>
+                  mutate(Period = wtc[["period"]]) |>
+                  tidyr::pivot_longer(cols = starts_with("X"), values_to = "Phase")) |>
+          arrange(name) |>
+          mutate(
+            Timecourse = rep(wtc[["t"]], each = length(wtc[["period"]])),
+            COI   = rep(wtc[["coi"]], each = length(wtc[["period"]])),
+            Frame = as.numeric(gsub("X", "", name)),
+            Frequency = 1 / Period,
+            WithinCOI = Period < COI 
+          ) |> select(-name) |>
+          mutate(
+            Dyad = df.dyad$Dyad[i],
+            Time = t,
+            pseudoDyad = pseudoDyad
+          )
+      )
       
     }
     
