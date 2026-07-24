@@ -243,7 +243,10 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
     
     for (i in 1:length(ls)) {
       # check whether the object in the list is the target - if not skip
-      if (class(ls.pseudo[[i]]) != "biwavelet") warning("Skipping ", names(ls)[i], ": not biwavelet.") next
+      if (class(ls.pseudo[[i]]) != "biwavelet") {
+        warning("Skipping ", names(ls)[i], ": not biwavelet.") 
+        next
+      }
       # get Dyad and Time
       Time = as.POSIXct(gsub(".*_", "", names(ls)[i]))
       Dyad = gsub("_.*", "", names(ls)[i])
