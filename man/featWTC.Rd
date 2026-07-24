@@ -23,10 +23,10 @@ featWTC(
 \item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}
 
 \item{phaseLimits}{Numeric. Frequency limits in Hz for the Phase Bins. All but the last value specify the included lower limit.
-The last value is the excluded maximum period.}
+The last value is the excluded maximum period. Must include at least two values.}
 
 \item{rsqLimits}{Numeric. Frequency limits in Hz for the Coherence Bins. All but the last value specify the included lower limit.
-The last value is the excluded maximum period.}
+The last value is the excluded maximum period. Must include at least two values.}
 
 \item{withinCOI}{Logical. Whether only values inside the COI should be included. Defalut is \code{TRUE}.}
 
@@ -44,7 +44,9 @@ The last value is the excluded maximum period.}
 If \code{return = TRUE}, returns dataframe. If provided, the dataframe is saved as rds to \code{rs.path}.
 }
 \description{
-Takes the dataframe created by \code{\link[=convertWTC]{convertWTC()}} and aggregates the results in prespecified Bins.
+Takes the dataframe created by \code{\link[=convertWTC]{convertWTC()}} and aggregates the results in prespecified Bins
+and across all Bins within the specified limits. Limits may differ between Rsq and Phase.
+Values outside COI and not significant values can be excluded.
 }
 \author{
 Irene Sophia Plank (\email{10planki@gmail.com})

@@ -293,14 +293,16 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
 
 #' Aggregate a dataframe containing the results of WTC to extract relevant features 
 #'
-#' Takes the dataframe created by [convertWTC()] and aggregates the results in prespecified Bins.
+#' Takes the dataframe created by [convertWTC()] and aggregates the results in prespecified Bins
+#' and across all Bins within the specified limits. Limits may differ between Rsq and Phase. 
+#' Values outside COI and not significant values can be excluded. 
 #'
 #' @param df Dataframe. Dataframe created by [convertWTC()].
 #' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param phaseLimits Numeric. Frequency limits in Hz for the Phase Bins. All but the last value specify the included lower limit. 
-#'   The last value is the excluded maximum period. 
+#'   The last value is the excluded maximum period. Must include at least two values.
 #' @param rsqLimits Numeric. Frequency limits in Hz for the Coherence Bins. All but the last value specify the included lower limit. 
-#'   The last value is the excluded maximum period. 
+#'   The last value is the excluded maximum period. Must include at least two values. 
 #' @param withinCOI Logical. Whether only values inside the COI should be included. Defalut is `TRUE`.
 #' @param onlySig Logical. Whether only significant values should be included. Defalut is `TRUE`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
@@ -337,28 +339,44 @@ featWTC = function(df, rs.path, phaseLimits, rsqLimits, withinCOI = T, onlySig =
                           labels = rsqLabels, 
                           right = FALSE,
                           include.lowest = TRUE)
+    ) |> # convert all outside of limits to NA
+    mutate(
+      Rsq   = if_else(is.na(rsqBin), NA, Rsq),
+      Phase = if_else(is.na(phaseBin), NA, Phase)
     )
   
-  # aggregate Phase
-  df.phase = df |> 
-    group_by(Dyad, Time, pseudoDyad, Feature, phaseBin) |>
+  df.agg = df |>
+    group_by(Dyad, Time, pseudoDyad, Feature) |>
     summarise(
-      value = mean(Phase, na.rm = T),
+      WTC_Rsq   = mean(Rsq,   na.rm = T),
+      WTC_Phase = mean(Phase, na.rm = T),
       .groups = "drop"
-    ) |> drop_na() |>
-    pivot_wider(names_from = phaseBin, names_prefix = "WTC_Phase_")
+    )
   
-  # aggregate Phase
-  df.rsq = df |> 
-    group_by(Dyad, Time, pseudoDyad, Feature, rsqBin) |>
-    summarise(
-      value = mean(Rsq, na.rm = T),
-      .groups = "drop"
-    ) |> drop_na() |>
-    pivot_wider(names_from = rsqBin, names_prefix = "WTC_Rsq_")
+  if (length(phaseLimits) > 2) {
+    # aggregate Phase
+    df.phase = df |> 
+      group_by(Dyad, Time, pseudoDyad, Feature, phaseBin) |>
+      summarise(
+        value = mean(Phase, na.rm = T),
+        .groups = "drop"
+      ) |> drop_na() |>
+      pivot_wider(names_from = phaseBin, names_prefix = "WTC_Phase_")
+    df.agg = merge(df.agg, df.phase, all.x = T)
+  }
   
-  df.out = merge(df.phase, df.rsq)
+  if (length(rsqLimits) > 2) {
+    # aggregate Phase
+    df.rsq = df |> 
+      group_by(Dyad, Time, pseudoDyad, Feature, rsqBin) |>
+      summarise(
+        value = mean(Rsq, na.rm = T),
+        .groups = "drop"
+      ) |> drop_na() |>
+      pivot_wider(names_from = rsqBin, names_prefix = "WTC_Rsq_")
+    df.agg = merge(df.agg, df.rsq, all.x = T)
+  }
   
-  if (return) return(df.out)
+  if (return) return(df.agg)
   
 }
