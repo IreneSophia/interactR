@@ -2,7 +2,8 @@
 #'
 #' Uses the \code{\link{biwavelet::wtc}} function to compute the Wavelet Coherence
 #' and Phase for a given column for a dyad. Optionally creates pseudo coherence based 
-#' on Dyad shuffling. Observed and pseudo coherence can be compared using `[!MISSING]`
+#' on Dyad shuffling. Resulting list can be transformed to dataframe using `[!MISSING]`.
+#' Observed and pseudo coherence can be compared using `[!MISSING]`
 #'
 #' @param df Dataframe. The dataset containing the variables to be processed. 
 #'   Must explicitly feature columns `Dyad`, `Identifier`, `Time`, either `Frame` or `Timestamp`, and the column `colname`. 
@@ -22,7 +23,7 @@
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
 #' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
 #'
-#' @return If `return = TRUE`, returns dataframe with the results. If provided, the dataframe and the full list are saved as rds to `rs.path`.
+#' @return If `return = TRUE`, returns list with the results. If provided, the full list are saved as rds to `rs.path`.
 #' 
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @references Issartel et al. (2006): A Practical Guide to Time—Frequency Analysis 
@@ -60,7 +61,7 @@ compWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
   if (!recompute & file.exists(flnm)) {
     if (return) {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading WTC features\n")
-      df.out = readRDS(flnm)
+      ls.out = readRDS(flnm)
     }
   } else {
     
@@ -69,9 +70,6 @@ compWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
     # check whether all columns in dataframe
     cols = c("Dyad", "Identifier", "Time", "Frame", colname)
     checkDF(df, cols)
-    
-    # create df.out
-    df.out = data.frame()
     
     # if pseudoDyad, then create a random list of combinations
     if (pseudoDyad) {
@@ -103,9 +101,9 @@ compWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
     set.seed(seed)
     
     # output structure
-    ls.out = list()
-    df.out = data.frame()
-    
+    ls.out = vector(mode = "list", length = nrow(df.dyad))
+    names(ls.out) = as.character(1:nrow(df.dyad))
+
     # focus on the relevant columns
     df = df |>
       select(all_of(cols), any_of(c("Frame", "Timestamp")))
@@ -157,40 +155,45 @@ compWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
                            mother = "morlet", 
                            param = order)
       
-      # convert wavelet coherence into dataframe
-      df.out = rbind(
-        df.out, 
-        data.frame(wtc[["rsq"]]) |>
-          mutate(Period = wtc[["period"]]) |>
-          tidyr::pivot_longer(cols = starts_with("X"), values_to = "Rsq") |>
-          merge(data.frame(wtc[["phase"]]) |>
-                  mutate(Period = wtc[["period"]]) |>
-                  tidyr::pivot_longer(cols = starts_with("X"), values_to = "Phase")) |>
-          merge(data.frame(wtc[["signif"]]) |>
-                  mutate(Period = wtc[["period"]]) |>
-                  tidyr::pivot_longer(cols = starts_with("X"), values_to = "PermProb")) |>
-          arrange(name) |>
-          mutate(
-            Timecourse = rep(wtc[["t"]], each = length(wtc[["period"]])),
-            COI   = rep(wtc[["coi"]], each = length(wtc[["period"]])),
-            Frame = as.numeric(gsub("X", "", name)),
-            Frequency = 1 / Period,
-            WithinCOI = Period < COI 
-          ) |> select(-name) |>
-          mutate(
-            Dyad = df.dyad$Dyad[i],
-            Time = t,
-            pseudoDyad = pseudoDyad
-          )
-      )
+      # add to the output list
+      ls.out[[i]] = wtc
+      names(ls.out)[i] = paste0(Dyad, "_", as.character(t))
       
     }
     
     # save the data
-    if (!is.null(rs.path)) saveRDS(df.out, file = flnm)
+    if (!is.null(rs.path)) saveRDS(ls.out, file = flnm)
     
   }
   
-  if (return) return(df.out)
+  if (return) return(ls.out)
   
 }
+
+
+# # convert wavelet coherence list into dataframe
+# df.out = rbind(
+#   df.out, 
+#   data.frame(wtc[["rsq"]]) |>
+#     mutate(Period = wtc[["period"]]) |>
+#     tidyr::pivot_longer(cols = starts_with("X"), values_to = "Rsq") |>
+#     merge(data.frame(wtc[["phase"]]) |>
+#             mutate(Period = wtc[["period"]]) |>
+#             tidyr::pivot_longer(cols = starts_with("X"), values_to = "Phase")) |>
+#     merge(data.frame(wtc[["signif"]]) |>
+#             mutate(Period = wtc[["period"]]) |>
+#             tidyr::pivot_longer(cols = starts_with("X"), values_to = "PermProb")) |>
+#     arrange(name) |>
+#     mutate(
+#       Timecourse = rep(wtc[["t"]], each = length(wtc[["period"]])),
+#       COI   = rep(wtc[["coi"]], each = length(wtc[["period"]])),
+#       Frame = as.numeric(gsub("X", "", name)),
+#       Frequency = 1 / Period,
+#       WithinCOI = Period < COI 
+#     ) |> select(-name) |>
+#     mutate(
+#       Dyad = df.dyad$Dyad[i],
+#       Time = t,
+#       pseudoDyad = pseudoDyad
+#     )
+# )

@@ -52,12 +52,13 @@ instead of observed WTC Default is \code{FALSE}.}
 Default is \code{NULL} which is converted into the number of real dyads.}
 }
 \value{
-If \code{return = TRUE}, returns dataframe with the results. If provided, the dataframe and the full list are saved as rds to \code{rs.path}.
+If \code{return = TRUE}, returns list with the results. If provided, the full list are saved as rds to \code{rs.path}.
 }
 \description{
 Uses the \code{\link{biwavelet::wtc}} function to compute the Wavelet Coherence
 and Phase for a given column for a dyad. Optionally creates pseudo coherence based
-on Dyad shuffling. Observed and pseudo coherence can be compared using \verb{[!MISSING]}
+on Dyad shuffling. Resulting list can be transformed to dataframe using \verb{[!MISSING]}.
+Observed and pseudo coherence can be compared using \verb{[!MISSING]}
 }
 \references{
 Issartel et al. (2006): A Practical Guide to Time—Frequency Analysis
