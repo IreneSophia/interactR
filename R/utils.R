@@ -1,3 +1,25 @@
+#' Bin numeric vector by counts
+#'
+#' This function bins a numeric vector into equally spaced intervals and returns 
+#' the count of values in each bin by computing a histogram without rendering the plot.
+#'
+#' @param x Numeric. Data to be binned.
+#' @param Bins Numeric. Number of bins. 
+#' @param minLimit Numeric. Lower limit of Bins, needs to be <= min(x). Default is `-pi`.
+#' @param maxLimit Numeric. Upper limit of Bins, needs to be >= max(x). Default is `-pi`.
+#'
+#' @return Returns a numeric vector of length Bins containing the counts. 
+#' 
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @export
+#' 
+binVector = function(x, Bins, minLimit = -pi, maxLimit = pi) {
+  if (all(is.na(x))) return(rep(NA_integer_, Bins))
+  if ((max(x) > maxLimit) | (min(x) < minLimit)) stop("minLimit and maxLimit need to be at least ", min(x), " and ", max(x), ".")
+  graphics::hist(x, breaks = seq(minLimit, maxLimit, length.out = Bins + 1), plot = FALSE)$counts
+}
+
+
 #' Checks column names of dataframe
 #'
 #' Assesses whether each column named in `colnames` is a column of the dataframe `df`.
