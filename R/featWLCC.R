@@ -87,6 +87,8 @@ featWLCC = function(df, rs.path, colname, featname,
       ls.ccf = readRDS(paste0(flnm, "_ccf.rds"))
     } else {
       
+      checkDF(df, c("Dyad", "Identifier", "Frame", colname))
+      
       # ensure that the dataframe is properly arranged
       df = df |> 
         arrange(Dyad, Identifier, Frame)
