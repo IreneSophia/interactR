@@ -7,8 +7,8 @@
 #' @param df Dataframe containing tracking data streams. Must explicitly feature columns `Dyad`, 
 #'   `Identifier`, `Frame`, `Time`, either `AOI.left` and `AOI.right` or `AOI`.
 #' @param ls.AOI List of character vectors. When specified, values isolate targets for AOI classification, 
-#'   automatically re-coding undeclared targets to `"None"`. 
-#'   If empty (`is.null(ls.AOI) == TRUE`), existing classification is used.
+#'   automatically re-coding undeclared targets to `"None"`. All but alphabet characters will be removed, 
+#'   both in the AOI columns and in this list. If empty (`is.null(ls.AOI) == TRUE`), existing classification is used.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
 #'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
@@ -50,7 +50,7 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
   } else {
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Preprocessing dwell times\n")
     # combine the AOI list into a pattern
-    if (!is.null(ls.AOI)) pattern = paste(ls.AOI, collapse = "|")
+    if (!is.null(ls.AOI)) pattern = paste(gsub("[^a-zA-Z]", "", ls.AOI), collapse = "|")
     
     # create an Actor column containing actor0 and actor1
     df = df |>
@@ -65,13 +65,13 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
       if ("AOI" %in% colnames(df)) {
         df = df |> 
           mutate(
-            AOI = coalesce(stringr::str_extract(AOI, pattern), "None")
+            AOI = coalesce(stringr::str_extract(gsub("[^a-zA-Z]", "", AOI), pattern), "None")
           )
       } else {
         df = df |> 
           mutate(
-            AOI.left = coalesce(stringr::str_extract(AOI.left, pattern), "None"),
-            AOI.right = coalesce(stringr::str_extract(AOI.right, pattern), "None")
+            AOI.left = coalesce(stringr::str_extract(gsub("[^a-zA-Z]", "", AOI.left), pattern), "None"),
+            AOI.right = coalesce(stringr::str_extract(gsub("[^a-zA-Z]", "", AOI.right), pattern), "None")
           )
       }
     }

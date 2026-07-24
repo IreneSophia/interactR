@@ -5,6 +5,11 @@
 #' on Dyad shuffling. Resulting list can be transformed to dataframe using [convertWTC()].
 #' Observed and pseudo coherence can be compared using [featWTC()].
 #'
+#' @details Relative phase differences are calculated as Phi_left - Phi_right. Thus, if Phase values
+#'   are positive, this indicates the left Identifier was leading, while negative values indicate that
+#'   the right Identifier was leading (based on the Dyad ID). Values closer to 0 indicate in-phase 
+#'   and values closer to +- pi indicate anti-phase.
+#'
 #' @param df Dataframe. The dataset containing the variables to be processed. 
 #'   Must explicitly feature columns `Dyad`, `Identifier`, `Time`, either `Frame` or `Timestamp`, and the column `colname`. 
 #'   For each Dyad, there must be exactly two Identifiers in the data. 
@@ -199,6 +204,11 @@ extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
 #' Takes the list created by [extractWTC()] and transforms it into a dataframe, 
 #' allowing easy aggregation and adding plotting options.
 #'
+#' @details Relative phase difference was calculated as Phi_left - Phi_right. Thus, if Phase values
+#'   are positive, this indicates the left Identifier was leading, while negative values indicate that
+#'   the right Identifier was leading (based on the Dyad ID). Values closer to 0 indicate in-phase 
+#'   and values closer to +- pi indicate anti-phase.
+#'
 #' @param ls List. This list must contain objects created by \code{\link{biwavelet::wtc}}.
 #'   Names of the list entries should follow this structure: `[Dyad]_[Time]`.
 #' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
@@ -296,6 +306,11 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
 #' Takes the dataframe created by [convertWTC()] and aggregates the results in prespecified Bins
 #' and across all Bins within the specified limits. Limits may differ between Rsq and Phase. 
 #' Values outside COI and not significant values can be excluded. 
+#'
+#' @details Relative phase difference was calculated as Phi_left - Phi_right. Thus, if Phase values
+#'   are positive, this indicates the left Identifier was leading, while negative values indicate that
+#'   the right Identifier was leading (based on the Dyad ID). Values closer to 0 indicate in-phase 
+#'   and values closer to +- pi indicate anti-phase.
 #'
 #' @param df Dataframe. Dataframe created by [convertWTC()].
 #' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.

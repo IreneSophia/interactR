@@ -48,6 +48,12 @@ Takes the dataframe created by \code{\link[=convertWTC]{convertWTC()}} and aggre
 and across all Bins within the specified limits. Limits may differ between Rsq and Phase.
 Values outside COI and not significant values can be excluded.
 }
+\details{
+Relative phase difference was calculated as Phi_left - Phi_right. Thus, if Phase values
+are positive, this indicates the left Identifier was leading, while negative values indicate that
+the right Identifier was leading (based on the Dyad ID). Values closer to 0 indicate in-phase
+and values closer to +- pi indicate anti-phase.
+}
 \author{
 Irene Sophia Plank (\email{10planki@gmail.com})
 }

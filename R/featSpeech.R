@@ -151,7 +151,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
       )
     
     # use the function to detect turns
-    df.speak = detectTurns(df.speak, verbose = verbose)
+    df.turns = detectTurns(df.speak, verbose = verbose)
     
     # aggregate and merge all the information
     if (verbose) cat(format(Sys.time(), "%X %Z"), ": Aggregate and save features\n")

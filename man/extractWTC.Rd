@@ -64,6 +64,12 @@ and Phase for a given column for a dyad. Optionally creates pseudo coherence bas
 on Dyad shuffling. Resulting list can be transformed to dataframe using \code{\link[=convertWTC]{convertWTC()}}.
 Observed and pseudo coherence can be compared using \code{\link[=featWTC]{featWTC()}}.
 }
+\details{
+Relative phase differences are calculated as Phi_left - Phi_right. Thus, if Phase values
+are positive, this indicates the left Identifier was leading, while negative values indicate that
+the right Identifier was leading (based on the Dyad ID). Values closer to 0 indicate in-phase
+and values closer to +- pi indicate anti-phase.
+}
 \references{
 Issartel et al. (2006): A Practical Guide to Time—Frequency Analysis
 in the Study of Human Motor Behavior: The Contribution of Wavelet Transform,

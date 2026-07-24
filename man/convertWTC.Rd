@@ -37,6 +37,12 @@ If \code{return = TRUE}, returns dataframe. If provided, the full dataframe is s
 Takes the list created by \code{\link[=extractWTC]{extractWTC()}} and transforms it into a dataframe,
 allowing easy aggregation and adding plotting options.
 }
+\details{
+Relative phase difference was calculated as Phi_left - Phi_right. Thus, if Phase values
+are positive, this indicates the left Identifier was leading, while negative values indicate that
+the right Identifier was leading (based on the Dyad ID). Values closer to 0 indicate in-phase
+and values closer to +- pi indicate anti-phase.
+}
 \seealso{
 \code{\link{featWTC}} \code{\link{extractWTC}} \code{\link{plotPhaseRose}} \code{\link{plotWTCLine}}
 }
