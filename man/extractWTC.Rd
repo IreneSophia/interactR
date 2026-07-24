@@ -11,7 +11,7 @@ extractWTC(
   fps,
   order = 8,
   suffix = "",
-  nsim = 400,
+  nsim = 300,
   df.pseudo = data.frame(),
   seed = "random",
   verbose = T,
@@ -47,7 +47,7 @@ leading to observed and not pseudo WTC being extracted.}
 
 \item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
 
-\item{nsim.}{Numeric. Number of Monte Carlo randomisations for computing WTC. Default is \code{400}.}
+\item{nsim.}{Numeric. Number of Monte Carlo randomisations for computing WTC. Default is \code{300}.}
 }
 \value{
 If \code{return = TRUE}, returns list with the results. If provided, the full list is saved as rds to \code{rs.path}.

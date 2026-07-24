@@ -18,7 +18,7 @@
 #' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
 #' @param order Numeric. Order for the wavelet transformation. Default is `8` based on Issartel et al. (2006).
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
-#' @param nsim. Numeric. Number of Monte Carlo randomisations for computing WTC. Default is `400`.
+#' @param nsim. Numeric. Number of Monte Carlo randomisations for computing WTC. Default is `300`.
 #' @param df.pseudo Dataframe. If it contains row, then instead of using the observed 
 #'    dyads listed in `df`, these pairings are tested for pseudo-WTC. Dataframe can be 
 #'    created using [shuffleIdentifier()] or [shuffleDyads()]. Default is an empty dataframe, 
@@ -39,7 +39,7 @@
 #' @export
 #' 
 extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "", 
-                      nsim = 400, df.pseudo = data.frame(), seed = "random",
+                      nsim = 300, df.pseudo = data.frame(), seed = "random",
                       verbose = T, recompute = F, return = T) {
   
   # get a random seed
