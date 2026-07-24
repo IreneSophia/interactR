@@ -166,6 +166,9 @@ compWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
           merge(data.frame(wtc[["phase"]]) |>
                   mutate(Period = wtc[["period"]]) |>
                   tidyr::pivot_longer(cols = starts_with("X"), values_to = "Phase")) |>
+          merge(data.frame(wtc[["signif"]]) |>
+                  mutate(Period = wtc[["period"]]) |>
+                  tidyr::pivot_longer(cols = starts_with("X"), values_to = "PermProb")) |>
           arrange(name) |>
           mutate(
             Timecourse = rep(wtc[["t"]], each = length(wtc[["period"]])),
