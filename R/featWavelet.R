@@ -278,6 +278,9 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
       )
     }
     
+    # add the featname
+    df.out = df.out |> mutate(Feature = featname)
+    
     
     # save the data
     if (!is.null(rs.path)) saveRDS(df.out, file = flnm)
@@ -294,7 +297,6 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
 #'
 #' @param df Dataframe. Dataframe created by [convertWTC()].
 #' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
-#' @param featname Character. The name of the feature of which WTC was computed.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -307,7 +309,7 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
 #' @export
 #' 
 
-featWTC = function(df, rs.path, featname, suffix = "", 
+featWTC = function(df, rs.path, suffix = "", 
                   verbose = T, recompute = F, return = T) {
   
 

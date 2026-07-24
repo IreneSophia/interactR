@@ -4,22 +4,12 @@
 \alias{featWTC}
 \title{Aggregate a dataframe containing the results of WTC to extract relevant features \verb{[!MISSING]}}
 \usage{
-featWTC(
-  df,
-  rs.path,
-  featname,
-  suffix = "",
-  verbose = T,
-  recompute = F,
-  return = T
-)
+featWTC(df, rs.path, suffix = "", verbose = T, recompute = F, return = T)
 }
 \arguments{
 \item{df}{Dataframe. Dataframe created by \code{\link[=convertWTC]{convertWTC()}}.}
 
 \item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}
-
-\item{featname}{Character. The name of the feature of which WTC was computed.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 
