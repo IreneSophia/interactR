@@ -130,7 +130,7 @@ shuffleDyads = function(df, seed = NULL, considerTime = T, inOrder = F, nsim = 1
     ) |> 
     # filter out original dyads
     filter(!(Dyad %in% ls.dyads)) |>
-    mutate(Dyad = paste0(left_Dyad, "_", right_Dyad)) |>
+    mutate(Dyad = paste0(left_Dyad, "|", right_Dyad)) |>
     select(-left_Dyad, -right_Dyad) |>
     mutate(across(ends_with("Time"), ~ as.POSIXct(.x, tz = timezone)))
   
@@ -202,7 +202,7 @@ shuffleIdentifier = function(df, seed = NULL, side = "right", nsim = 100) {
     tidyr::separate(right, into = c("right_Dyad", "right_Time", "right_Identifier"), sep = "_") |>
     tidyr::separate(left,  into = c("left_Dyad",  "left_Time",  "left_Identifier"), sep = "_") |>
     mutate(
-      Dyad = paste0(left_Dyad, "_", right_Dyad)
+      Dyad = paste0(left_Dyad, "|", right_Dyad)
     ) |> select(-left_Dyad, -right_Dyad) |>
     mutate(across(ends_with("Time"), ~ as.POSIXct(.x, tz = timezone)))
   
