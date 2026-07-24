@@ -157,7 +157,7 @@ compWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
       
       # add to the output list
       ls.out[[i]] = wtc
-      names(ls.out)[i] = paste0(Dyad, "_", as.character(t))
+      names(ls.out)[i] = paste0(df.dyad$Dyad[i], "_", as.character(t))
       
     }
     
