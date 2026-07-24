@@ -1,3 +1,4 @@
+
 #' Bin numeric vector by counts
 #'
 #' This function bins a numeric vector into equally spaced intervals and returns 
@@ -71,8 +72,7 @@ checkDF = function(df, colnames) {
 shuffleDyads = function(df, seed = NULL, considerTime = T, inOrder = F, nsim = 100) {
   
   checkDF(df, c("Dyad", "Time", "Identifier"))
-  if (!(side %in% c("left", "right"))) stop("side has to be either 'left' or 'right'.")
-  
+
   # extract the timezone
   timezone = attr(df$Time[1],"tzone")
   
@@ -125,8 +125,7 @@ shuffleDyads = function(df, seed = NULL, considerTime = T, inOrder = F, nsim = 1
   df.out = df.out |> 
     # create the new Dyad information
     mutate(
-      Dyad = paste0(left_Identifier, "-", right_Identifier),
-      pseudoDyad = row_number()
+      Dyad = paste0(left_Identifier, "-", right_Identifier)
     ) |> 
     # filter out original dyads
     filter(!(Dyad %in% ls.dyads)) |>
