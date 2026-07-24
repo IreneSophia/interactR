@@ -20,7 +20,9 @@ featDwell(
 
 \item{ls.AOI}{List of character vectors. When specified, values isolate targets for AOI classification,
 automatically re-coding undeclared targets to \code{"None"}. All but alphabet characters will be removed,
-both in the AOI columns and in this list. If empty (\code{is.null(ls.AOI) == TRUE}), existing classification is used.}
+both in the AOI columns and in this list. The order of the AOIs matters: if more than one were to fit,
+then the first AOI is chosen. E.g., if ls.AOI = c("Self", "Laptop"), then "Self Laptop" is classified as "Self".
+If empty (\code{is.null(ls.AOI) == TRUE}), existing classification is used.}
 
 \item{rs.path}{Character. Path to the directory where the output files will be saved.
 If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk.}
