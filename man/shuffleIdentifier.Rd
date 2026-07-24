@@ -20,8 +20,9 @@ numeric, then a random seed is chosen. Default is \code{NULL}.}
 }
 \value{
 Returns a dataframe with pseudo-dyads, including the information of
-\code{Dyad}, now consisting of both original dyad IDs, \code{Identifier}, \code{Time} as well as
-\code{pseudoDyad}, a unique numeric ID, and \code{side}, tracking left versus right.
+\code{Dyad}, now consisting of both original dyad IDs, as well as each two
+columns for the left and the right \code{Identifer} and \code{Time}, thus, one row
+per pseudo-dyad.
 }
 \description{
 Takes a dataframe of dyads and returns a specific number of pseudo-dyads of

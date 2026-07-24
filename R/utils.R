@@ -38,8 +38,9 @@ checkDF = function(df, colnames) {
 #' @param nsim Numeric. Maximum number of pseudo-dyads to be returned. Default is `100`.
 #'
 #' @return Returns a dataframe with pseudo-dyads, including the information of
-#'   `Dyad`, now consisting of both original dyad IDs, `Identifier`, `Time` as well as
-#'   `pseudoDyad`, a unique numeric ID, and `side`, tracking left versus right.
+#'   `Dyad`, now consisting of both original dyad IDs, as well as each two 
+#'   columns for the left and the right `Identifer` and `Time`, thus, one row
+#'   per pseudo-dyad.
 #' 
 #' @import dplyr
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
@@ -48,6 +49,7 @@ checkDF = function(df, colnames) {
 shuffleDyads = function(df, seed = NULL, considerTime = T, inOrder = F, nsim = 100) {
   
   checkDF(df, c("Dyad", "Time", "Identifier"))
+  if (!(side %in% c("left", "right"))) stop("side has to be either 'left' or 'right'.")
   
   # extract the timezone
   timezone = attr(df$Time[1],"tzone")
@@ -71,9 +73,10 @@ shuffleDyads = function(df, seed = NULL, considerTime = T, inOrder = F, nsim = 1
     # combine left versus right info into one value each
     df.sess = df |> 
       mutate(side = if_else(gsub("-.*", "", Dyad) == Identifier, "left", "right"),
-             sess = paste(Time, Dyad, Identifier, sep = "_")) |> 
-      select(Dyad, side, sess) |>
-      tidyr::pivot_wider(names_from = side, values_from = sess)
+             sess = paste(Time, Dyad, Identifier, sep = "_"),
+             tmp  = as.numeric(as.factor(paste(Time, Dyad)))) |> 
+      select(tmp, Dyad, side, sess) |>
+      tidyr::pivot_wider(names_from = side, values_from = sess) |> select(-tmp)
     # generate combinations
     df.out = expand.grid(V1 = df.sess$left, V2 = df.sess$right)
   }
@@ -89,6 +92,8 @@ shuffleDyads = function(df, seed = NULL, considerTime = T, inOrder = F, nsim = 1
       left_Identifier != right_Identifier   # remove same Dyad
     )
   
+  if (nrow(df.out) == 0) stop("No possible new combinations.")
+  
   # potentially filter out pseudoDyads with the same Time 
   if (considerTime) {
     df.out = df.out |>
@@ -103,15 +108,9 @@ shuffleDyads = function(df, seed = NULL, considerTime = T, inOrder = F, nsim = 1
     ) |> 
     # filter out original dyads
     filter(!(Dyad %in% ls.dyads)) |>
-    mutate(Dyad = paste0(left_Dyad, "_", right_Dyad),
-           pseudoDyad = row_number()) |>
+    mutate(Dyad = paste0(left_Dyad, "_", right_Dyad)) |>
     select(-left_Dyad, -right_Dyad) |>
-    tidyr::pivot_longer(cols = starts_with(c("left", "right"))) |>
-    tidyr::separate(name, into = c("side", "name"), sep = "_") |>
-    mutate(pseudoDyad = sprintf("%s_%d", side, pseudoDyad)) |>
-    tidyr::pivot_wider() |>
-    mutate(pseudoDyad = as.numeric(gsub(".*_(.+)", "\\1", pseudoDyad)),
-           Time = as.POSIXct(Time, tz = timezone))
+    mutate(across(ends_with("Time"), ~ as.POSIXct(.x, tz = timezone)))
   
   # select nsim random dyads
   if (nsim < nrow(df.out)) df.out = df.out[sample.int(nrow(df.out), nsim, replace = F),]
@@ -135,8 +134,9 @@ shuffleDyads = function(df, seed = NULL, considerTime = T, inOrder = F, nsim = 1
 #' @param nsim Numeric. Number of pseudo-dyads to be returned. Default is `100`.
 #'
 #' @return Returns a dataframe with pseudo-dyads, including the information of
-#'   `Dyad`, now consisting of both original dyad IDs, `Identifier`, `Time` as well as
-#'   `pseudoDyad`, a unique numeric ID, and `side`, tracking left versus right.
+#'   `Dyad`, now consisting of both original dyad IDs, as well as each two 
+#'   columns for the left and the right `Identifer` and `Time`, thus, one row
+#'   per pseudo-dyad.
 #' 
 #' @import dplyr
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
@@ -157,7 +157,8 @@ shuffleIdentifier = function(df, seed = NULL, side = "right", nsim = 100) {
     # extract the side
     mutate(
       Side = if_else(gsub("-.*", "", Dyad) == Identifier, "left", "right"),
-      tmp  = as.numeric(as.factor(Dyad))
+      # get a temporary unique ID for each Dyad, in case they interact more often
+      tmp = as.numeric(as.factor(paste0(Dyad, "_", Time)))
     ) |>
     # unite dyad, time and identifier into one session information
     tidyr::unite("Session", c(Dyad, Time, Identifier)) |>
@@ -181,12 +182,7 @@ shuffleIdentifier = function(df, seed = NULL, side = "right", nsim = 100) {
     mutate(
       Dyad = paste0(left_Dyad, "_", right_Dyad)
     ) |> select(-left_Dyad, -right_Dyad) |>
-    tidyr::pivot_longer(cols = starts_with(c("left", "right"))) |>
-    tidyr::separate(name, into = c("side", "name"), sep = "_") |>
-    mutate(pseudoDyad = sprintf("%s_%d", side, pseudoDyad)) |>
-    tidyr::pivot_wider() |>
-    mutate(pseudoDyad = as.numeric(gsub(".*_(.+)", "\\1", pseudoDyad)),
-           Time = as.POSIXct(Time, tz = timezone))
+    mutate(across(ends_with("Time"), ~ as.POSIXct(.x, tz = timezone)))
   
   # potentially select nsim random dyads
   if (nsim < nrow(df.out)) df.out = df.out[sample.int(nrow(df.out), nsim, replace = F),]
