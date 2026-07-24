@@ -243,7 +243,7 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
     
     for (i in 1:length(ls)) {
       # check whether the object in the list is the target - if not skip
-      if (class(ls.pseudo[[i]]) != "biwavelet") {
+      if (class(ls[[i]]) != "biwavelet") {
         warning("Skipping ", names(ls)[i], ": not biwavelet.") 
         next
       }
