@@ -153,18 +153,19 @@ extractData = function(df.info, rs.path, timezone, suffix = '', anonymise = F,
         # extract the starting time of this experiment from the Filename
         Time = as.POSIXct(gsub(".*/(.+)/TrackingDataLog.*", "\\1", Filename), 
                           format = "%Y-%m-%d_%H-%M-%S", tz = timezone),
-        # cluster the gaze and eye targets, focusing on the one with the shortest distance
-        # and replacing the IDs with Self versus Other
-        AOI.gaze  = gsub("Name: (.+) Distance.*", "\\1", Gaze_Targets),
+        # focus on the target with the shortest distance
+        AOI.gaze  = sub("^Name: (.*?) Distance.*$", "\\1", Gaze_Targets, perl = TRUE),
+        AOI.left  = sub("^Name: (.*?) Distance.*$", "\\1", LeftEye_Targets, perl = TRUE),
+        AOI.right  = sub("^Name: (.*?) Distance.*$", "\\1", RightEye_Targets, perl = TRUE),
+        # replace the Identifier with Self
         AOI.gaze  = gsub(sprintf("%s's", Identifier[1]), "Self", AOI.gaze),
+        AOI.left  = gsub(sprintf("%s's", Identifier[1]), "Self", AOI.left),
+        AOI.right  = gsub(sprintf("%s's", Identifier[1]), "Self", AOI.right),
+        # replace all other phrases with possessive with Other
         AOI.gaze  = if_else(!grepl(".*'s .*", AOI.gaze), AOI.gaze, 
                             gsub(".*'s ", "Other ", AOI.gaze)),
-        AOI.left  = gsub("Name: (.+) Distance.*", "\\1", LeftEye_Targets),
-        AOI.left  = gsub(sprintf("%s's", Identifier[1]), "Self", AOI.left),
         AOI.left  = if_else(!grepl(".*'s .*", AOI.left), AOI.left, 
                             gsub(".*'s ", "Other ", AOI.left)),
-        AOI.right  = gsub("Name: (.+) Distance.*", "\\1", RightEye_Targets),
-        AOI.right  = gsub(sprintf("%s's", Identifier[1]), "Self", AOI.right),
         AOI.right  = if_else(!grepl(".*'s .*", AOI.right), AOI.right, 
                              gsub(".*'s ", "Other ", AOI.right))
       )
