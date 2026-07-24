@@ -89,12 +89,12 @@ compWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
       }
     } else {
       # get a list of real dyads - one row per dyad same as with pseudo
-      df.dyad = df |>
+      df.dyad = df |> ungroup() |>
         select(Dyad, Time) |> 
         distinct() |>
         mutate(
           left_Identifier  = gsub("(.+)-.*", "\\1", Dyad),
-          right_Identifier  = gsub("(.+)-.*", "\\1", Dyad),
+          right_Identifier  = gsub(".*-(.+)", "\\1", Dyad),
           left_Time = Time
         ) |> rename(right_Time = Time)
     }
@@ -114,7 +114,8 @@ compWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
     df = df |> group_by(Dyad, Identifier, Time) |> 
       arrange(Frame) |>
       mutate(Timecourse = Frame/fps,
-             Duration   = 1/fps)
+             Duration   = 1/fps) |>
+      ungroup()
     
     # loop through the Dyads
     for (i in 1:nrow(df.dyad)) {
