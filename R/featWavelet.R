@@ -76,6 +76,7 @@ extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
     
     # if pseudoDyad, then create a random list of combinations
     if (pseudoDyad) {
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Creating Pseudo Dyads\n")
       # check if nDyad needs to be set
       if (is.null(nDyads)) nDyads = length(unique(df$Dyad))
       # get a list of shuffled dyads: either out of all options
@@ -108,7 +109,7 @@ extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
     # output structure
     ls.out = vector(mode = "list", length = nrow(df.dyad))
     names(ls.out) = as.character(1:nrow(df.dyad))
-
+    
     # focus on the relevant columns
     df = df |>
       select(all_of(cols), any_of(c("Frame", "Timestamp")))
@@ -133,10 +134,6 @@ extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
         stop("Different Time without dyad shuffling!")
       }
       
-      # get the average timestep in seconds
-      dt = as.numeric(mean(df |> filter(Dyad == df.dyad$Dyad[i] & Time == t) |> pull(Duration), na.rm = T),
-                      unit = "secs")
-      
       # extract data into a vector
       data1 = df |> filter(Identifier == df.dyad$left_Identifier[i]  & Time == df.dyad$left_Time[i])  |> arrange(Timecourse) |> pull(colname)
       data2 = df |> filter(Identifier == df.dyad$right_Identifier[i] & Time == df.dyad$right_Time[i]) |> arrange(Timecourse) |> pull(colname)
@@ -145,20 +142,42 @@ extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
       time1 = df |> filter(Identifier == df.dyad$left_Identifier[i]  & Time == df.dyad$left_Time[i])  |> arrange(Timecourse) |> pull(Timecourse)
       time2 = df |> filter(Identifier == df.dyad$right_Identifier[i] & Time == df.dyad$right_Time[i]) |> arrange(Timecourse) |> pull(Timecourse)
       
+      # if pseudoDyad, there might be a difference in timepoints - cut the longer one
+      if (pseudoDyad & length(time1) != length(time2)) {
+        ls.data = list(data1 = data1, data2 = data2, 
+                       time1 = time1, time2 = time2)
+        ls.trim = lapply(ls.data, function(v) v[1:min(sapply(ls.data, length))])
+        data1 = ls.trim$data1
+        data2 = ls.trim$data2
+        time1 = ls.trim$time1
+        time2 = ls.trim$time2
+      }
+      
       # configuration for wavelet transformation
+      dt = 1/fps
       S0 = 2 * dt # smallest scale, set here to Nyquist limit
       Dj = 1/12
       J1 = round(log2(((length(time1) * 0.17) * 2 * dt) / S0) / Dj) # configure number of frequency scales (minus 1)
       
-      # compute the wavelet coherence
-      wtc = biwavelet::wtc(cbind(time1, data1), cbind(time2, data2), 
-                           pad = T, # padding with zeros to length of power of 2, faster and less cone of influence problems
-                           dj  = Dj, # spacing / resolution between scales, 12 sub-octaves for fine frequency resolution
-                           s0  = S0, 
-                           J1  = J1, 
-                           nrands = nsim, 
-                           mother = "morlet", 
-                           param = order)
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Starting WTC for dyad ", df.dyad$Dyad[i], "\n")
+      
+      # try to compute the wavelet coherence 
+      wtc = tryCatch(
+        {
+          biwavelet::wtc(cbind(time1, data1), cbind(time2, data2), 
+                         pad = T, # padding with zeros to length of power of 2, faster and less cone of influence problems
+                         dj  = Dj, # spacing / resolution between scales, 12 sub-octaves for fine frequency resolution
+                         s0  = S0, 
+                         J1  = J1, 
+                         nrands = nsim, 
+                         mother = "morlet", 
+                         param = order)
+        },
+        error = function(e) {
+          message(paste("Skipping Dyad", df.dyad$Dyad[i], "due to error:", e$message))
+          return(e$message)
+        }
+      )
       
       # add to the output list
       ls.out[[i]] = wtc
