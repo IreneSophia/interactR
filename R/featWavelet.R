@@ -348,8 +348,8 @@ featWTC = function(df, rs.path, phaseLimits, rsqLimits, withinCOI = T, onlySig =
   df.agg = df |>
     group_by(Dyad, Time, pseudoDyad, Feature) |>
     summarise(
-      WTC_Rsq   = mean(Rsq,   na.rm = T),
-      WTC_Phase = mean(Phase, na.rm = T),
+      DyadWTC_Rsq   = mean(Rsq,   na.rm = T),
+      DyadWTC_Phase = mean(Phase, na.rm = T),
       .groups = "drop"
     )
   
@@ -361,7 +361,7 @@ featWTC = function(df, rs.path, phaseLimits, rsqLimits, withinCOI = T, onlySig =
         value = mean(Phase, na.rm = T),
         .groups = "drop"
       ) |> drop_na() |>
-      pivot_wider(names_from = phaseBin, names_prefix = "WTC_Phase_")
+      pivot_wider(names_from = phaseBin, names_prefix = "DyadWTC_Phase_")
     df.agg = merge(df.agg, df.phase, all.x = T)
   }
   
@@ -373,7 +373,7 @@ featWTC = function(df, rs.path, phaseLimits, rsqLimits, withinCOI = T, onlySig =
         value = mean(Rsq, na.rm = T),
         .groups = "drop"
       ) |> drop_na() |>
-      pivot_wider(names_from = rsqBin, names_prefix = "WTC_Rsq_")
+      pivot_wider(names_from = rsqBin, names_prefix = "DyadWTC_Rsq_")
     df.agg = merge(df.agg, df.rsq, all.x = T)
   }
   
