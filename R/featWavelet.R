@@ -60,6 +60,7 @@ extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
     } else {
       flnm  = file.path(rs.path, sprintf("dataWTC_%s_seed-%d%s.rds", 
                                          colname, seed, suffix))
+      pseudoDyad = F
     }
   }
   
