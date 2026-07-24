@@ -291,12 +291,18 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
   
 }
 
-#' Aggregate a dataframe containing the results of WTC to extract relevant features `[!MISSING]`
+#' Aggregate a dataframe containing the results of WTC to extract relevant features 
 #'
-#' Takes the dataframe created by [convertWTC()] and aggregates the results.
+#' Takes the dataframe created by [convertWTC()] and aggregates the results in prespecified Bins.
 #'
 #' @param df Dataframe. Dataframe created by [convertWTC()].
 #' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
+#' @param phaseLimits Numeric. Frequency limits in Hz for the Phase Bins. All but the last value specify the included lower limit. 
+#'   The last value is the excluded maximum period. 
+#' @param rsqLimits Numeric. Frequency limits in Hz for the Coherence Bins. All but the last value specify the included lower limit. 
+#'   The last value is the excluded maximum period. 
+#' @param withinCOI Logical. Whether only values inside the COI should be included. Defalut is `TRUE`.
+#' @param onlySig Logical. Whether only significant values should be included. Defalut is `TRUE`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -309,10 +315,50 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
 #' @export
 #' 
 
-featWTC = function(df, rs.path, suffix = "", 
-                  verbose = T, recompute = F, return = T) {
+featWTC = function(df, rs.path, phaseLimits, rsqLimits, withinCOI = T, onlySig = T,
+                   suffix = "", verbose = T, recompute = F, return = T) {
   
-
-  return(df)
+  phaseLabels = paste0("[", head(phaseLimits, -1), "-", tail(phaseLimits, -1), "[")
+  rsqLabels   = paste0("[", head(rsqLimits, -1), "-", tail(rsqLimits, -1), "[")
+  
+  # potentially exclude outside of COI and not significant values
+  if (withinCOI) df = df |> filter(WithinCOI)
+  if (onlySig) df = df |> filter(PermProb > 0.95)
+  
+  # classify into bins
+  df = df |>
+    mutate(phaseBin = cut(Frequency, 
+                          breaks = phaseLimits, 
+                          labels = phaseLabels, 
+                          right = FALSE,
+                          include.lowest = TRUE),
+           rsqBin =   cut(Frequency, 
+                          breaks = rsqLimits, 
+                          labels = rsqLabels, 
+                          right = FALSE,
+                          include.lowest = TRUE)
+    )
+  
+  # aggregate Phase
+  df.phase = df |> 
+    group_by(Dyad, Time, pseudoDyad, Feature, phaseBin) |>
+    summarise(
+      value = mean(Phase, na.rm = T),
+      .groups = "drop"
+    ) |> drop_na() |>
+    pivot_wider(names_from = phaseBin, names_prefix = "WTC_Phase_")
+  
+  # aggregate Phase
+  df.rsq = df |> 
+    group_by(Dyad, Time, pseudoDyad, Feature, rsqBin) |>
+    summarise(
+      value = mean(Rsq, na.rm = T),
+      .groups = "drop"
+    ) |> drop_na() |>
+    pivot_wider(names_from = rsqBin, names_prefix = "WTC_Rsq_")
+  
+  df.out = merge(df.phase, df.rsq)
+  
+  if (return) return(df.out)
   
 }

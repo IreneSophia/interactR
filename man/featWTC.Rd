@@ -2,14 +2,35 @@
 % Please edit documentation in R/featWavelet.R
 \name{featWTC}
 \alias{featWTC}
-\title{Aggregate a dataframe containing the results of WTC to extract relevant features \verb{[!MISSING]}}
+\title{Aggregate a dataframe containing the results of WTC to extract relevant features}
 \usage{
-featWTC(df, rs.path, suffix = "", verbose = T, recompute = F, return = T)
+featWTC(
+  df,
+  rs.path,
+  phaseLimits,
+  rsqLimits,
+  withinCOI = T,
+  onlySig = T,
+  suffix = "",
+  verbose = T,
+  recompute = F,
+  return = T
+)
 }
 \arguments{
 \item{df}{Dataframe. Dataframe created by \code{\link[=convertWTC]{convertWTC()}}.}
 
 \item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}
+
+\item{phaseLimits}{Numeric. Frequency limits in Hz for the Phase Bins. All but the last value specify the included lower limit.
+The last value is the excluded maximum period.}
+
+\item{rsqLimits}{Numeric. Frequency limits in Hz for the Coherence Bins. All but the last value specify the included lower limit.
+The last value is the excluded maximum period.}
+
+\item{withinCOI}{Logical. Whether only values inside the COI should be included. Defalut is \code{TRUE}.}
+
+\item{onlySig}{Logical. Whether only significant values should be included. Defalut is \code{TRUE}.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 
@@ -23,7 +44,7 @@ featWTC(df, rs.path, suffix = "", verbose = T, recompute = F, return = T)
 If \code{return = TRUE}, returns dataframe. If provided, the dataframe is saved as rds to \code{rs.path}.
 }
 \description{
-Takes the dataframe created by \code{\link[=convertWTC]{convertWTC()}} and aggregates the results.
+Takes the dataframe created by \code{\link[=convertWTC]{convertWTC()}} and aggregates the results in prespecified Bins.
 }
 \author{
 Irene Sophia Plank (\email{10planki@gmail.com})
