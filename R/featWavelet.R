@@ -3,7 +3,7 @@
 #' Uses the \code{\link{biwavelet::wtc}} function to compute the Wavelet Coherence
 #' and Phase for a given column for a dyad. Optionally creates pseudo coherence based 
 #' on Dyad shuffling. Resulting list can be transformed to dataframe using [convertWTC()].
-#' Observed and pseudo coherence can be compared using [featWTC()].
+#' Observed and pseudo coherence can be aggregated using [featWTC()].
 #'
 #' @details Relative phase differences are calculated as Phi_left - Phi_right. Thus, if Phase values
 #'   are positive, this indicates the left Identifier was leading, while negative values indicate that
@@ -19,12 +19,10 @@
 #' @param order Numeric. Order for the wavelet transformation. Default is `8` based on Issartel et al. (2006).
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param nsim. Numeric. Number of Monte Carlo randomisations for computing WTC. Default is `400`.
-#' @param pseudoDyad Logical. Flags whether to generate pseudo-WTC benchmarks using dyad shuffling 
-#'   instead of observed WTC Default is `FALSE`.
-#' @param nDyads Numeric. Total number of synthetic dyad simulations to execute when `pseudoDyad = TRUE`. 
-#'   Default is `NULL` which is converted into the number of real dyads.
-#' @param shuffleMethod Character. Either `"Identifier"` or `"Dyad"`. If the first, then 
-#'    the function [shuffleIdentifier()] is used, otherwise [shuffleDyads()].
+#' @param df.pseudo Dataframe. If it contains row, then instead of using the observed 
+#'    dyads listed in `df`, these pairings are tested for pseudo-WTC. Dataframe can be 
+#'    created using [shuffleIdentifier()] or [shuffleDyads()]. Default is an empty dataframe, 
+#'    leading to observed and not pseudo WTC being extracted.
 #' @param seed Character or Numeric. Seed supporting reproducibility. Takes an integer seed or `"random"`. Default is `"random"`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -41,8 +39,7 @@
 #' @export
 #' 
 extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "", 
-                      nsim = 400, pseudoDyad = F, nDyads = NULL, 
-                      shuffleMethod = "Identifier", seed = "random",
+                      nsim = 400, df.pseudo = data.frame(), seed = "random",
                       verbose = T, recompute = F, return = T) {
   
   # get a random seed
@@ -56,9 +53,10 @@ extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
     flnm = ''
   } else {
     # create filename depending on whether this is pseudo or not
-    if (pseudoDyad) {
+    if (nrow(df.pseudo) > 0) {
       flnm  = file.path(rs.path, sprintf("dataWTC_%s_seed-%d_pseudo%s.rds", 
                                          colname, seed, suffix))
+      pseudoDyad = T
     } else {
       flnm  = file.path(rs.path, sprintf("dataWTC_%s_seed-%d%s.rds", 
                                          colname, seed, suffix))
@@ -81,21 +79,7 @@ extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
     
     # if pseudoDyad, then create a random list of combinations
     if (pseudoDyad) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Creating Pseudo Dyads\n")
-      # check if nDyad needs to be set
-      if (is.null(nDyads)) nDyads = length(unique(df$Dyad))
-      # get a list of shuffled dyads: either out of all options
-      if (shuffleMethod == "Dyad") {
-        # randomly draw from all possible options if large nDyads
-        df.dyad = shuffleDyads(df |> select(Dyad, Time, Identifier) |> distinct(),
-                               seed = seed, nsim = nDyads)
-      } else if (shuffleMethod == "Identifier") {
-        # shuffle the right Identifier
-        df.dyad = shuffleIdentifier(df |> select(Dyad, Time, Identifier) |> distinct(), 
-                                    seed = seed, side = "right", nsim = nDyads)
-      } else {
-        stop("shuffleMethod must be 'Identifier' or 'Dyad'.")
-      }
+      df.dyad = df.pseudo
     } else {
       # get a list of real dyads - one row per dyad same as with pseudo
       df.dyad = df |> ungroup() |>

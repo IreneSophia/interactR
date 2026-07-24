@@ -12,9 +12,7 @@ extractWTC(
   order = 8,
   suffix = "",
   nsim = 400,
-  pseudoDyad = F,
-  nDyads = NULL,
-  shuffleMethod = "Identifier",
+  df.pseudo = data.frame(),
   seed = "random",
   verbose = T,
   recompute = F,
@@ -36,14 +34,10 @@ For each Dyad, there must be exactly two Identifiers in the data.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 
-\item{pseudoDyad}{Logical. Flags whether to generate pseudo-WTC benchmarks using dyad shuffling
-instead of observed WTC Default is \code{FALSE}.}
-
-\item{nDyads}{Numeric. Total number of synthetic dyad simulations to execute when \code{pseudoDyad = TRUE}.
-Default is \code{NULL} which is converted into the number of real dyads.}
-
-\item{shuffleMethod}{Character. Either \code{"Identifier"} or \code{"Dyad"}. If the first, then
-the function \code{\link[=shuffleIdentifier]{shuffleIdentifier()}} is used, otherwise \code{\link[=shuffleDyads]{shuffleDyads()}}.}
+\item{df.pseudo}{Dataframe. If it contains row, then instead of using the observed
+dyads listed in \code{df}, these pairings are tested for pseudo-WTC. Dataframe can be
+created using \code{\link[=shuffleIdentifier]{shuffleIdentifier()}} or \code{\link[=shuffleDyads]{shuffleDyads()}}. Default is an empty dataframe,
+leading to observed and not pseudo WTC being extracted.}
 
 \item{seed}{Character or Numeric. Seed supporting reproducibility. Takes an integer seed or \code{"random"}. Default is \code{"random"}.}
 
@@ -62,7 +56,7 @@ If \code{return = TRUE}, returns list with the results. If provided, the full li
 Uses the \code{\link{biwavelet::wtc}} function to compute the Wavelet Coherence
 and Phase for a given column for a dyad. Optionally creates pseudo coherence based
 on Dyad shuffling. Resulting list can be transformed to dataframe using \code{\link[=convertWTC]{convertWTC()}}.
-Observed and pseudo coherence can be compared using \code{\link[=featWTC]{featWTC()}}.
+Observed and pseudo coherence can be aggregated using \code{\link[=featWTC]{featWTC()}}.
 }
 \details{
 Relative phase differences are calculated as Phi_left - Phi_right. Thus, if Phase values
