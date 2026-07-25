@@ -311,8 +311,9 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
 #' @param Funs List. List of function to be used for the aggregation. First is used for Coherence. 
 #'   Optionally, a second is used for Phase. If Limits contains two sets of Limits, but Funs only
 #'   one function, then this function is used for both Phase and Coherence. 
-#' @param withinCOI Logical. Whether only values inside the COI should be included. Defalut is `TRUE`.
-#' @param onlySig Logical. Whether only significant values should be included. Defalut is `TRUE`.
+#' @param labels. Logical. Whether to use labels showing the Bin limits. If false, then Bins are numbered. Default is `TRUE`.
+#' @param withinCOI Logical. Whether only values inside the COI should be included. Default is `TRUE`.
+#' @param onlySig Logical. Whether only significant values should be included. Default is `TRUE`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -325,7 +326,7 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
 #' @export
 #' 
 
-featWTC = function(df, rs.path, Limits, Funs,
+featWTC = function(df, rs.path, Limits, Funs, labels = T,
                    withinCOI = T, onlySig = T, suffix = "", 
                    verbose = T, recompute = F, return = T) {
   
@@ -348,7 +349,7 @@ featWTC = function(df, rs.path, Limits, Funs,
   }
   
   # create labels
-  rsqLabels   = paste0("[", head(Limits[[1]], -1), "-", tail(Limits[[1]], -1), "[")
+  if (labels) rsqLabels = NULL else rsqLabels = FALSE
   rsqFun      = Funs[[1]]
   rsqLimits   = Limits[[1]]
   if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extract coherence aggregates\n")
@@ -379,7 +380,7 @@ featWTC = function(df, rs.path, Limits, Funs,
   # if second Limits, then also for phases
   if (length(Limits) == 2) {
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extract Phase aggregates\n")
-    phaseLabels = paste0("[", head(Limits[[2]], -1), "-", tail(Limits[[2]], -1), "[")
+    if (labels) phaseLabels = NULL else phaseLabels = FALSE
     phaseFun    = Funs[[2]]
     phaseLimits = Limits[[2]]
     df = df |>

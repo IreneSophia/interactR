@@ -9,6 +9,7 @@ featWTC(
   rs.path,
   Limits,
   Funs,
+  labels = T,
   withinCOI = T,
   onlySig = T,
   suffix = "",
@@ -32,9 +33,9 @@ each numeric must include at least two.}
 Optionally, a second is used for Phase. If Limits contains two sets of Limits, but Funs only
 one function, then this function is used for both Phase and Coherence.}
 
-\item{withinCOI}{Logical. Whether only values inside the COI should be included. Defalut is \code{TRUE}.}
+\item{withinCOI}{Logical. Whether only values inside the COI should be included. Default is \code{TRUE}.}
 
-\item{onlySig}{Logical. Whether only significant values should be included. Defalut is \code{TRUE}.}
+\item{onlySig}{Logical. Whether only significant values should be included. Default is \code{TRUE}.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 
@@ -46,6 +47,8 @@ one function, then this function is used for both Phase and Coherence.}
 
 \item{phaseLimits}{Numeric. Frequency limits in Hz for the Phase Bins. All but the last value specify the included lower limit.
 The last value is the excluded maximum period. Must include at least two values.}
+
+\item{labels.}{Logical. Whether to use labels showing the Bin limits. If false, then Bins are numbered. Default is \code{TRUE}.}
 }
 \value{
 If \code{return = TRUE}, returns dataframe. If provided, the dataframe is saved as rds to \code{rs.path}.
