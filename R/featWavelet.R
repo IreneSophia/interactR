@@ -211,7 +211,7 @@ extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
 #' @export
 #' 
 convertWTC = function(ls, rs.path, featname, suffix = "", 
-                   verbose = T, recompute = F, return = T) {
+                      verbose = T, recompute = F, return = T) {
 
   # check rs.path
   if (is.null(rs.path)) {
@@ -237,6 +237,8 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
     df.out = data.frame()
     
     for (i in 1:length(ls)) {
+      
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Processing", i, " of ", length(ls), "\n")
       # check whether the object in the list is the target - if not skip
       if (class(ls[[i]]) != "biwavelet") {
         warning("Skipping ", names(ls)[i], ": not biwavelet.") 
@@ -320,6 +322,16 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
 featWTC = function(df, rs.path, phaseLimits, rsqLimits, withinCOI = T, onlySig = T,
                    suffix = "", verbose = T, recompute = F, return = T) {
   
+  # check rs.path
+  if (is.null(rs.path)) {
+    # create empty filename because nothing will be saved
+    flnm = ''
+  } else {
+    # create filename 
+    flnm  = file.path(rs.path, sprintf("featWTC%s.csv", suffix))
+  }
+  
+  # create labels
   phaseLabels = paste0("[", head(phaseLimits, -1), "-", tail(phaseLimits, -1), "[")
   rsqLabels   = paste0("[", head(rsqLimits, -1), "-", tail(rsqLimits, -1), "[")
   
@@ -376,6 +388,9 @@ featWTC = function(df, rs.path, phaseLimits, rsqLimits, withinCOI = T, onlySig =
       pivot_wider(names_from = rsqBin, names_prefix = "DyadWTC_Rsq_")
     df.agg = merge(df.agg, df.rsq, all.x = T)
   }
+  
+  # save the data
+  if (!is.null(rs.path)) saveRDS(df.out, file = flnm)
   
   if (return) return(df.agg)
   
