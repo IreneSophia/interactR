@@ -16,7 +16,8 @@ numeric, then a random seed is chosen. Default is \code{NULL}.}
 
 \item{side}{Character. Which side to shuffle. Default is \code{right}.}
 
-\item{nsim}{Numeric. Number of pseudo-dyads to be returned. Default is \code{100}.}
+\item{nsim}{Numeric. Number of pseudo-dyads to be returned. Default is \code{100}.
+If nsim > nrow(df), then it shuffles until enough unique pseudo dyads are created.}
 }
 \value{
 Returns a dataframe with pseudo-dyads, including the information of

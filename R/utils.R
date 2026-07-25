@@ -153,6 +153,7 @@ shuffleDyads = function(df, seed = NULL, considerTime = T, inOrder = F, nsim = 1
 #'   numeric, then a random seed is chosen. Default is `NULL`.
 #' @param side Character. Which side to shuffle. Default is `right`.
 #' @param nsim Numeric. Number of pseudo-dyads to be returned. Default is `100`.
+#'   If nsim > nrow(df), then it shuffles until enough unique pseudo dyads are created.
 #'
 #' @return Returns a dataframe with pseudo-dyads, including the information of
 #'   `Dyad`, now consisting of both original dyad IDs, as well as each two 
