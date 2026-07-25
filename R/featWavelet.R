@@ -54,7 +54,7 @@ extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
   } else {
     # create filename depending on whether this is pseudo or not
     if (nrow(df.pseudo) > 0) {
-      flnm  = file.path(rs.path, sprintf("dataWTC_%s_seed-%d_pseudo%s.rds", 
+      flnm  = file.path(rs.path, sprintf("dataWTC_%s_seed-%d-pseudo%s.rds", 
                                          colname, seed, suffix))
       pseudoDyad = T
     } else {
