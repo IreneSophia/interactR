@@ -174,7 +174,7 @@ shuffleIdentifier = function(df, seed = NULL, side = "right", nsim = 100) {
   if (is.numeric(seed)) set.seed(seed) else set.seed(sample(1000:9999, 1))
   
   # preprocess the dataframe
-  df.out = df |>
+  df = df |>
     # extract the side
     mutate(
       Side = if_else(gsub("-.*", "", Dyad) == Identifier, "left", "right"),
@@ -186,24 +186,39 @@ shuffleIdentifier = function(df, seed = NULL, side = "right", nsim = 100) {
     tidyr::pivot_wider(values_from = Session, names_from = Side) |>
     select(-tmp)
   
-  # shuffle either the right or the left ensuring no entry is in its original place
-  shuffled = sample(df.out[[side]])
-  while (any(shuffled == df.out[[side]])) {
-    shuffled = sample(df.out[[side]])
+  df.out = data.frame()
+  x = 0
+  
+  while (nrow(df.out) < nsim) {
+    
+    x = x + 1
+    
+    # get the original preprocessed dataframe
+    df.tmp = df
+    
+    # shuffle either the right or the left ensuring no entry is in its original place
+    shuffled = sample(df.tmp[[side]])
+    while (any(shuffled == df.tmp[[side]])) {
+      shuffled = sample(df.tmp[[side]])
+    }
+    
+    # replace original column
+    df.tmp[[side]] = shuffled
+    
+    # extract needed columns
+    df.tmp = df.tmp |>
+      mutate(pseudoDyad = row_number()) |>
+      tidyr::separate(right, into = c("right_Dyad", "right_Time", "right_Identifier"), sep = "_") |>
+      tidyr::separate(left,  into = c("left_Dyad",  "left_Time",  "left_Identifier"), sep = "_") |>
+      mutate(
+        Dyad = paste0(left_Dyad, "|", right_Dyad)
+      ) |> select(-left_Dyad, -right_Dyad) |>
+      mutate(across(ends_with("Time"), ~ as.POSIXct(.x, tz = timezone)))
+    
+    # add to df.out and only keep unique rows
+    df.out = rbind(df.out, df.tmp |> select(-pseudoDyad)) |> distinct()
+    
   }
-  
-  # replace original column
-  df.out[[side]] = shuffled
-  
-  # extract needed columns
-  df.out = df.out |>
-    mutate(pseudoDyad = row_number()) |>
-    tidyr::separate(right, into = c("right_Dyad", "right_Time", "right_Identifier"), sep = "_") |>
-    tidyr::separate(left,  into = c("left_Dyad",  "left_Time",  "left_Identifier"), sep = "_") |>
-    mutate(
-      Dyad = paste0(left_Dyad, "|", right_Dyad)
-    ) |> select(-left_Dyad, -right_Dyad) |>
-    mutate(across(ends_with("Time"), ~ as.POSIXct(.x, tz = timezone)))
   
   # potentially select nsim random dyads
   if (nsim < nrow(df.out)) df.out = df.out[sample.int(nrow(df.out), nsim, replace = F),]
