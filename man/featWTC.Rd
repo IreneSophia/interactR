@@ -9,6 +9,7 @@ featWTC(
   rs.path,
   phaseLimits,
   rsqLimits,
+  FUN,
   withinCOI = T,
   onlySig = T,
   suffix = "",
@@ -39,6 +40,8 @@ The last value is the excluded maximum period. Must include at least two values.
 \item{recompute}{Logical. Whether existing data on disk should be recomputed and overwritten. Default is \code{FALSE}.}
 
 \item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
+
+\item{FUN.}{Function. Function to be used for the aggregation, e.g., mean or max (for peak).}
 }
 \value{
 If \code{return = TRUE}, returns dataframe. If provided, the dataframe is saved as rds to \code{rs.path}.
