@@ -9,7 +9,8 @@ featWTC(
   rs.path,
   phaseLimits,
   rsqLimits,
-  FUN,
+  phaseFun,
+  rsqFun,
   withinCOI = T,
   onlySig = T,
   suffix = "",
@@ -29,6 +30,10 @@ The last value is the excluded maximum period. Must include at least two values.
 \item{rsqLimits}{Numeric. Frequency limits in Hz for the Coherence Bins. All but the last value specify the included lower limit.
 The last value is the excluded maximum period. Must include at least two values.}
 
+\item{phaseFun}{Function. Function to be used for the aggregation of phase, e.g., mean.}
+
+\item{rsqFun}{Function. Function to be used for the aggregation of coherence, e.g., mean or max (for peak).}
+
 \item{withinCOI}{Logical. Whether only values inside the COI should be included. Defalut is \code{TRUE}.}
 
 \item{onlySig}{Logical. Whether only significant values should be included. Defalut is \code{TRUE}.}
@@ -40,8 +45,6 @@ The last value is the excluded maximum period. Must include at least two values.
 \item{recompute}{Logical. Whether existing data on disk should be recomputed and overwritten. Default is \code{FALSE}.}
 
 \item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
-
-\item{FUN.}{Function. Function to be used for the aggregation, e.g., mean or max (for peak).}
 }
 \value{
 If \code{return = TRUE}, returns dataframe. If provided, the dataframe is saved as rds to \code{rs.path}.

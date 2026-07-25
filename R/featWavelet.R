@@ -305,7 +305,8 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
 #'   The last value is the excluded maximum period. Must include at least two values.
 #' @param rsqLimits Numeric. Frequency limits in Hz for the Coherence Bins. All but the last value specify the included lower limit. 
 #'   The last value is the excluded maximum period. Must include at least two values. 
-#' @param FUN. Function. Function to be used for the aggregation, e.g., mean or max (for peak).
+#' @param phaseFun Function. Function to be used for the aggregation of phase, e.g., mean.
+#' @param rsqFun Function. Function to be used for the aggregation of coherence, e.g., mean or max (for peak).
 #' @param withinCOI Logical. Whether only values inside the COI should be included. Defalut is `TRUE`.
 #' @param onlySig Logical. Whether only significant values should be included. Defalut is `TRUE`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
@@ -320,7 +321,7 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
 #' @export
 #' 
 
-featWTC = function(df, rs.path, phaseLimits, rsqLimits, FUN,
+featWTC = function(df, rs.path, phaseLimits, rsqLimits, phaseFun, rsqFun,
                    withinCOI = T, onlySig = T, suffix = "", 
                    verbose = T, recompute = F, return = T) {
   
@@ -362,17 +363,17 @@ featWTC = function(df, rs.path, phaseLimits, rsqLimits, FUN,
   df.agg = df |>
     group_by(Dyad, Time, pseudoDyad, Feature) |>
     summarise(
-      DyadWTC_Rsq   = FUN(Rsq,   na.rm = T),
-      DyadWTC_Phase = FUN(Phase, na.rm = T),
+      DyadWTC_Rsq   = rsqFun(Rsq,   na.rm = T),
+      DyadWTC_Phase = phaseFun(Phase, na.rm = T),
       .groups = "drop"
     )
   
   if (length(phaseLimits) > 2) {
     # aggregate Phase
-    df.phase = df |> 
+    df.phase = df |> filter(!is.na(phaseBin)) |>
       group_by(Dyad, Time, pseudoDyad, Feature, phaseBin) |>
       summarise(
-        value = FUN(Phase, na.rm = T),
+        value = phaseFun(Phase, na.rm = T),
         .groups = "drop"
       ) |> drop_na() |>
       tidyr::pivot_wider(names_from = phaseBin, names_prefix = "DyadWTC_Phase_")
@@ -381,10 +382,10 @@ featWTC = function(df, rs.path, phaseLimits, rsqLimits, FUN,
   
   if (length(rsqLimits) > 2) {
     # aggregate Phase
-    df.rsq = df |> 
+    df.rsq = df |> filter(!is.na(rsqBin)) |>
       group_by(Dyad, Time, pseudoDyad, Feature, rsqBin) |>
       summarise(
-        value = FUN(Rsq, na.rm = T),
+        value = rsqFun(Rsq, na.rm = T),
         .groups = "drop"
       ) |> drop_na() |>
       tidyr::pivot_wider(names_from = rsqBin, names_prefix = "DyadWTC_Rsq_")
@@ -392,7 +393,7 @@ featWTC = function(df, rs.path, phaseLimits, rsqLimits, FUN,
   }
   
   # save the data
-  if (!is.null(rs.path)) saveRDS(df.out, file = flnm)
+  if (!is.null(rs.path)) saveRDS(df.agg, file = flnm)
   
   if (return) return(df.agg)
   
