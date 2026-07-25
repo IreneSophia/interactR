@@ -7,10 +7,8 @@
 featWTC(
   df,
   rs.path,
-  phaseLimits,
-  rsqLimits,
-  phaseFun,
-  rsqFun,
+  Limits,
+  Funs,
   withinCOI = T,
   onlySig = T,
   suffix = "",
@@ -24,15 +22,15 @@ featWTC(
 
 \item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}
 
-\item{phaseLimits}{Numeric. Frequency limits in Hz for the Phase Bins. All but the last value specify the included lower limit.
-The last value is the excluded maximum period. Must include at least two values.}
+\item{Limits}{List. List containing numeric of frequency limits in Hz.
+First entry is used for the Coherence Bins, optionally a second for Phase Bins.
+All but the last value of each numeric specify the included lower limit.
+The last value is the excluded maximum period. List must include at least one value,
+each numeric must include at least two.}
 
-\item{rsqLimits}{Numeric. Frequency limits in Hz for the Coherence Bins. All but the last value specify the included lower limit.
-The last value is the excluded maximum period. Must include at least two values.}
-
-\item{phaseFun}{Function. Function to be used for the aggregation of phase, e.g., mean.}
-
-\item{rsqFun}{Function. Function to be used for the aggregation of coherence, e.g., mean or max (for peak).}
+\item{Funs}{List. List of function to be used for the aggregation. First is used for Coherence.
+Optionally, a second is used for Phase. If Limits contains two sets of Limits, but Funs only
+one function, then this function is used for both Phase and Coherence.}
 
 \item{withinCOI}{Logical. Whether only values inside the COI should be included. Defalut is \code{TRUE}.}
 
@@ -45,6 +43,9 @@ The last value is the excluded maximum period. Must include at least two values.
 \item{recompute}{Logical. Whether existing data on disk should be recomputed and overwritten. Default is \code{FALSE}.}
 
 \item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
+
+\item{phaseLimits}{Numeric. Frequency limits in Hz for the Phase Bins. All but the last value specify the included lower limit.
+The last value is the excluded maximum period. Must include at least two values.}
 }
 \value{
 If \code{return = TRUE}, returns dataframe. If provided, the dataframe is saved as rds to \code{rs.path}.

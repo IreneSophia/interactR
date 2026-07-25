@@ -303,10 +303,14 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
 #' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param phaseLimits Numeric. Frequency limits in Hz for the Phase Bins. All but the last value specify the included lower limit. 
 #'   The last value is the excluded maximum period. Must include at least two values.
-#' @param rsqLimits Numeric. Frequency limits in Hz for the Coherence Bins. All but the last value specify the included lower limit. 
-#'   The last value is the excluded maximum period. Must include at least two values. 
-#' @param phaseFun Function. Function to be used for the aggregation of phase, e.g., mean.
-#' @param rsqFun Function. Function to be used for the aggregation of coherence, e.g., mean or max (for peak).
+#' @param Limits List. List containing numeric of frequency limits in Hz.
+#'   First entry is used for the Coherence Bins, optionally a second for Phase Bins. 
+#'   All but the last value of each numeric specify the included lower limit. 
+#'   The last value is the excluded maximum period. List must include at least one value, 
+#'   each numeric must include at least two. 
+#' @param Funs List. List of function to be used for the aggregation. First is used for Coherence. 
+#'   Optionally, a second is used for Phase. If Limits contains two sets of Limits, but Funs only
+#'   one function, then this function is used for both Phase and Coherence. 
 #' @param withinCOI Logical. Whether only values inside the COI should be included. Defalut is `TRUE`.
 #' @param onlySig Logical. Whether only significant values should be included. Defalut is `TRUE`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
@@ -321,9 +325,13 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
 #' @export
 #' 
 
-featWTC = function(df, rs.path, phaseLimits, rsqLimits, phaseFun, rsqFun,
+featWTC = function(df, rs.path, Limits, Funs,
                    withinCOI = T, onlySig = T, suffix = "", 
                    verbose = T, recompute = F, return = T) {
+  
+  # check if the variables are correct
+  if ((class(Limits) != "list")  | (class(Funs) != "list")) stop("Both Limits and Funs need to be lists.")
+  if (!(length(Limits) %in% 1:2) | !(length(Limits) %in% 1:2)) stop("Both Limits and Funs need to be of length 1 or 2 - first for coherence and, potentially, second for phase.")
   
   # check rs.path
   if (is.null(rs.path)) {
@@ -334,39 +342,65 @@ featWTC = function(df, rs.path, phaseLimits, rsqLimits, phaseFun, rsqFun,
     flnm  = file.path(rs.path, sprintf("featWTC%s.csv", suffix))
   }
   
+  # if two Limits but only one Fun, then use the same Fun twice
+  if ((length(Limits) == 2) & (length(Funs) == 1)) {
+    Funs = c(Funs, Funs)
+  }
+  
   # create labels
-  phaseLabels = paste0("[", head(phaseLimits, -1), "-", tail(phaseLimits, -1), "[")
-  rsqLabels   = paste0("[", head(rsqLimits, -1), "-", tail(rsqLimits, -1), "[")
+  rsqLabels   = paste0("[", head(Limits[[1]], -1), "-", tail(Limits[[1]], -1), "[")
+  rsqFun      = Funs[[1]]
+  rsqLimits   = Limits[[1]]
+  if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extract coherence aggregates\n")
   
   # potentially exclude outside of COI and not significant values
   if (withinCOI) df = df |> filter(WithinCOI)
-  if (onlySig) df = df |> filter(PermProb > 0.95)
+  if (onlySig)   df = df |> filter(PermProb > 0.95)
   
-  # classify into bins
+  # classify into rsq bins
   df = df |>
-    mutate(phaseBin = cut(Frequency, 
-                          breaks = phaseLimits, 
-                          labels = phaseLabels, 
-                          right = FALSE,
-                          include.lowest = TRUE),
-           rsqBin =   cut(Frequency, 
+    mutate(rsqBin =   cut(Frequency, 
                           breaks = rsqLimits, 
                           labels = rsqLabels, 
                           right = FALSE,
-                          include.lowest = TRUE)
-    ) |> # convert all outside of limits to NA
-    mutate(
-      Rsq   = if_else(is.na(rsqBin), NA, Rsq),
-      Phase = if_else(is.na(phaseBin), NA, Phase)
+                          include.lowest = TRUE),
+           # convert all outside of limits to NA
+           Rsq   = if_else(is.na(rsqBin), NA, Rsq)
     )
   
+  # aggregate
   df.agg = df |>
     group_by(Dyad, Time, pseudoDyad, Feature) |>
     summarise(
       DyadWTC_Rsq   = rsqFun(Rsq,   na.rm = T),
-      DyadWTC_Phase = phaseFun(Phase, na.rm = T),
       .groups = "drop"
     )
+  
+  # if second Limits, then also for phases
+  if (length(Limits) == 2) {
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extract Phase aggregates\n")
+    phaseLabels = paste0("[", head(Limits[[2]], -1), "-", tail(Limits[[2]], -1), "[")
+    phaseFun    = Funs[[2]]
+    phaseLimits = Limits[[2]]
+    df = df |>
+      mutate(phaseBin = cut(Frequency, 
+                            breaks = phaseLimits, 
+                            labels = phaseLabels, 
+                            right = FALSE,
+                            include.lowest = TRUE),
+             #convert outside to NA
+             Phase = if_else(is.na(phaseBin), NA, Phase)
+      )
+    df.agg = merge(df.agg, 
+                   df |>
+                     group_by(Dyad, Time, pseudoDyad, Feature) |>
+                     summarise(
+                       DyadWTC_Phase = phaseFun(Phase, na.rm = T),
+                       .groups = "drop"
+                     ))
+  } else {
+    phaseLimits = c()
+  }
   
   if (length(phaseLimits) > 2) {
     # aggregate Phase
@@ -375,7 +409,7 @@ featWTC = function(df, rs.path, phaseLimits, rsqLimits, phaseFun, rsqFun,
       summarise(
         value = phaseFun(Phase, na.rm = T),
         .groups = "drop"
-      ) |> drop_na() |>
+      ) |> tidyr::drop_na() |>
       tidyr::pivot_wider(names_from = phaseBin, names_prefix = "DyadWTC_Phase_")
     df.agg = merge(df.agg, df.phase, all.x = T)
   }
@@ -387,7 +421,7 @@ featWTC = function(df, rs.path, phaseLimits, rsqLimits, phaseFun, rsqFun,
       summarise(
         value = rsqFun(Rsq, na.rm = T),
         .groups = "drop"
-      ) |> drop_na() |>
+      ) |> tidyr::drop_na() |>
       tidyr::pivot_wider(names_from = rsqBin, names_prefix = "DyadWTC_Rsq_")
     df.agg = merge(df.agg, df.rsq, all.x = T)
   }
