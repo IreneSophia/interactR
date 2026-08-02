@@ -19,6 +19,12 @@ plotWTCcomp = function(df.rsq, col.plot = c("#08519c", "#4B9C79")) {
   
   minFreq = floor(min(df.rsq$Frequency) * 5) / 5
   maxFreq = ceiling(max(df.rsq$Frequency) * 5) / 5
+  
+  # recode the pseudoDyad variable 
+  df.rsq = df.rsq |>
+    mutate(
+      pseudoDyad = if_else(pseudoDyad, "pseudo Dyad", "observed Dyad")
+    )
 
   # plot
   p = df.rsq |>
@@ -34,17 +40,19 @@ plotWTCcomp = function(df.rsq, col.plot = c("#08519c", "#4B9C79")) {
                     ymax = pmin(1, Rsq_avg + Rsq_std)),
                 alpha = 0.2, colour = NA) +
     geom_point(data = df.rsq |> filter(p.adj < 0.05) |>
-                 group_by(pseudoDyad, Frequency, Bin) |>
+                 group_by(pseudoDyad, Frequency, Bin, Type) |>
                  summarise(Rsq_avg = mean(Rsq_avg),
-                           .groups = "drop")) + 
+                           .groups = "drop"),
+               aes(shape = Type), show.legend = F) + 
     theme_bw() +
     scale_fill_manual(values = col.plot) + 
     scale_colour_manual(values = col.plot) + 
+    scale_y_continuous(name = "Coherence") + 
     scale_x_continuous(
       name = "Frequency",
       breaks = log(seq(from = minFreq, to = maxFreq, length.out = 5)),
       labels = seq(from = minFreq, to = maxFreq, length.out = 5)
-    ) + theme(legend.position = "bottom")
+    ) + theme(legend.position = "bottom", legend.title = element_blank())
   
   if (length(unique(df.rsq$Feature)) > 1) p = p + facet_wrap(. ~ Feature)
   
