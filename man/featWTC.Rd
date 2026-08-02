@@ -11,7 +11,6 @@ featWTC(
   Funs,
   labels = T,
   withinCOI = T,
-  onlySig = T,
   suffix = "",
   verbose = T,
   recompute = F,
@@ -34,8 +33,6 @@ Optionally, a second is used for Phase. If Limits contains two sets of Limits, b
 one function, then this function is used for both Phase and Coherence.}
 
 \item{withinCOI}{Logical. Whether only values inside the COI should be included. Default is \code{TRUE}.}
-
-\item{onlySig}{Logical. Whether only significant values should be included. Default is \code{TRUE}.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 

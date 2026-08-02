@@ -8,6 +8,7 @@ convertWTC(
   ls,
   rs.path,
   featname,
+  withinCOI = T,
   suffix = "",
   verbose = T,
   recompute = F,
@@ -21,6 +22,8 @@ Names of the list entries should follow this structure: \verb{[Dyad]_[Time]}.}
 \item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}
 
 \item{featname}{Character. The name of the feature of which WTC was computed.}
+
+\item{withinCOI}{Logical. Whether only values inside the COI should be included. Default is \code{TRUE}.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 

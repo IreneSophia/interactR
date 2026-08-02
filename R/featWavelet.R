@@ -198,6 +198,7 @@ extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
 #'   Names of the list entries should follow this structure: `[Dyad]_[Time]`.
 #' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param featname Character. The name of the feature of which WTC was computed.
+#' @param withinCOI Logical. Whether only values inside the COI should be included. Default is `TRUE`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -210,8 +211,8 @@ extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
 #' @import dplyr
 #' @export
 #' 
-convertWTC = function(ls, rs.path, featname, suffix = "", 
-                      verbose = T, recompute = F, return = T) {
+convertWTC = function(ls, rs.path, featname, withinCOI = T,
+                      suffix = "", verbose = T, recompute = F, return = T) {
 
   # check rs.path
   if (is.null(rs.path)) {
@@ -256,9 +257,6 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
           merge(data.frame(ls[[i]][["phase"]]) |>
                   mutate(Period = ls[[i]][["period"]]) |>
                   tidyr::pivot_longer(cols = starts_with("X"), values_to = "Phase")) |>
-          merge(data.frame(ls[[i]][["signif"]]) |>
-                  mutate(Period = ls[[i]][["period"]]) |>
-                  tidyr::pivot_longer(cols = starts_with("X"), values_to = "PermProb")) |>
           arrange(name) |>
           mutate(
             Timecourse = rep(ls[[i]][["t"]], each = length(ls[[i]][["period"]])),
@@ -278,6 +276,8 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
     # add the featname
     df.out = df.out |> mutate(Feature = featname)
     
+    # potentially filter within COI
+    if (withinCOI) df.out = df.out |> filter(WithinCOI)
     
     # save the data
     if (!is.null(rs.path)) saveRDS(df.out, file = flnm)
@@ -313,7 +313,6 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
 #'   one function, then this function is used for both Phase and Coherence. 
 #' @param labels. Logical. Whether to use labels showing the Bin limits. If false, then Bins are numbered. Default is `TRUE`.
 #' @param withinCOI Logical. Whether only values inside the COI should be included. Default is `TRUE`.
-#' @param onlySig Logical. Whether only significant values should be included. Default is `TRUE`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -327,7 +326,7 @@ convertWTC = function(ls, rs.path, featname, suffix = "",
 #' 
 
 featWTC = function(df, rs.path, Limits, Funs, labels = T,
-                   withinCOI = T, onlySig = T, suffix = "", 
+                   withinCOI = T, suffix = "", 
                    verbose = T, recompute = F, return = T) {
   
   # check if the variables are correct
@@ -354,10 +353,9 @@ featWTC = function(df, rs.path, Limits, Funs, labels = T,
   rsqLimits   = Limits[[1]]
   if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extract coherence aggregates\n")
   
-  # potentially exclude outside of COI and not significant values
+  # potentially exclude outside of COI
   if (withinCOI) df = df |> filter(WithinCOI)
-  if (onlySig)   df = df |> filter(PermProb > 0.95)
-  
+
   # classify into rsq bins
   df = df |>
     mutate(rsqBin =   cut(Frequency, 
