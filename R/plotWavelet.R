@@ -43,6 +43,8 @@ plotWTCcomp = function(df.rsq, col.plot = c("#08519c", "#4B9C79")) {
       labels = exp(seq(from = log(minFreq), to = log(maxFreq), length.out = 5))
     ) + theme(legend.position = "bottom")
   
+  if (length(unique(df.rsq$Feature)) > 1) p = p + facet_wrap(. ~ Feature)
+  
   return(p)
 
 }

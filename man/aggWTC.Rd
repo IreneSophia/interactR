@@ -4,7 +4,16 @@
 \alias{aggWTC}
 \title{Aggregate a dataframe containing the results of WTC to compare pseudo and observed WTC}
 \usage{
-aggWTC(df, minFreq, maxFreq, withinCOI = T)
+aggWTC(
+  df,
+  minFreq,
+  maxFreq,
+  withinCOI = T,
+  suffix = "",
+  verbose = T,
+  recompute = F,
+  return = T
+)
 }
 \arguments{
 \item{df}{Dataframe. Dataframe created by \code{\link[=convertWTC]{convertWTC()}}.}
@@ -14,9 +23,17 @@ aggWTC(df, minFreq, maxFreq, withinCOI = T)
 \item{maxFreq}{Numeric. Maximum frequency which is included.}
 
 \item{withinCOI}{Logical. Whether only values inside the COI should be included. Default is \code{TRUE}.}
+
+\item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
+
+\item{verbose}{Logical. Whether progress and output are printed to the console. Default is \code{TRUE}.}
+
+\item{recompute}{Logical. Whether existing data on disk should be recomputed and overwritten. Default is \code{FALSE}.}
+
+\item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
 }
 \value{
-Returns aggregated dataframe.
+If \code{return = TRUE}, returns dataframe. If provided, the dataframe is saved as rds to \code{rs.path}.
 }
 \description{
 Takes the dataframe created by \code{\link[=convertWTC]{convertWTC()}} and aggregates the results per Frequency,

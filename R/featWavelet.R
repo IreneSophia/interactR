@@ -19,19 +19,45 @@
 
 compareWTC = function(df.rsq, rs.path, suffix = "", 
                       verbose = T, recompute = F, return = T) {
+  # check rs.path
+  if (is.null(rs.path)) {
+    # create empty filename because nothing will be saved
+    flnm = ''
+  } else {
+    # create filename 
+    flnm  = file.path(rs.path, 
+                      sprintf("featWTC_pseudo-comp%s.csv", suffix))
+  }
   
-  # use non-parametric tests to assess differences
-  df.stat = df.rsq |> 
-    group_by(Bin) |> 
-    rstatix::wilcox_test(Rsq_avg ~ pseudoDyad) |> 
-    rstatix::adjust_pvalue(method = "BH") |>
-    mutate(
-      significance = if_else(p.adj < 0.05, "*", "")
-    )
+  # if no recompute and the file exists, it is simply loaded
+  if (!recompute & file.exists(flnm)) {
+    if (return) {
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading WTC comparison\n")
+      df.rsq = read_csv(df.rsq)
+    }
+  } else {
   
-  # merge with the df.rsq
-  df.rsq = merge(df.stat |> select(Bin, statistic, p, p.adj, significance),
-                 df.rsq)
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Comparing pseudo and observed WTC from ", unique(df.rsq$Feature), "\n")
+    
+    # use non-parametric tests to assess differences
+    df.stat = df.rsq |> 
+      group_by(Bin) |> 
+      rstatix::wilcox_test(Rsq_avg ~ pseudoDyad) |> 
+      rstatix::adjust_pvalue(method = "BH") |>
+      mutate(
+        significance = if_else(p.adj < 0.05, "*", "")
+      )
+    
+    # merge with the df.rsq
+    df.rsq = merge(df.stat |> select(Bin, statistic, p, p.adj, significance),
+                   df.rsq)
+    
+    # save the data
+    if (!is.null(rs.path)) write_csv(df.rsq, file = flnm)
+    
+  }
+  
+  if (return) return(df.rsq)
   
 }
 
@@ -44,36 +70,66 @@ compareWTC = function(df.rsq, rs.path, suffix = "",
 #' @param minFreq Numeric. Minimum frequency which is included. 
 #' @param maxFreq Numeric. Maximum frequency which is included. 
 #' @param withinCOI Logical. Whether only values inside the COI should be included. Default is `TRUE`.
+#' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
+#' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
+#' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
+#' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
 #'
-#' @return Returns aggregated dataframe.
+#' @return If `return = TRUE`, returns dataframe. If provided, the dataframe is saved as rds to `rs.path`.
 #' 
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @import dplyr
 #' @export
 #' 
 
-aggWTC = function(df, minFreq, maxFreq, withinCOI = T) {
+aggWTC = function(df, minFreq, maxFreq, withinCOI = T, suffix = "", 
+                  verbose = T, recompute = F, return = T) {
   
-  # filter the data if necessary
-  if (withinCOI) df = df |> filter(WithinCOI)
+  # check rs.path
+  if (is.null(rs.path)) {
+    # create empty filename because nothing will be saved
+    flnm = ''
+  } else {
+    # create filename 
+    flnm  = file.path(rs.path, 
+                      sprintf("dataWTC_pseudo-comp-agg%s.rds", suffix))
+  }
   
-  # filter based on the Limits
-  df = df |>
-    filter(Frequency >= minFreq & Frequency <= maxFreq)
+  # if no recompute and the file exists, it is simply loaded
+  if (!recompute & file.exists(flnm)) {
+    if (return) {
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading aggregated WTC for comparison\n")
+      df.rsq = read_csv(df.rsq)
+    }
+  } else {
+    
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Aggregating pseudo and observed WTC from ", unique(df.rsq$Feature), "\n")
+    
+    # filter the data if necessary
+    if (withinCOI) df = df |> filter(WithinCOI)
+    
+    # filter based on the Limits
+    df = df |>
+      filter(Frequency >= minFreq & Frequency <= maxFreq)
+    
+    # aggregate the data
+    df.rsq = df |>
+      group_by(Period, Frequency, Dyad, Time, pseudoDyad, Feature) |>
+      summarise(
+        Rsq_avg = mean(Rsq), 
+        Rsq_std = sd(Rsq),
+        .groups = "drop"
+      ) |>
+      mutate(
+        Bin = as.numeric(as.factor(Frequency))
+      )
   
-  # aggregate the data
-  df.rsq = df |>
-    group_by(Period, Frequency, Dyad, Time, pseudoDyad, Feature) |>
-    summarise(
-      Rsq_avg = mean(Rsq), 
-      Rsq_std = sd(Rsq),
-      .groups = "drop"
-    ) |>
-    mutate(
-      Bin = as.numeric(as.factor(Frequency))
-    )
+    # save the data
+    if (!is.null(rs.path)) saveRDS(df.rsq, file = flnm)
+    
+  }
   
-  return(df.rsq)
+  if (return) return(df.rsq)
   
 }
 
