@@ -17,8 +17,8 @@
 
 plotWTCcomp = function(df.rsq, col.plot = c("#08519c", "#4B9C79")) {
   
-  minFreq = min(df.rsq$Frequency)
-  maxFreq = max(df.rsq$Frequency)
+  minFreq = floor(min(df.rsq$Frequency) * 5) / 5
+  maxFreq = ceiling(max(df.rsq$Frequency) * 5) / 5
 
   # plot
   p = df.rsq |>
@@ -42,8 +42,8 @@ plotWTCcomp = function(df.rsq, col.plot = c("#08519c", "#4B9C79")) {
     scale_colour_manual(values = col.plot) + 
     scale_x_continuous(
       name = "Frequency",
-      breaks = seq(from = log(minFreq), to = log(maxFreq), length.out = 5),
-      labels = exp(seq(from = log(minFreq), to = log(maxFreq), length.out = 5))
+      breaks = log(seq(from = minFreq, to = maxFreq, length.out = 5)),
+      labels = seq(from = minFreq, to = maxFreq, length.out = 5)
     ) + theme(legend.position = "bottom")
   
   if (length(unique(df.rsq$Feature)) > 1) p = p + facet_wrap(. ~ Feature)
