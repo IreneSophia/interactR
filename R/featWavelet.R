@@ -303,7 +303,8 @@ extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
                          J1  = J1, 
                          nrands = nsim, 
                          mother = "morlet", 
-                         param = order)
+                         param = order, 
+                         quiet = !verbose)
         },
         error = function(e) {
           message(paste("Skipping Dyad", df.dyad$Dyad[i], "due to error:", e$message))
