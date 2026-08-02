@@ -16,6 +16,9 @@
 #' @export
 
 plotWTCcomp = function(df.rsq, col.plot = c("#08519c", "#4B9C79")) {
+  
+  minFreq = min(df.rsq$Frequency)
+  maxFreq = max(df.rsq$Frequency)
 
   # plot
   p = df.rsq |>
