@@ -43,10 +43,13 @@ compareWTC = function(df.rsq, rs.path, suffix = "",
     # use non-parametric tests to assess differences
     df.stat = df.rsq |> 
       group_by(Bin) |> 
-      rstatix::wilcox_test(Rsq_avg ~ pseudoDyad) |> 
+      rstatix::wilcox_test(Rsq_avg ~ pseudoDyad, detailed = T) |> 
       rstatix::adjust_pvalue(method = "BH") |>
       mutate(
-        significance = if_else(p.adj < 0.05, "*", "")
+        Sig  = if_else(p.adj < 0.05, "*", ""),
+        Type = case_when(estimate > 0 & p.adj < 0.05 ~ "coherence",
+                         estimate < 0 & p.adj < 0.05 ~ "hypo-coherence",
+                         T ~ "")
       )
     
     # merge with the df.rsq
