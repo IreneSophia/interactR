@@ -191,6 +191,8 @@ extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
     flnm = ''
+    # get whether this is pseudo or not
+    if (nrow(df.pseudo) > 0) pseudoDyad = T else pseudoDyad = F
   } else {
     # create filename depending on whether this is pseudo or not
     if (nrow(df.pseudo) > 0) {
