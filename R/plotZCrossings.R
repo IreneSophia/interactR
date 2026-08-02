@@ -66,7 +66,7 @@ plotZCrossings = function(df, colname, fps, minDegree,
   # get the shift for the raw data / scale for the frequency
   shift = ceiling(abs(min(df$V)) + maxFreq + 1)
   shift_max = shift + max(df$V)
-  scaleFactor = ceiling(max(df$V)/(maxFreq*2))
+  scaleFactor = ceiling(max(df$V)/(maxFreq*1.2))
   
   # check whether dyad or solo
   IDs = unique(df$Identifier)
@@ -245,7 +245,7 @@ plotZCrossings = function(df, colname, fps, minDegree,
         values = c("Centered" = "solid", "Input" = "dotted", "Zero Crossing" = "dashed")
       ) + 
       scale_y_continuous(
-        name = "Hz", limits = c(-maxFreq*2, maxFreq*2), 
+        name = "Hz", limits = c(-maxFreq*1.2, maxFreq*1.2), 
         sec.axis = sec_axis(transform = ~ . * scaleFactor, name = "Signal")
       ) +
       xlab(sprintf("Seconds (window size %d s)", win)) + 
