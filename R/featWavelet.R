@@ -34,7 +34,7 @@ compareWTC = function(df.rsq, rs.path, suffix = "",
   if (!recompute & file.exists(flnm)) {
     if (return) {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading WTC comparison\n")
-      df.rsq = read_csv(df.rsq)
+      df.rsq = read_csv(flnm)
     }
   } else {
   
@@ -101,7 +101,7 @@ aggWTC = function(df, rs.path, minFreq, maxFreq, withinCOI = T, suffix = "",
   if (!recompute & file.exists(flnm)) {
     if (return) {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading aggregated WTC for comparison\n")
-      df.rsq = read_csv(df.rsq)
+      df.rsq = readRDS(flnm)
     }
   } else {
     
