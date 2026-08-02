@@ -5,6 +5,7 @@
 #' observed Rsq values. 
 #'
 #' @param df Dataframe. Dataframe created by [aggWTC()].
+#' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -67,6 +68,7 @@ compareWTC = function(df.rsq, rs.path, suffix = "",
 #' within given limits of a minimum and maximum Frequency. Values outside COI can be excluded. 
 #'
 #' @param df Dataframe. Dataframe created by [convertWTC()].
+#' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param minFreq Numeric. Minimum frequency which is included. 
 #' @param maxFreq Numeric. Maximum frequency which is included. 
 #' @param withinCOI Logical. Whether only values inside the COI should be included. Default is `TRUE`.
@@ -82,7 +84,7 @@ compareWTC = function(df.rsq, rs.path, suffix = "",
 #' @export
 #' 
 
-aggWTC = function(df, minFreq, maxFreq, withinCOI = T, suffix = "", 
+aggWTC = function(df, rs.path, minFreq, maxFreq, withinCOI = T, suffix = "", 
                   verbose = T, recompute = F, return = T) {
   
   # check rs.path
