@@ -53,7 +53,7 @@ If \code{return = TRUE}, returns dataframe. If provided, the dataframe is saved 
 \description{
 Takes the dataframe created by \code{\link[=convertWTC]{convertWTC()}} and aggregates the results in prespecified Bins
 and across all Bins within the specified limits. Limits may differ between Rsq and Phase.
-Values outside COI and not significant values can be excluded.
+Values outside COI can be excluded.
 }
 \details{
 Relative phase difference was calculated as Phi_left - Phi_right. Thus, if Phase values

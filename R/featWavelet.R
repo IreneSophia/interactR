@@ -1,3 +1,82 @@
+
+#' Compares pseudo and observed WTC within given Frequencies
+#'
+#' Takes the dataframe created by [aggWTC()] and compares the pseudo and the
+#' observed Rsq values. 
+#'
+#' @param df Dataframe. Dataframe created by [aggWTC()].
+#' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
+#' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
+#' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
+#' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
+#'
+#' @return If `return = TRUE`, returns dataframe. If provided, the dataframe is saved as rds to `rs.path`.
+#' 
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @import dplyr
+#' @export
+#' 
+
+compareWTC = function(df.rsq, rs.path, suffix = "", 
+                      verbose = T, recompute = F, return = T) {
+  
+  # use non-parametric tests to assess differences
+  df.stat = df.rsq |> 
+    group_by(Bin) |> 
+    rstatix::wilcox_test(Rsq_avg ~ pseudoDyad) |> 
+    rstatix::adjust_pvalue(method = "BH") |>
+    mutate(
+      significance = if_else(p.adj < 0.05, "*", "")
+    )
+  
+  # merge with the df.rsq
+  df.rsq = merge(df.stat |> select(Bin, statistic, p, p.adj, significance),
+                 df.rsq)
+  
+}
+
+#' Aggregate a dataframe containing the results of WTC to compare pseudo and observed WTC
+#'
+#' Takes the dataframe created by [convertWTC()] and aggregates the results per Frequency, 
+#' within given limits of a minimum and maximum Frequency. Values outside COI can be excluded. 
+#'
+#' @param df Dataframe. Dataframe created by [convertWTC()].
+#' @param minFreq Numeric. Minimum frequency which is included. 
+#' @param maxFreq Numeric. Maximum frequency which is included. 
+#' @param withinCOI Logical. Whether only values inside the COI should be included. Default is `TRUE`.
+#'
+#' @return Returns aggregated dataframe.
+#' 
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @import dplyr
+#' @export
+#' 
+
+aggWTC = function(df, minFreq, maxFreq, withinCOI = T) {
+  
+  # filter the data if necessary
+  if (withinCOI) df = df |> filter(WithinCOI)
+  
+  # filter based on the Limits
+  df = df |>
+    filter(Frequency >= minFreq & Frequency <= maxFreq)
+  
+  # aggregate the data
+  df.rsq = df |>
+    group_by(Period, Frequency, Dyad, Time, pseudoDyad, Feature) |>
+    summarise(
+      Rsq_avg = mean(Rsq), 
+      Rsq_std = sd(Rsq),
+      .groups = "drop"
+    ) |>
+    mutate(
+      Bin = as.numeric(as.factor(Frequency))
+    )
+  
+  return(df.rsq)
+  
+}
+
 #' Compute Wavelet Coherence for Time-course Data
 #'
 #' Uses the \code{\link{biwavelet::wtc}} function to compute the Wavelet Coherence
@@ -292,7 +371,7 @@ convertWTC = function(ls, rs.path, featname, withinCOI = T,
 #'
 #' Takes the dataframe created by [convertWTC()] and aggregates the results in prespecified Bins
 #' and across all Bins within the specified limits. Limits may differ between Rsq and Phase. 
-#' Values outside COI and not significant values can be excluded. 
+#' Values outside COI can be excluded. 
 #'
 #' @details Relative phase difference was calculated as Phi_left - Phi_right. Thus, if Phase values
 #'   are positive, this indicates the left Identifier was leading, while negative values indicate that
