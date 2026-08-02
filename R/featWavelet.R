@@ -53,7 +53,7 @@ compareWTC = function(df.rsq, rs.path, suffix = "",
       )
     
     # merge with the df.rsq
-    df.rsq = merge(df.stat |> select(Bin, statistic, p, p.adj, significance),
+    df.rsq = merge(df.stat |> select(Bin, statistic, p, p.adj, estimate, conf.low, conf.high, Sig, Type),
                    df.rsq)
     
     # save the data
