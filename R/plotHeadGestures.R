@@ -75,7 +75,7 @@ plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
     rename("V" = "V_signal")
   
   # get the shift for the raw data / scale for the frequency
-  scaleFactor = ceiling(max(df$V)/(maxFreq*2))
+  scaleFactor = ceiling(max(df$V)/(maxFreq*1.2))
   
   p = df |> 
     ggplot(aes(x = Frame, fill = Gesture)) + 
@@ -106,7 +106,7 @@ plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
       values = c("Centered" = "solid", "Input" = "dotted", "Zero Crossing" = "dashed")
     ) + 
     scale_y_continuous(
-      name = "Hz", limits = c(-maxFreq*2, maxFreq*2), 
+      name = "Hz", limits = c(-maxFreq*1.2, maxFreq*1.2), 
       sec.axis = sec_axis(transform = ~ . * scaleFactor, name = "Signal")
     ) +
     xlab(sprintf("Seconds (window size %d s)", win)) + 
