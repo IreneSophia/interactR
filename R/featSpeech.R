@@ -45,24 +45,22 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
   
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
-    if (return) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading speech features\n")
-      df.out = readr::read_csv(flnm, show_col_types = F)
-    }
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading speech features\n")
+    df.out = readr::read_csv(flnm, show_col_types = F)
   } else {
-  
-      if (!is.null(praat.path)) {
-        # OPTION 1: ASSUMING PRAAT DATAFRAME
-      
-        checkDF(df.speak, c("Dyad", "Identifier", "Turn", "Start", "End", "Duration", "nSyll"))
-        
-        if (!file.exists(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv")))) {
-          stop("Specified praat path and prefix do not lead to file ", paste0(praat.prefix, "_pitchIntensity.csv"))
-        }
     
+    if (!is.null(praat.path)) {
+      # OPTION 1: ASSUMING PRAAT DATAFRAME
+      
+      checkDF(df.speak, c("Dyad", "Identifier", "Turn", "Start", "End", "Duration", "nSyll"))
+      
+      if (!file.exists(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv")))) {
+        stop("Specified praat path and prefix do not lead to file ", paste0(praat.prefix, "_pitchIntensity.csv"))
+      }
+      
       # give some info
       if (verbose) cat("----------- Extracting and aggregating Speech features -----------\n")
-    
+      
       # read in the praat output capturing pitch and intensity
       df.pint = readr::read_csv(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv")),
                                 show_col_types = F) |>
@@ -165,10 +163,10 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
       full_join(df, by = c('Dyad', 'Identifier')) |>
       select(where(~ any(!is.na(.x))))
     
+    # save the features
+    if (!is.null(rs.path)) readr::write_csv(df.out, file = flnm)
+    
   }
-  
-  # save the features
-  if (!is.null(rs.path)) readr::write_csv(df.out, file = flnm)
   
   if (return) return(df.out |> ungroup())
   
