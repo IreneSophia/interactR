@@ -121,7 +121,7 @@ featEFE = function(df, rs.path, suffix = "", verbose = T,
     df.out = df.face |> select(-starts_with("Facial_")) |> 
       tidyr::pivot_longer(cols = c(Anger, Disgust, Joy, Fear, Sadness, Surprise, Contempt), 
                    names_to = "Emotion", names_prefix = "EFE.") |> 
-      group_by(Dyad, Identifier, Time, Partner, Emotion) |> 
+      group_by(Dyad, Identifier, Time, across(any_of('Partner')), Emotion) |> 
       summarise(value = mean(value)) |> 
       tidyr::pivot_wider(names_from = Emotion, 
                   names_glue = "EFE_{Emotion}_Total")
@@ -132,7 +132,7 @@ featEFE = function(df, rs.path, suffix = "", verbose = T,
         df.face |> select(-starts_with("Facial_")) |> 
           tidyr::pivot_longer(cols = c(Anger, Disgust, Joy, Fear, Sadness, Surprise, Contempt), 
                        names_to = "Emotion", names_prefix = "EFE.") |> 
-          group_by(Dyad, Identifier, Time, Partner, Communication, Emotion) |> 
+          group_by(Dyad, Identifier, Time, across(any_of('Partner')), Communication, Emotion) |> 
           summarise(value = mean(value)) |> 
           tidyr::pivot_wider(names_from = c(Emotion, Communication), 
                       names_glue = "EFE_{Emotion}_{Communication}"))
