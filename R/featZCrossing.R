@@ -13,7 +13,7 @@
 #' 1. **Baseline Centering:** Removes slow-moving baseline drift using a running mean ([aggSlide()]).
 #' 2. **Frequency Mapping:** Counts sign inversions using [findZCrossing()] over an explicit window interval.
 #' 3. **Bandpass Filtering:** Identifies sequences falling strictly within the bounds defined by `minFreq` and `maxFreq`.
-#' 4. **Smoothing:** Stabilizes transient state transitions by enforcing a secondary duration validation window.
+#' 4. **Smoothing:** Enforcing a secondary duration validation window with only segments of at least half its length considered relevant.
 #'
 #' Newly generated vectors are appended back to the source data frame utilizing a 
 #' systematic naming template (e.g., `[column]_centred`, `[column]_sum`, 
@@ -52,8 +52,6 @@ featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "",
                          winCentre = NULL, winSmooth = 0, 
                          verbose = T, recompute = F, return = T) {
   
-  checkDF(df, c("Dyad", "Identifier", "Time", "Frame", "Timestamp", colnames))
-  
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
@@ -75,6 +73,8 @@ featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "",
   } else {
     
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Exctracting Zero Crossings from ", paste(colnames, collapse = ", "), "\n")
+    
+    checkDF(df, c("Dyad", "Identifier", "Time", "Frame", "Timestamp", colnames))
     
     # focus on relevant columns 
     df = df |>
@@ -143,7 +143,7 @@ featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "",
 
 #' Agreggate Zero-Crossing Frequency Extracted from Time Series Data
 #'
-#' Aggregates the results from \code{\link{featZCrossing}} to provide one 
+#' Aggregates the results from \code{\link{featZCrossing}} or \code{\link{featHeadGestures}} to provide one 
 #' absolute and one relative value per Identifier per time series. 
 #'
 #' @param df Dataframe. The dataset containing the variables to be processed, created by \code{\link{featZCrossing}}. 
@@ -167,8 +167,6 @@ featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "",
 aggZCrossing = function(df, rs.path, colnames, suffix = "",
                         verbose = T, recompute = F, return = T) {
   
-  checkDF(df, c("Dyad", "Identifier", "Time", "Frame", colnames))
-  
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
@@ -188,6 +186,7 @@ aggZCrossing = function(df, rs.path, colnames, suffix = "",
     
     # aggregate the ZC information
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Aggregating information\n")
+    checkDF(df, c("Dyad", "Identifier", "Time", "Frame", colnames))
     
     # overall ZC information
     df.out = df |> 

@@ -36,7 +36,7 @@ to extract zero-crossing features.}
 If \code{return = TRUE}, returns the dataframe or saves consolidated summary CSV to \code{rs.path} if provided.
 }
 \description{
-Aggregates the results from \code{\link{featZCrossing}} to provide one
+Aggregates the results from \code{\link{featZCrossing}} or \code{\link{featHeadGestures}} to provide one
 absolute and one relative value per Identifier per time series.
 }
 \seealso{

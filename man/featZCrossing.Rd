@@ -73,7 +73,7 @@ The calculation executes sequentially across one or more specified columns:
 \item \strong{Baseline Centering:} Removes slow-moving baseline drift using a running mean (\code{\link[=aggSlide]{aggSlide()}}).
 \item \strong{Frequency Mapping:} Counts sign inversions using \code{\link[=findZCrossing]{findZCrossing()}} over an explicit window interval.
 \item \strong{Bandpass Filtering:} Identifies sequences falling strictly within the bounds defined by \code{minFreq} and \code{maxFreq}.
-\item \strong{Smoothing:} Stabilizes transient state transitions by enforcing a secondary duration validation window.
+\item \strong{Smoothing:} Enforcing a secondary duration validation window with only segments of at least half its length considered relevant.
 }
 
 Newly generated vectors are appended back to the source data frame utilizing a
