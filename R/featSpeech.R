@@ -151,7 +151,8 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
       )
     
     # use the function to detect turns
-    df.turns = detectTurns(df.speak, verbose = verbose)
+    df.turns = detectTurns(df.speak, rs.path, suffix = suffix,
+                           verbose = verbose, recompute = T, return = T)
     
     # aggregate and merge all the information
     if (verbose) cat(format(Sys.time(), "%X %Z"), ": Aggregate and save features\n")
@@ -184,68 +185,97 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
 #' @param df.speak Dataframe containing all information about the sounding instances,
 #'   can be created using [convertGrid()] and needs to contain the columns
 #'   `Dyad`, `Identifier`, `Turn`, `Start`, `End` and `Duration`.
+#' @param rs.path Character. Path to the directory where the output files will be saved.
+#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
+#' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
+#' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
+#' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `FALSE`.
 #'
-#' @return Dataframe containing all turns. 
+#' @return If `return = TRUE`, returns the processed dataframe. Saves `dataTurn[suffix].rds` to disk if `rs.path` is provided.
 #' 
 #' @import dplyr
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
 #' 
 
-detectTurns = function(df.speak, verbose = T) {
+detectTurns = function(df.speak, rs.path, suffix = '',
+                       verbose = T, recompute = F, return = F) {
   
-  checkDF(df.speak, c("Dyad", "Identifier", "Turn", "Start", "End", "Duration"))
   
-  # ensure that the dataframe is properly arranged
-  df.speak = df.speak |>
-    arrange(Dyad, Start, End) |>
-    mutate(
-      engulfed = F
-    )
-  
-  # we need to get rid of all sounding instance that are completely engulfed in another
-  if (verbose) cat(format(Sys.time(), "%X %Z"), ": Remove engulfed sounds\n")
-  for (i in 2:nrow(df.speak)) {
-    if (sum((df.speak$Start[i] >= df.speak[(df.speak$Dyad == df.speak$Dyad[i]),]$Start) &  
-            (df.speak$End[i]   <= df.speak[(df.speak$Dyad == df.speak$Dyad[i]),]$End)) > 1 ) { 
-      df.speak$engulfed[i] = T
-    } 
+  # check rs.path
+  if (is.null(rs.path)) {
+    # create empty filename because nothing will be saved
+    flnm = ''
+  } else {
+    # create filename
+    flnm = file.path(rs.path, sprintf("dataTurn%s.rds", suffix))
   }
-  df.speak = df.speak |> filter(engulfed == F) |> select(-c(engulfed))
   
-  # identify turns: here, turns are defined as starting with the first sounding
-  # instance of a person until the end of the last sounding instance of this 
-  # person before a non-engulfed sounding instance of another person
-  if (verbose) cat(format(Sys.time(), "%X %Z"), ": Detect turns\n")
-  df.turns = df.speak |>
-    ungroup() |>
-    mutate(rown = row_number()) |>             # add row number
-    group_by(Dyad, Identifier) |>              # group by the person speaking
-    mutate(
-      tn = cumsum(c(TRUE, diff(rown) > 1))      # always keep the lowest row number of this turn as turn number
-    ) |>
-    ungroup() |>
-    mutate(
-      Turn = paste0(Identifier, "_", tn)        # add this turn number to the person speaking
-    ) |>
-    group_by(Dyad, Identifier, Turn) |>        # summarise by Dyad, Identifier and Turn
-    summarise(
-      StartTurn = min(Start, na.rm = T),        # take the start of the first sounding instance
-      EndTurn   = max(End, na.rm = T),          # take the end of the last sounding instance
-      DurTurn   = EndTurn - StartTurn           # compute duration of the turn
-    ) |> 
-    arrange(Dyad, StartTurn) |>
-    group_by(Dyad) |>
-    mutate(
-      Turn = row_number()
-    ) |>
-    group_by(Dyad) |>
-    mutate(
-      TTG = StartTurn - lag(EndTurn)
-    )
+  # if no recompute and the file exists, it is simply loaded
+  if (!recompute & file.exists(flnm)) {
+    if (return) {
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading turns\n")
+      df.turns = readRDS(flnm)
+    }
+  } else {
   
-  return(df.turns)
+    checkDF(df.speak, c("Dyad", "Identifier", "Turn", "Start", "End", "Duration"))
+    
+    # ensure that the dataframe is properly arranged
+    df.speak = df.speak |>
+      arrange(Dyad, Start, End) |>
+      mutate(
+        engulfed = F
+      )
+    
+    # we need to get rid of all sounding instance that are completely engulfed in another
+    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Remove engulfed sounds\n")
+    for (i in 2:nrow(df.speak)) {
+      if (sum((df.speak$Start[i] >= df.speak[(df.speak$Dyad == df.speak$Dyad[i]),]$Start) &  
+              (df.speak$End[i]   <= df.speak[(df.speak$Dyad == df.speak$Dyad[i]),]$End)) > 1 ) { 
+        df.speak$engulfed[i] = T
+      } 
+    }
+    df.speak = df.speak |> filter(engulfed == F) |> select(-c(engulfed))
+    
+    # identify turns: here, turns are defined as starting with the first sounding
+    # instance of a person until the end of the last sounding instance of this 
+    # person before a non-engulfed sounding instance of another person
+    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Detect turns\n")
+    df.turns = df.speak |>
+      ungroup() |>
+      mutate(rown = row_number()) |>             # add row number
+      group_by(Dyad, Identifier) |>              # group by the person speaking
+      mutate(
+        tn = cumsum(c(TRUE, diff(rown) > 1))      # always keep the lowest row number of this turn as turn number
+      ) |>
+      ungroup() |>
+      mutate(
+        Turn = paste0(Identifier, "_", tn)        # add this turn number to the person speaking
+      ) |>
+      group_by(Dyad, Identifier, Turn) |>        # summarise by Dyad, Identifier and Turn
+      summarise(
+        StartTurn = min(Start, na.rm = T),        # take the start of the first sounding instance
+        EndTurn   = max(End, na.rm = T),          # take the end of the last sounding instance
+        DurTurn   = EndTurn - StartTurn           # compute duration of the turn
+      ) |> 
+      arrange(Dyad, StartTurn) |>
+      group_by(Dyad) |>
+      mutate(
+        Turn = row_number()
+      ) |>
+      group_by(Dyad) |>
+      mutate(
+        TTG = StartTurn - lag(EndTurn)
+      )
+    
+    # save the features
+    if (!is.null(rs.path)) saveRDS(df.turns, file = flnm)
+    
+  }
+  
+  if (return) return(df.turns |> ungroup())
   
 }
 

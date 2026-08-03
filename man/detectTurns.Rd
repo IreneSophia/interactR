@@ -4,17 +4,33 @@
 \alias{detectTurns}
 \title{Detect Turns based on Sounding Instances}
 \usage{
-detectTurns(df.speak, verbose = T)
+detectTurns(
+  df.speak,
+  rs.path,
+  suffix = "",
+  verbose = T,
+  recompute = F,
+  return = F
+)
 }
 \arguments{
 \item{df.speak}{Dataframe containing all information about the sounding instances,
 can be created using \code{\link[=convertGrid]{convertGrid()}} and needs to contain the columns
 \code{Dyad}, \code{Identifier}, \code{Turn}, \code{Start}, \code{End} and \code{Duration}.}
 
+\item{rs.path}{Character. Path to the directory where the output files will be saved.
+If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk.}
+
+\item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
+
 \item{verbose}{Logical. Whether progress and output are printed to the console. Default is \code{TRUE}.}
+
+\item{recompute}{Logical. Whether existing data on disk should be recomputed and overwritten. Default is \code{FALSE}.}
+
+\item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{FALSE}.}
 }
 \value{
-Dataframe containing all turns.
+If \code{return = TRUE}, returns the processed dataframe. Saves \verb{dataTurn[suffix].rds} to disk if \code{rs.path} is provided.
 }
 \description{
 This function takes a datframe containing sounding instances and detects turns -
