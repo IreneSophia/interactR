@@ -39,8 +39,6 @@ featHeadGestures = function(df, rs.path, colNodding, colShaking, fps, minDegree,
                             winCentre = NULL, winSmooth = 0, 
                             verbose = T, recompute = F, return = T) {
   
-  checkDF(df, c("Dyad", "Identifier", "Frame", "Time", colNodding, colShaking))
-  
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
@@ -62,6 +60,8 @@ featHeadGestures = function(df, rs.path, colNodding, colShaking, fps, minDegree,
   } else {
     
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Exctracting Head Gestures from ", paste(c(colNodding, colShaking), collapse = ", "), "\n")
+    
+    checkDF(df, c("Dyad", "Identifier", "Frame", "Time", colNodding, colShaking))
     
     # process the dataframe to extract Zero Crossings
     df = featZCrossing(df, c(), c(colNodding, colShaking), fps, minDegree,
