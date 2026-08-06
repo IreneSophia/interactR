@@ -114,7 +114,8 @@ extractDataVERSE = function(df.info, timezone = c(),
     
     # any other information in the df.info is added - needed for cutting data
     df = df |> 
-      merge(df.info)
+      # disregard any timestamps that may be in df.info
+      merge(df.info |> select(-any_of("Timestamp")))
     
     # if the df.info contains start and end times, then cut out everything in-between
     if (sum(c("start.use", "end.use") %in% colnames(df.info)) == 2) {
@@ -234,10 +235,11 @@ extractDataVERSE = function(df.info, timezone = c(),
       df$Identifier = recode[df$Identifier]
     }
     
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
-    
     # save the data frame
-    if (save) saveRDS(df |> ungroup(), file.path(rs.path, sprintf("dataVERSE%s.rds", suffix)))
+    if (save) {
+      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      saveRDS(df |> ungroup(), file.path(rs.path, sprintf("dataVERSE%s.rds", suffix)))
+      }
   }
   
   # return the ungrouped dataframe
