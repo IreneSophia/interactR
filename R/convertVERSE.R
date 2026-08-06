@@ -9,10 +9,13 @@
 #'   Can optionally contain parameters defining windows: 
 #'   `start.use` (first Timestamp), `end.use` (last Timestamp), 
 #'   or `frame.use` (number of frames starting at `start.use` or sequence origin).
-#' @param rs.path Path to the directory where the output file will be saved, if empty (is.null(rs.path) == TRUE), then nothing is saved
-#' @param timezone Character. Timezone in which the data collection was conducted.
+#' @param timezone Character. Timezone in which the data collection was conducted. 
+#'   If this is null, then the tiemzone is determined using `Sys.timezone()`. Default is `c()`.
+#' @param rs.path Path to the directory where the output file will be saved, if empty (is.null(rs.path) == TRUE), 
+#'   then nothing is saved. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
-#' @param anonymise Logical. Switch to toggle whether Identifiers should be anonymised and Time should be reset to 0 for anonymisation. Default is `FALSE`.
+#' @param anonymise Logical. Switch to toggle whether Identifiers should be anonymised and Time should be 
+#'   reset to 0 for anonymisation. Default is `FALSE`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
 #' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
@@ -24,10 +27,9 @@
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
 
-extractData = function(df.info, rs.path, timezone, suffix = '', anonymise = F, 
-                       verbose = T, recompute = F, return = T) {
-  
-  checkDF(df.info, c("Filename", "Time"))
+extractDataVERSE = function(df.info, timezone = c(), 
+                            rs.path = c(), suffix = '', anonymise = F, 
+                            verbose = T, recompute = F, return = T) {
   
   # check whether the data should be saved
   if (is.null(rs.path)) {
@@ -36,6 +38,9 @@ extractData = function(df.info, rs.path, timezone, suffix = '', anonymise = F,
   } else {
     save = T
   }
+  
+  # check whether a timezone was provided or should be extracted
+  if (is.null(timezone)) timezone = Sys.timezone()
   
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(file.path(rs.path, sprintf("dataVERSE%s.rds", suffix)))) {
@@ -50,6 +55,8 @@ extractData = function(df.info, rs.path, timezone, suffix = '', anonymise = F,
     
     # give some info
     if (verbose) cat("----------- Extracting data from", nrow(df.info), "VERSE experiments -----------\n")
+    
+    checkDF(df.info, c("Filename", "Time"))
     
     # extract the header from one of the files
     header = as.character(
@@ -283,7 +290,7 @@ readCSVs = function(Filename, cols = 1:186) {
 #' @param fl.ls Character vector. File system paths pointing to target `EventLog.txt` documents.
 #' @param timezone Character. Timezone in which the data collection was conducted.
 #' @param type Character string. Target format of parsing outcome. Use `"list"` to compile all 
-#'   unprocessed elements dynamically, or `"df"` to extract structured tabular fields. Default is `"list"`.
+#'   unprocessed elements dynamically, or `"df"` to extract structured tabular fields. Default is `"df"`.
 #'
 #' @return A composite `list` or integrated `dataframe` depending on selection assigned to `type`.
 #' 
@@ -292,7 +299,7 @@ readCSVs = function(Filename, cols = 1:186) {
 #' @export
 #' 
 
-extractEvents = function(fl.ls, timezone, type = "list") {
+extractEventsVERSE = function(fl.ls, timezone, type = "df") {
   
   # return all the information as a list
   if (type == "list") {
@@ -339,7 +346,7 @@ extractEvents = function(fl.ls, timezone, type = "list") {
                              txt[grep("\"Environment\":", txt)]),
           Time = as.POSIXct(gsub(".*/(.+)/EventLog.txt", "\\1", fl.ls[i]), 
                             format = "%Y-%m-%d_%H-%M-%S", tz = timezone),
-          Filename = fl.ls[i]
+          Filename = gsub("EventLog.txt", "TrackingDataLog.csv", fl.ls[i])
         )
       # add the actors / participants, depending on their number
       if (length(grep("\"DefaultAvatar\":", txt)) == 1) {
@@ -347,8 +354,8 @@ extractEvents = function(fl.ls, timezone, type = "list") {
           mutate(
             actor0  = gsub(".*\"(.+)\"", "\\1", txt[grep("\"Participants\":", txt)+1]),
             avatar0 = gsub(".*\": \"(.+)\",", "\\1", txt[grep("\"DefaultAvatar\":", txt)[1]]), 
-            actor1  = NA,
-            avatar1 = NA
+            actor1  = "",
+            avatar1 = ""
           )
       } else {
         df.txt = df.txt |> 
