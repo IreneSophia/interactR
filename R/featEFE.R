@@ -86,6 +86,22 @@ featEFE = function(df, rs.path = c(), suffix = "", verbose = T,
                 "enough information to meaningfully interpret each emotion.")
       }
       
+      # rescale some of the facial expressions from VERSE if they are composites
+      # of multiple shapes
+      df = df |>
+        mutate(
+          Facial_BrowInnerUp      = Facial_BrowInnerUp / 2, # combines InnerBrowRaiserR and InnerBrowRaiserL
+          Facial_BrowOuterUpLeft  = Facial_BrowOuterUpLeft / 1.5, # takes 0.015 instead of 0.010
+          Facial_BrowOuterUpRight = Facial_BrowOuterUpRight / 1.5, # takes 0.015 instead of 0.010
+          Facial_CheekPuff        = Facial_CheekPuff / 2, # combines CheekPuffL and CheekPuffR
+          Facial_CheekSquintLeft  = Facial_CheekSquintLeft / 2, # combines CheekRaiserL and LipCornerPullerL
+          Facial_CheekSquintRight = Facial_CheekSquintRight / 2, 
+          Facial_LeftEye_Squint   = Facial_LeftEye_Squint / 1.25, # LidTightenerL and 0.0025 of LipCornerPullerL
+          Facial_MouthFunnel      = Facial_MouthFunnel / 1.5, # combines 0.0025 of 6 Blendshapes
+          Facial_MouthPucker      = Facial_MouthPucker / 1.3, # combines LipPuckerL and R with each 0.0065
+          Facial_RightEye_Squint  = Facial_RightEye_Squint / 1.25 # same as Left
+        )
+      
       # preprocessing facial expressions
       df.face = df |> 
         select(Dyad, Identifier, Time, Frame, any_of(c('Time', 'Timestamp', 'Partner', 'Actor', 'Communication')),
@@ -120,28 +136,47 @@ featEFE = function(df, rs.path = c(), suffix = "", verbose = T,
       # save the preprocessed facial data
       if (!is.null(rs.path)) saveRDS(df.face, flrds)
     }
-    # aggregate the emotional expressions
-    df.out = df.face |> select(-starts_with("Facial_")) |> 
+    # convert to long
+    df.face = df.face |> select(-starts_with("Facial_")) |> 
       tidyr::pivot_longer(cols = c(Anger, Disgust, Joy, Fear, Sadness, Surprise, Contempt), 
-                   names_to = "Emotion", names_prefix = "EFE.") |> 
-      group_by(Dyad, Identifier, Time, across(any_of('Partner')), Emotion) |> 
-      summarise(value = mean(value),
-                .groups = "drop") |> 
-      tidyr::pivot_wider(names_from = Emotion, 
-                  names_glue = "EFE_{Emotion}_Total")
+                          names_to = "Emotion", names_prefix = "EFE.")
+    # aggregate the emotional expressions
+    df.out = merge(
+      # individually for the emotions
+      df.face |> 
+        group_by(Dyad, Identifier, Time, across(any_of('Partner')), Emotion) |> 
+        summarise(value = mean(value),
+                  .groups = "drop") |> 
+        tidyr::pivot_wider(names_from = Emotion, 
+                    names_glue = "EFE_{Emotion}_Total"),
+      # over all emotions
+      df.face |> 
+        group_by(Dyad, Identifier, Time, across(any_of('Partner'))) |> 
+        summarise(EFE_Total = mean(value),
+                  .groups = "drop"))
     # potentially adding values depending on Communication
     if ("Communication" %in% colnames(df.face)) {
       df.out = merge(
         df.out, 
-        df.face |> select(-starts_with("Facial_")) |> 
-          tidyr::pivot_longer(cols = c(Anger, Disgust, Joy, Fear, Sadness, Surprise, Contempt), 
-                       names_to = "Emotion", names_prefix = "EFE.") |> 
+        df.face |> 
           group_by(Dyad, Identifier, Time, across(any_of('Partner')), Communication, Emotion) |> 
           summarise(value = mean(value),
                     .groups = "drop") |> 
           tidyr::pivot_wider(names_from = c(Emotion, Communication), 
-                      names_glue = "EFE_{Emotion}_{Communication}"))
+                      names_glue = "EFE_{Emotion}_{Communication}")) |>
+        merge(
+          df.face |> 
+            group_by(Dyad, Identifier, Time, across(any_of('Partner')), Communication) |> 
+            summarise(value = mean(value),
+                      .groups = "drop") |> 
+            tidyr::pivot_wider(names_from = Communication, 
+                               names_glue = "EFE_{Communication}")
+        )
     }
+    # replace any NAs with 0 - for example, if one person is not speaking at all
+    df.out = df.out |> 
+      mutate(across(everything(), ~ tidyr::replace_na(.x, 0)))
+    
     # save feature face dataframe
     if (!is.null(rs.path)) readr::write_csv(df.out, flcsv)
   }
