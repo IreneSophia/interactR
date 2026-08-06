@@ -11,7 +11,7 @@ plotPhaseRose(df.dyad, Bins, col.plot = "#4B9C79")
 
 \item{Bins}{Numeric. Number of Bins in which phases should be separated.}
 
-\item{col.plot}{Character vector containing Hex colour code.}
+\item{col.plot}{Character vector containing Hex colour code. Default is green.}
 }
 \value{
 A \code{ggplot} object.
