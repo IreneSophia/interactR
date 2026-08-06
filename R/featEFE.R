@@ -49,22 +49,6 @@
 featEFE = function(df, rs.path = c(), suffix = "", verbose = T,
                     recompute = F, return = T) {
   
-  checkDF(df, c("Dyad", "Identifier", "Frame", "Time"))
-  
-  # check the facial columns
-  if (length(colnames(df |> 
-                      select(matches(
-                        c("Facial_BrowDown.*", "Facial_.*Eye_Squint", "Facial_.*Eye_Wide", 
-                          "Facial_MouthPucker", "Facial_MouthFrown.*", "Facial_MouthLowerDown.*", 
-                          "Facial_NoseSneer.*", "Facial_CheekSquint.*", "Facial_MouthSmile.*", 
-                          "Facial_BrowInnerUp", "Facial_BrowOuterUp.*", "Facial_JawOpen", 
-                          "Facial_MouthStretch.*", "Facial_MouthDimple.*"))))) < 25) {
-    warning("Dataframe df is containing less columns for extracting the emotions than expected.\n",
-            "If you aggregated across both sides of the face, this can be expected and is potentially no need to worry.\n",
-            "To be sure, please check the documentation of the function to assess whether you have\n",
-            "enough information to meaningfully interpret each emotion.")
-  }
-  
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
@@ -84,6 +68,24 @@ featEFE = function(df, rs.path = c(), suffix = "", verbose = T,
       df.face = readRDS(flrds)
     } else {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Preprocessing facial expressions\n")
+      
+      # check the columns
+      checkDF(df, c("Dyad", "Identifier", "Frame", "Time"))
+      
+      # check the facial columns
+      if (length(colnames(df |> 
+                          select(matches(
+                            c("Facial_BrowDown.*", "Facial_.*Eye_Squint", "Facial_.*Eye_Wide", 
+                              "Facial_MouthPucker", "Facial_MouthFrown.*", "Facial_MouthLowerDown.*", 
+                              "Facial_NoseSneer.*", "Facial_CheekSquint.*", "Facial_MouthSmile.*", 
+                              "Facial_BrowInnerUp", "Facial_BrowOuterUp.*", "Facial_JawOpen", 
+                              "Facial_MouthStretch.*", "Facial_MouthDimple.*"))))) < 25) {
+        warning("Dataframe df is containing less columns for extracting the emotions than expected.\n",
+                "If you aggregated across both sides of the face, this can be expected and is potentially no need to worry.\n",
+                "To be sure, please check the documentation of the function to assess whether you have\n",
+                "enough information to meaningfully interpret each emotion.")
+      }
+      
       # preprocessing facial expressions
       df.face = df |> 
         select(Dyad, Identifier, Time, Frame, any_of(c('Time', 'Timestamp', 'Partner', 'Actor', 'Communication')),
