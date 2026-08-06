@@ -4,7 +4,7 @@
 \alias{featEFE}
 \title{Combine ARKit52 Facial Expressions into Emotional Facial Expressions (EFE)}
 \usage{
-featEFE(df, rs.path, suffix = "", verbose = T, recompute = F, return = F)
+featEFE(df, rs.path = c(), suffix = "", verbose = T, recompute = F, return = T)
 }
 \arguments{
 \item{df}{Dataframe containing the facial data. Must contain the columns \code{Dyad},
@@ -19,7 +19,7 @@ If the dataframe contains a \code{Communication} column, EFEs are also
 aggregated based on Speaking, Listening, Both and None.}
 
 \item{rs.path}{Character. Path to the directory where the output files will be saved.
-If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk.}
+If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk. Default is \code{c()}.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 

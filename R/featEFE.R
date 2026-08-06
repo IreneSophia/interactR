@@ -32,7 +32,7 @@
 #'   If the dataframe contains a `Communication` column, EFEs are also
 #'   aggregated based on Speaking, Listening, Both and None.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
-#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
+#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -46,8 +46,8 @@
 #' @references Aldenhoven et al. (2026). Sensors.
 #' @export
 
-featEFE = function(df, rs.path, suffix = "", verbose = T,
-                    recompute = F, return = F) {
+featEFE = function(df, rs.path = c(), suffix = "", verbose = T,
+                    recompute = F, return = T) {
   
   checkDF(df, c("Dyad", "Identifier", "Frame", "Time"))
   
@@ -108,7 +108,8 @@ featEFE = function(df, rs.path, suffix = "", verbose = T,
         )
       # get a list of columns that don't contain any data
       ls.cols = df.face |> 
-        summarise(across(where(is.numeric), sum)) |>
+        summarise(across(where(is.numeric), sum),
+                  .groups = "drop") |>
         tidyr::pivot_longer(cols = everything()) |> 
         filter(value == 0) |> pull(name)
       # remove them from the dataframe
@@ -122,7 +123,8 @@ featEFE = function(df, rs.path, suffix = "", verbose = T,
       tidyr::pivot_longer(cols = c(Anger, Disgust, Joy, Fear, Sadness, Surprise, Contempt), 
                    names_to = "Emotion", names_prefix = "EFE.") |> 
       group_by(Dyad, Identifier, Time, across(any_of('Partner')), Emotion) |> 
-      summarise(value = mean(value)) |> 
+      summarise(value = mean(value),
+                .groups = "drop") |> 
       tidyr::pivot_wider(names_from = Emotion, 
                   names_glue = "EFE_{Emotion}_Total")
     # potentially adding values depending on Communication
@@ -133,7 +135,8 @@ featEFE = function(df, rs.path, suffix = "", verbose = T,
           tidyr::pivot_longer(cols = c(Anger, Disgust, Joy, Fear, Sadness, Surprise, Contempt), 
                        names_to = "Emotion", names_prefix = "EFE.") |> 
           group_by(Dyad, Identifier, Time, across(any_of('Partner')), Communication, Emotion) |> 
-          summarise(value = mean(value)) |> 
+          summarise(value = mean(value),
+                    .groups = "drop") |> 
           tidyr::pivot_wider(names_from = c(Emotion, Communication), 
                       names_glue = "EFE_{Emotion}_{Communication}"))
     }
