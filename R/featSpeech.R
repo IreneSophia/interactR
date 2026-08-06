@@ -462,7 +462,7 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
     
     # give a warning if there was no row left and exit the function
     if (nrow(df.speak) == 0) {
-      warning("No overlap between the two dataframes.")
+      warning("No overlap between the two dataframes. Nothing was added.")
       return(c())
     }
     
