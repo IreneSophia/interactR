@@ -2,18 +2,20 @@
 #'
 #' Extracts nodding and head shaking by detecting Zero Crossing using \code{\link{featZCrossing}}. 
 #' Gestures are classified exclusively as nodding, head shaking or nothing for each Frame.
+#' Input can be data preprocessed using \code{\link{preproHead}}.
 #'
 #' @param df Dataframe. The dataset containing the variables to be processed, potentially created by \code{\link{preproHead}}. 
 #'   Must explicitly feature columns `Dyad`, `Identifier`, `Time`, `Frame` and the columns `colNodding` and `colShaking`. This dataframe
 #'   will be processed using \code{\link{featHeadGestures}} to extract nodding and head shaking, assuming that only one can happen at a time. 
-#' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param colNodding Character. The exact name of the column in \code{df} from which
 #'   to extract, and then plot, nodding. 
 #' @param colShaking Character. The exact name of the column in \code{df} from which
 #'   to extract, and then plot, head shaking. 
 #' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
 #' @param minDegree Numeric. How many degree of rotational difference are needed for the movement to be considered relevant. 
-#' Depends on the fps and the specific movement. Setting to negative number leads to no thresholding based on degrees. 
+#'   Depends on the fps and the specific movement. Setting to negative number leads to no thresholding based on degrees. 
+#' @param rs.path Character. Path to destination directory for saved files. 
+#'   If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param win Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.
 #' @param minFreq Numeric. The lower cutoff boundary of the targeted frequency band in Hz. Default is \code{1.5}.
@@ -33,8 +35,8 @@
 #' @import dplyr
 #' @export
 #' 
-featHeadGestures = function(df, rs.path, colNodding, colShaking, fps, minDegree, 
-                            suffix = "", 
+featHeadGestures = function(df, colNodding, colShaking, fps, minDegree, 
+                            rs.path = c(), suffix = "", 
                             win = 2, minFreq = 1.5, maxFreq = 6.5, 
                             winCentre = NULL, winSmooth = 0, 
                             verbose = T, recompute = F, return = T) {
@@ -167,10 +169,10 @@ rotDiff = function(x, y) {
 #' @param df Dataframe containing head coordinate streams. Requires tracking coordinates alongside 
 #' core columns `Dyad`, `Identifier`, `Time`, `Timestamp` and `Frame` as well as all columns
 #' specified to be processed.
-#' @param rs.path Character. Path to the directory where the output files will be saved.
-#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
 #' @param rotnames Character vector. String labels identifying target rotational columns.
 #' @param tranames Character vector. String labels identifying target translational columns.
+#' @param rs.path Character. Path to the directory where the output files will be saved.
+#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param performFixCirc Logical. Directs execution to correct boundaries for angular circular values. Default is `TRUE`.
 #' @param cornames Character vector. Optional mapping labels matched in length to `rotnames` for baseline adjustments 
@@ -187,7 +189,7 @@ rotDiff = function(x, y) {
 #' @export
 #' 
 
-preproHead = function(df, rs.path, rotnames, tranames, suffix = '',
+preproHead = function(df, rotnames, tranames, rs.path = c(), suffix = '',
                       performFixCirc = T, cornames = c(),
                       verbose = T, recompute = F, return = F) {
   

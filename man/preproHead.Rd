@@ -6,9 +6,9 @@
 \usage{
 preproHead(
   df,
-  rs.path,
   rotnames,
   tranames,
+  rs.path = c(),
   suffix = "",
   performFixCirc = T,
   cornames = c(),
@@ -22,12 +22,12 @@ preproHead(
 core columns \code{Dyad}, \code{Identifier}, \code{Time}, \code{Timestamp} and \code{Frame} as well as all columns
 specified to be processed.}
 
-\item{rs.path}{Character. Path to the directory where the output files will be saved.
-If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk.}
-
 \item{rotnames}{Character vector. String labels identifying target rotational columns.}
 
 \item{tranames}{Character vector. String labels identifying target translational columns.}
+
+\item{rs.path}{Character. Path to the directory where the output files will be saved.
+If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk. Default is \code{c()}.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 

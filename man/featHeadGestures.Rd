@@ -6,11 +6,11 @@
 \usage{
 featHeadGestures(
   df,
-  rs.path,
   colNodding,
   colShaking,
   fps,
   minDegree,
+  rs.path = c(),
   suffix = "",
   win = 2,
   minFreq = 1.5,
@@ -27,8 +27,6 @@ featHeadGestures(
 Must explicitly feature columns \code{Dyad}, \code{Identifier}, \code{Time}, \code{Frame} and the columns \code{colNodding} and \code{colShaking}. This dataframe
 will be processed using \code{\link{featHeadGestures}} to extract nodding and head shaking, assuming that only one can happen at a time.}
 
-\item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}
-
 \item{colNodding}{Character. The exact name of the column in \code{df} from which
 to extract, and then plot, nodding.}
 
@@ -39,6 +37,9 @@ to extract, and then plot, head shaking.}
 
 \item{minDegree}{Numeric. How many degree of rotational difference are needed for the movement to be considered relevant.
 Depends on the fps and the specific movement. Setting to negative number leads to no thresholding based on degrees.}
+
+\item{rs.path}{Character. Path to destination directory for saved files.
+If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is \code{c()}.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 
@@ -66,6 +67,7 @@ If \code{return = TRUE}, returns the dataframe or saves RDS file to \code{rs.pat
 \description{
 Extracts nodding and head shaking by detecting Zero Crossing using \code{\link{featZCrossing}}.
 Gestures are classified exclusively as nodding, head shaking or nothing for each Frame.
+Input can be data preprocessed using \code{\link{preproHead}}.
 }
 \seealso{
 \code{\link{featZCrossing}} \code{\link{preproHead}}
