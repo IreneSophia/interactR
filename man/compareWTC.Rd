@@ -6,7 +6,7 @@
 \usage{
 compareWTC(
   df.rsq,
-  rs.path,
+  rs.path = c(),
   suffix = "",
   verbose = T,
   recompute = F,
@@ -14,7 +14,8 @@ compareWTC(
 )
 }
 \arguments{
-\item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}
+\item{rs.path}{Character. Path to destination directory for saved files.
+If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is \code{c()}.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 

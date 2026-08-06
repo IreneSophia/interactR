@@ -6,10 +6,10 @@
 \usage{
 featZCrossing(
   df,
-  rs.path,
   colnames,
   fps,
   minDegree,
+  rs.path = c(),
   suffix = "",
   win = 2,
   minFreq = 1.5,
@@ -25,8 +25,6 @@ featZCrossing(
 \item{df}{Dataframe. The dataset containing the variables to be processed. Must explicitly feature columns \code{Dyad},
 \code{Identifier}, \code{Frame}, \code{Timestamp}, \code{Time} as well as all columns contained in \code{colnames}.}
 
-\item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}
-
 \item{colnames}{Character vector. The exact name or names of the column(s) in \code{df} from which
 to extract zero-crossing features.}
 
@@ -34,6 +32,9 @@ to extract zero-crossing features.}
 
 \item{minDegree}{Numeric. How many degree of rotational difference are needed for the movement to be considered relevant.
 Depends on the fps and the specific movement. Setting to negative number leads to no thresholding based on degrees.}
+
+\item{rs.path}{Path to the directory where the output file will be saved, if empty (is.null(rs.path) == TRUE),
+then nothing is saved. Default is \code{c()}.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 

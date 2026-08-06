@@ -21,12 +21,13 @@
 #'
 #' @param df Dataframe. The dataset containing the variables to be processed. Must explicitly feature columns `Dyad`, 
 #'   `Identifier`, `Frame`, `Timestamp`, `Time` as well as all columns contained in `colnames`. 
-#' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param colnames Character vector. The exact name or names of the column(s) in \code{df} from which
 #'   to extract zero-crossing features. 
 #' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
 #' @param minDegree Numeric. How many degree of rotational difference are needed for the movement to be considered relevant. 
 #' Depends on the fps and the specific movement. Setting to negative number leads to no thresholding based on degrees. 
+#' @param rs.path Path to the directory where the output file will be saved, if empty (is.null(rs.path) == TRUE), 
+#'   then nothing is saved. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param win Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.
 #' @param minFreq Numeric. The lower cutoff boundary of the targeted frequency band in Hz. Default is \code{1.5}.
@@ -47,7 +48,7 @@
 #' @import dplyr
 #' @export
 
-featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "", 
+featZCrossing = function(df, colnames, fps, minDegree, rs.path = c(), suffix = "", 
                          win = 2, minFreq = 1.5, maxFreq = 6.5, 
                          winCentre = NULL, winSmooth = 0, 
                          verbose = T, recompute = F, return = T) {
@@ -149,9 +150,10 @@ featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "",
 #' @param df Dataframe. The dataset containing the variables to be processed, created by \code{\link{featZCrossing}}. 
 #'   Must explicitly feature columns `Dyad`, `Identifier`, `Frame`, `Time`, all columns contained in `colnames`. 
 #'   If `Communication` is a column, zero crossings are also aggregated based on its classification. 
-#' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param colnames Character vector. The exact name or names of the column(s) in \code{df} from which
 #'   to extract zero-crossing features. 
+#' @param rs.path Path to the directory where the output file will be saved, if empty (is.null(rs.path) == TRUE), 
+#'   then nothing is saved. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -164,7 +166,7 @@ featZCrossing = function(df, rs.path, colnames, fps, minDegree, suffix = "",
 #' @import dplyr
 #' @export
 
-aggZCrossing = function(df, rs.path, colnames, suffix = "",
+aggZCrossing = function(df, colnames, rs.path = c(), suffix = "",
                         verbose = T, recompute = F, return = T) {
   
   # check rs.path
@@ -200,7 +202,8 @@ aggZCrossing = function(df, rs.path, colnames, suffix = "",
       # aggregate the information
       group_by(Dyad, Identifier, Time, Frames.total) |>
       summarise(
-        across(matches(colnames), sum)
+        across(matches(colnames), sum),
+        .groups = "drop"
       ) |> ungroup() |>
       mutate(
         across(matches(colnames), ~ .x * 100/Frames.total, .names = "RelativeZC_{.col}")
@@ -218,7 +221,8 @@ aggZCrossing = function(df, rs.path, colnames, suffix = "",
           ) |>
           group_by(Dyad, Identifier, Time, Communication, Frames.total) |>
           summarise(
-            across(matches(colnames), sum)
+            across(matches(colnames), sum),
+            .groups = "drop"
           ) |> ungroup() |>
           mutate(
             across(matches(colnames), ~ .x * 100/Frames.total, .names = "RelativeZC_{.col}")

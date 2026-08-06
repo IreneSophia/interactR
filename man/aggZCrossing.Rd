@@ -6,8 +6,8 @@
 \usage{
 aggZCrossing(
   df,
-  rs.path,
   colnames,
+  rs.path = c(),
   suffix = "",
   verbose = T,
   recompute = F,
@@ -19,10 +19,11 @@ aggZCrossing(
 Must explicitly feature columns \code{Dyad}, \code{Identifier}, \code{Frame}, \code{Time}, all columns contained in \code{colnames}.
 If \code{Communication} is a column, zero crossings are also aggregated based on its classification.}
 
-\item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}
-
 \item{colnames}{Character vector. The exact name or names of the column(s) in \code{df} from which
 to extract zero-crossing features.}
+
+\item{rs.path}{Path to the directory where the output file will be saved, if empty (is.null(rs.path) == TRUE),
+then nothing is saved. Default is \code{c()}.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 

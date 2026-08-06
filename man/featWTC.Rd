@@ -6,11 +6,11 @@
 \usage{
 featWTC(
   df,
-  rs.path,
   Limits,
   Funs,
   labels = T,
   withinCOI = T,
+  rs.path = c(),
   suffix = "",
   verbose = T,
   recompute = F,
@@ -19,8 +19,6 @@ featWTC(
 }
 \arguments{
 \item{df}{Dataframe. Dataframe created by \code{\link[=convertWTC]{convertWTC()}}.}
-
-\item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}
 
 \item{Limits}{List. List containing numeric of frequency limits in Hz.
 First entry is used for the Coherence Bins, optionally a second for Phase Bins.
@@ -33,6 +31,9 @@ Optionally, a second is used for Phase. If Limits contains two sets of Limits, b
 one function, then this function is used for both Phase and Coherence.}
 
 \item{withinCOI}{Logical. Whether only values inside the COI should be included. Default is \code{TRUE}.}
+
+\item{rs.path}{Character. Path to destination directory for saved files.
+If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is \code{c()}.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 

@@ -6,10 +6,10 @@
 \usage{
 extractWTC(
   df,
-  rs.path,
   colname,
   fps,
   order = 8,
+  rs.path = c(),
   suffix = "",
   nsim = 300,
   df.pseudo = data.frame(),
@@ -24,13 +24,14 @@ extractWTC(
 Must explicitly feature columns \code{Dyad}, \code{Identifier}, \code{Time}, either \code{Frame} or \code{Timestamp}, and the column \code{colname}.
 For each Dyad, there must be exactly two Identifiers in the data.}
 
-\item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}
-
 \item{colname}{Character. The exact name in \code{df} from which to extract the data.}
 
 \item{fps}{Numeric. Frame processing rate frequency profile (frames per second) of the dataset.}
 
 \item{order}{Numeric. Order for the wavelet transformation. Default is \code{8} based on Issartel et al. (2006).}
+
+\item{rs.path}{Character. Path to destination directory for saved files.
+If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is \code{c()}.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 

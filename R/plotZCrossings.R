@@ -101,7 +101,8 @@ plotZCrossings = function(df, colname, fps, minDegree,
         xmin = min(Frame),
         xmax = max(Frame),
         ymin = 0,
-        ymax = shift_max
+        ymax = shift_max,
+        .groups = "drop"
       ) |> ungroup() |> filter(Communication != "None")
     df.speak = rbind(df.speak |> mutate(Identifier = IDs[1]),
                      df.speak |> mutate(Identifier = IDs[2]))
@@ -173,7 +174,8 @@ plotZCrossings = function(df, colname, fps, minDegree,
         xmin = min(Frame),
         xmax = max(Frame),
         ymin = 0,
-        ymax = shift_max
+        ymax = shift_max,
+        .groups = "drop"
       ) |> ungroup() |> filter(Communication != "None") |>
       mutate(Identifier = IDs)
     

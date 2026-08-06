@@ -7,8 +7,8 @@
 pseudoWLCC(
   shuffleMethod,
   mea.orig,
-  rs.path,
   fl.wlcc,
+  rs.path = c(),
   win = win,
   inc = inc,
   lag = lag,
@@ -28,10 +28,10 @@ pseudoWLCC(
 
 \item{mea.orig}{List containing \code{MEA} objects (can be created via \code{\link[=MEAfake]{MEAfake()}}).}
 
-\item{rs.path}{Character. Path to destination directory where the output files will be saved.
-If empty (is.null(rs.path) == TRUE), then nothing is saved.}
-
 \item{fl.wlcc}{Character. Prefix for files saved to disk.}
+
+\item{rs.path}{Character. Path to destination directory. Files are written inside a generated directory nested under \verb{[rs.path]/featWLCC[suffix]}.
+If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is \code{c()}.}
 
 \item{win}{Numeric. Window size in seconds.}
 

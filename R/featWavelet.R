@@ -5,7 +5,8 @@
 #' observed Rsq values. 
 #'
 #' @param df Dataframe. Dataframe created by [aggWTC()].
-#' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
+#' @param rs.path Character. Path to destination directory for saved files. 
+#'   If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -18,7 +19,7 @@
 #' @export
 #' 
 
-compareWTC = function(df.rsq, rs.path, suffix = "", 
+compareWTC = function(df.rsq, rs.path = c(), suffix = "", 
                       verbose = T, recompute = F, return = T) {
   # check rs.path
   if (is.null(rs.path)) {
@@ -71,10 +72,11 @@ compareWTC = function(df.rsq, rs.path, suffix = "",
 #' within given limits of a minimum and maximum Frequency. Values outside COI can be excluded. 
 #'
 #' @param df Dataframe. Dataframe created by [convertWTC()].
-#' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param minFreq Numeric. Minimum frequency which is included. 
 #' @param maxFreq Numeric. Maximum frequency which is included. 
 #' @param withinCOI Logical. Whether only values inside the COI should be included. Default is `TRUE`.
+#' @param rs.path Character. Path to destination directory for saved files. 
+#'   If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -87,7 +89,7 @@ compareWTC = function(df.rsq, rs.path, suffix = "",
 #' @export
 #' 
 
-aggWTC = function(df, rs.path, minFreq, maxFreq, withinCOI = T, suffix = "", 
+aggWTC = function(df, minFreq, maxFreq, withinCOI = T, rs.path = c(), suffix = "", 
                   verbose = T, recompute = F, return = T) {
   
   # check rs.path
@@ -151,10 +153,11 @@ aggWTC = function(df, rs.path, minFreq, maxFreq, withinCOI = T, suffix = "",
 #' @param df Dataframe. The dataset containing the variables to be processed. 
 #'   Must explicitly feature columns `Dyad`, `Identifier`, `Time`, either `Frame` or `Timestamp`, and the column `colname`. 
 #'   For each Dyad, there must be exactly two Identifiers in the data. 
-#' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param colname Character. The exact name in \code{df} from which to extract the data. 
 #' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
 #' @param order Numeric. Order for the wavelet transformation. Default is `8` based on Issartel et al. (2006).
+#' @param rs.path Character. Path to destination directory for saved files. 
+#'   If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param nsim. Numeric. Number of Monte Carlo randomisations for computing WTC. Default is `300`.
 #' @param df.pseudo Dataframe. If it contains row, then instead of using the observed 
@@ -176,7 +179,7 @@ aggWTC = function(df, rs.path, minFreq, maxFreq, withinCOI = T, suffix = "",
 #' @import dplyr
 #' @export
 #' 
-extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "", 
+extractWTC = function(df, colname, fps, order = 8, rs.path = c(), suffix = "", 
                       nsim = 300, df.pseudo = data.frame(), seed = "random",
                       verbose = T, recompute = F, return = T) {
   
@@ -337,9 +340,10 @@ extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
 #'
 #' @param ls List. This list must contain objects created by \code{\link{biwavelet::wtc}}.
 #'   Names of the list entries should follow this structure: `[Dyad]_[Time]`.
-#' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param featname Character. The name of the feature of which WTC was computed.
 #' @param withinCOI Logical. Whether only values inside the COI should be included. Default is `TRUE`.
+#' @param rs.path Character. Path to destination directory for saved files. 
+#'   If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -352,7 +356,7 @@ extractWTC = function(df, rs.path, colname, fps, order = 8, suffix = "",
 #' @import dplyr
 #' @export
 #' 
-convertWTC = function(ls, rs.path, featname, withinCOI = T,
+convertWTC = function(ls, featname, withinCOI = T, rs.path = c(), 
                       suffix = "", verbose = T, recompute = F, return = T) {
 
   # check rs.path
@@ -441,7 +445,6 @@ convertWTC = function(ls, rs.path, featname, withinCOI = T,
 #'   and values closer to +- pi indicate anti-phase.
 #'
 #' @param df Dataframe. Dataframe created by [convertWTC()].
-#' @param rs.path Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param phaseLimits Numeric. Frequency limits in Hz for the Phase Bins. All but the last value specify the included lower limit. 
 #'   The last value is the excluded maximum period. Must include at least two values.
 #' @param Limits List. List containing numeric of frequency limits in Hz.
@@ -454,6 +457,8 @@ convertWTC = function(ls, rs.path, featname, withinCOI = T,
 #'   one function, then this function is used for both Phase and Coherence. 
 #' @param labels. Logical. Whether to use labels showing the Bin limits. If false, then Bins are numbered. Default is `TRUE`.
 #' @param withinCOI Logical. Whether only values inside the COI should be included. Default is `TRUE`.
+#' @param rs.path Character. Path to destination directory for saved files. 
+#'   If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -466,8 +471,8 @@ convertWTC = function(ls, rs.path, featname, withinCOI = T,
 #' @export
 #' 
 
-featWTC = function(df, rs.path, Limits, Funs, labels = T,
-                   withinCOI = T, suffix = "", 
+featWTC = function(df, Limits, Funs, labels = T,
+                   withinCOI = T, rs.path = c(), suffix = "", 
                    verbose = T, recompute = F, return = T) {
   
   # check if the variables are correct

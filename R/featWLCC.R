@@ -6,14 +6,14 @@
 #' @note Requires package `rMEA` (>= 1.3.1) to support generating diagnostic heatmap distributions when `ABS = FALSE`.
 #'
 #' @param df Dataframe containing tracking data. Requires the variables `Dyad`, `Identifier`, `Frame` and the target numeric timeline (`colname`). 
-#' @param rs.path Character. Path to destination directory. Files are written inside a generated directory nested under `[rs.path]/featWLCC[suffix]`.
-#'        If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param colname Character. Name of column vector inside `df` to isolate for analysis.
 #' @param featname Character. Descriptive label for feature. Must not contain underscores.
 #' @param win Numeric. Window size in seconds.
 #' @param inc Numeric. Window increment step in seconds.
 #' @param lag Numeric. Evaluated cross-correlation lag step in seconds.
 #' @param fps Numeric. Sampling rate (frames per second).
+#' @param rs.path Character. Path to destination directory. Files are written inside a generated directory nested under `[rs.path]/featWLCC[suffix]`.
+#'        If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is `c()`.
 #' @param suffix Character. Suffix string appended onto `rs.path`. Default is `""`.
 #' @param parallel Logical. Enables multi-core clusters inside the parent `MEAccf` routine. Default is `TRUE`.
 #' @param pseudoDyad Logical. Flags whether to generate pseudo-WLCC benchmarks using dyad shuffling. Default is `TRUE`.
@@ -43,8 +43,8 @@
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
 #' 
-featWLCC = function(df, rs.path, colname, featname,
-                    win, inc, lag, fps, suffix = '', parallel = T,
+featWLCC = function(df, colname, featname, win, inc, lag, fps, 
+                    rs.path = c(), suffix = '', parallel = T,
                     pseudoDyad = T, nDyad = 100, bfThreshold = log(3),
                     pseudoShuffling = F, shuffleMethod = 'Seg', nShuffle = 100,
                     pseudoPass = 1, credibleThreshold = 90, 
@@ -210,17 +210,21 @@ featWLCC = function(df, rs.path, colname, featname,
             group_by(window, name, Feature) |>
             tidyr::drop_na() |> 
             # summarise by finding the peak
-            summarise(pseudo = max(pseudo)) |>
+            summarise(pseudo = max(pseudo),
+                      .groups = "drop") |>
             group_by(name, Feature) |>
-            summarise(pseudo = mean(pseudo))
+            summarise(pseudo = mean(pseudo),
+                      .groups = "drop")
         } else {
           df.pseudoDyad.agg = df.pseudoDyad |>
             group_by(window, name, Dyad, Feature) |>
             tidyr::drop_na() |> 
             # summarise using the mean
-            summarise(pseudo = mean(pseudo)) |>
+            summarise(pseudo = mean(pseudo),
+                      .groups = "drop") |>
             group_by(name, Feature) |>
-            summarise(pseudo = mean(pseudo))
+            summarise(pseudo = mean(pseudo),
+                      .groups = "drop")
         }
         
         # save the dataframe
@@ -233,7 +237,8 @@ featWLCC = function(df, rs.path, colname, featname,
           filter(!is.na(pseudo)) |>
           summarise(
             mean = mean(pseudo, na.rm = T),
-            peak = max(pseudo, na.rm = T)
+            peak = max(pseudo, na.rm = T),
+            .groups = "drop"
           ) |> 
           tidyr::pivot_longer(names_to = "Stat", cols = c(mean, peak), values_to = "pseudo") |> 
           ungroup() |> 
@@ -267,9 +272,11 @@ featWLCC = function(df, rs.path, colname, featname,
             group_by(window, name, sim) |>
             tidyr::drop_na() |> 
             # summarise by finding the peak
-            summarise(pseudo = max(pseudo)) |>
+            summarise(pseudo = max(pseudo),
+                      .groups = "drop") |>
             group_by(name, sim) |>
-            summarise(pseudo = mean(pseudo)) |>
+            summarise(pseudo = mean(pseudo),
+                      .groups = "drop") |>
             tidyr::separate(name, into = c("Feature", "Dyad", "Session"), sep = "_") |>
             select(-Session)
         } else {
@@ -277,9 +284,11 @@ featWLCC = function(df, rs.path, colname, featname,
             group_by(window, name, sim) |>
             tidyr::drop_na() |> 
             # summarise using the mean
-            summarise(pseudo = mean(pseudo)) |>
+            summarise(pseudo = mean(pseudo),
+                      .groups = "drop") |>
             group_by(name, sim) |>
-            summarise(pseudo = mean(pseudo)) |>
+            summarise(pseudo = mean(pseudo),
+                      .groups = "drop") |>
             tidyr::separate(name, into = c("Feature", "Dyad", "Session"), sep = "_") |>
             select(-Session)
         }
@@ -294,7 +303,8 @@ featWLCC = function(df, rs.path, colname, featname,
           filter(!is.na(pseudo)) |>
           summarise(
             mean = mean(pseudo, na.rm = T),
-            peak = max(pseudo, na.rm = T)
+            peak = max(pseudo, na.rm = T),
+            .groups = "drop"
           ) |> ungroup() |>
           tidyr::pivot_longer(names_to = "Stat", cols = c(mean, peak), values_to = "pseudo") |> 
           filter(!is.na(pseudo)) |> mutate(Method = shuffleMethod) |>
@@ -355,13 +365,15 @@ featWLCC = function(df, rs.path, colname, featname,
           filter(!is.na(WLCC)) |>
           summarise(
             mean = mean(WLCC, na.rm = T),
-            peak = max(WLCC, na.rm = T)
+            peak = max(WLCC, na.rm = T),
+            .groups = "drop"
           ) |>
           tidyr::pivot_longer(names_to = "Stat", cols = c(mean, peak)) |>
           group_by(Feature, lag, Stat) |>
           summarise(
             observed = mean(value, na.rm = T),
-            observed.sd = sd(value, na.rm = T)
+            observed.sd = sd(value, na.rm = T),
+            .groups = "drop"
           ),
         df.pseudo
       ) |>
@@ -371,7 +383,8 @@ featWLCC = function(df, rs.path, colname, featname,
           observed.sd = mean(observed.sd, na.rm = T),
           observed = mean(observed, na.rm = T),
           pseudo.sd = sd(pseudo, na.rm = T),
-          pseudo = mean(pseudo, na.rm = T)
+          pseudo = mean(pseudo, na.rm = T),
+          .groups = "drop"
         ) |> group_by(Feature, lag, Stat) |>
         mutate(
           count = sum(prob > credibleThreshold)
@@ -386,15 +399,19 @@ featWLCC = function(df, rs.path, colname, featname,
     if (method == "peak") {
       df.ccf.dyad = df.ccf |> 
         group_by(Dyad, Feature, window) |> 
-        tidyr::drop_na() |> summarise(WLCC = max(WLCC)) |>
+        tidyr::drop_na() |> summarise(WLCC = max(WLCC),
+                                      .groups = "drop") |>
         group_by(Dyad, Feature) |>
-        summarise(DyadWLCC = mean(WLCC))
+        summarise(DyadWLCC = mean(WLCC),
+                  .groups = "drop")
     } else {
       df.ccf.dyad = df.ccf |> 
         group_by(Dyad, Feature, window) |> 
-        tidyr::drop_na() |> summarise(WLCC = mean(WLCC)) |>
+        tidyr::drop_na() |> summarise(WLCC = mean(WLCC),
+                                      .groups = "drop") |>
         group_by(Dyad, Feature) |>
-        summarise(DyadWLCC = mean(WLCC))
+        summarise(DyadWLCC = mean(WLCC),
+                  .groups = "drop")
     }
     
     # check whether overall observed WLCC higher than pseudo WLCC
@@ -430,11 +447,13 @@ featWLCC = function(df, rs.path, colname, featname,
     if (method == "peak") {
       df.ccf.agg = df.ccf |> 
         group_by(Dyad, Type, Feature, window) |> 
-        tidyr::drop_na() |> summarise(WLCC = max(WLCC))
+        tidyr::drop_na() |> summarise(WLCC = max(WLCC),
+                                      .groups = "drop")
     } else {
       df.ccf.agg = df.ccf |> 
         group_by(Dyad, Type, Feature, window) |> 
-        tidyr::drop_na() |> summarise(WLCC = mean(WLCC))
+        tidyr::drop_na() |> summarise(WLCC = mean(WLCC),
+                                      .groups = "drop")
     }
       
     # then, average these values for each Dyad and Identifier
@@ -443,7 +462,8 @@ featWLCC = function(df, rs.path, colname, featname,
       df.ccf.agg |> 
         filter(Type != "simultaneous") |>
         group_by(Dyad, Type, Feature) |> 
-        summarise(WLCC = mean(WLCC)) |> 
+        summarise(WLCC = mean(WLCC),
+                  .groups = "drop") |> 
         mutate(
           Identifier = case_when(
             Type == "actor0" ~ gsub("(.+)-.*", "\\1", Dyad), 
@@ -509,9 +529,9 @@ MEAfake = function(s1, s2, fps, s1Name = "s1Name", s2Name = "s2Name",
 #'
 #' @param shuffleMethod Character string. Specifies the shuffling paradigm; accept options are either `"Data"` or `"Seg"`.
 #' @param mea.orig List containing `MEA` objects (can be created via [MEAfake()]).
-#' @param rs.path Character. Path to destination directory where the output files will be saved.
-#'        If empty (is.null(rs.path) == TRUE), then nothing is saved.
 #' @param fl.wlcc Character. Prefix for files saved to disk.
+#' @param rs.path Character. Path to destination directory. Files are written inside a generated directory nested under `[rs.path]/featWLCC[suffix]`.
+#'        If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is `c()`.
 #' @param win Numeric. Window size in seconds.
 #' @param inc Numeric. Window increment step in seconds.
 #' @param lag Numeric. Evaluated cross-correlation lag step in seconds.
@@ -534,7 +554,7 @@ MEAfake = function(s1, s2, fps, s1Name = "s1Name", s2Name = "s2Name",
 #' @import dplyr
 #' 
 
-pseudoWLCC = function(shuffleMethod, mea.orig, rs.path, fl.wlcc, 
+pseudoWLCC = function(shuffleMethod, mea.orig, fl.wlcc, rs.path = c(),
                       win = win, inc = inc, lag = lag, fps = fps, parallel = T, 
                       n = 100, r2Z = T, ABS = T, seed = 'random',
                       verbose = T, recompute = F, return = T) {

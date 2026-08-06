@@ -6,13 +6,13 @@
 \usage{
 featWLCC(
   df,
-  rs.path,
   colname,
   featname,
   win,
   inc,
   lag,
   fps,
+  rs.path = c(),
   suffix = "",
   parallel = T,
   pseudoDyad = T,
@@ -36,9 +36,6 @@ featWLCC(
 \arguments{
 \item{df}{Dataframe containing tracking data. Requires the variables \code{Dyad}, \code{Identifier}, \code{Frame} and the target numeric timeline (\code{colname}).}
 
-\item{rs.path}{Character. Path to destination directory. Files are written inside a generated directory nested under \verb{[rs.path]/featWLCC[suffix]}.
-If empty (is.null(rs.path) == TRUE), then nothing is saved.}
-
 \item{colname}{Character. Name of column vector inside \code{df} to isolate for analysis.}
 
 \item{featname}{Character. Descriptive label for feature. Must not contain underscores.}
@@ -50,6 +47,9 @@ If empty (is.null(rs.path) == TRUE), then nothing is saved.}
 \item{lag}{Numeric. Evaluated cross-correlation lag step in seconds.}
 
 \item{fps}{Numeric. Sampling rate (frames per second).}
+
+\item{rs.path}{Character. Path to destination directory. Files are written inside a generated directory nested under \verb{[rs.path]/featWLCC[suffix]}.
+If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is \code{c()}.}
 
 \item{suffix}{Character. Suffix string appended onto \code{rs.path}. Default is \code{""}.}
 

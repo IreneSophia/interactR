@@ -6,10 +6,10 @@
 \usage{
 aggWTC(
   df,
-  rs.path,
   minFreq,
   maxFreq,
   withinCOI = T,
+  rs.path = c(),
   suffix = "",
   verbose = T,
   recompute = F,
@@ -19,13 +19,14 @@ aggWTC(
 \arguments{
 \item{df}{Dataframe. Dataframe created by \code{\link[=convertWTC]{convertWTC()}}.}
 
-\item{rs.path}{Character. Path to destination directory for saved files. If empty (is.null(rs.path) == TRUE), then nothing is saved.}
-
 \item{minFreq}{Numeric. Minimum frequency which is included.}
 
 \item{maxFreq}{Numeric. Maximum frequency which is included.}
 
 \item{withinCOI}{Logical. Whether only values inside the COI should be included. Default is \code{TRUE}.}
+
+\item{rs.path}{Character. Path to destination directory for saved files.
+If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is \code{c()}.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 
