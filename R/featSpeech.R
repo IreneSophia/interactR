@@ -460,6 +460,12 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
     # remove dyads from df.speak that are not in df
     df.speak = df.speak |> filter(Dyad %in% unique(df$Dyad))
     
+    # give a warning if there was no row left and exit the function
+    if (nrow(df.speak) == 0) {
+      warning("No overlap between the two dataframes.")
+      return(c())
+    }
+    
     # loop through the turns and add the information
     for (i in 1:nrow(df.speak)) { #    
       
