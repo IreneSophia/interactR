@@ -102,13 +102,11 @@ aggWTC = function(df, rs.path, minFreq, maxFreq, withinCOI = T, suffix = "",
   
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
-    if (return) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading aggregated WTC for comparison\n")
-      df.rsq = readRDS(flnm)
-    }
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading aggregated WTC for comparison\n")
+    df.rsq = readRDS(flnm)
   } else {
     
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Aggregating pseudo and observed WTC from ", unique(df.rsq$Feature), "\n")
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Aggregating pseudo and observed WTC from ", unique(df$Feature), "\n")
     
     # filter the data if necessary
     if (withinCOI) df = df |> filter(WithinCOI)
