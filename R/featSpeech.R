@@ -17,7 +17,7 @@
 #'   such that `is.null(praat.path) == TRUE`.
 #' @param praat.prefix Character. Prefix used in the Praat script for the output files.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
-#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
+#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -31,7 +31,7 @@
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
 
-featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
+featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix = '',
                       verbose = T, recompute = F, return = F) {
   
   # check rs.path
@@ -100,7 +100,8 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
           Start = as.numeric(min(Timestamp), unit = "secs"),
           End   = as.numeric(max(Timestamp), unit = "secs"),
           Duration = End - Start,
-          nSyll = NA
+          nSyll = NA,
+          .groups = "drop"
         ) |> ungroup()
       
       df.pint = df.speak |>
@@ -116,7 +117,8 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
       summarise(
         nSyll = sum(nSyll),
         PhonationDuration = sum(Duration),
-        ArticulationRate = nSyll/PhonationDuration
+        ArticulationRate = nSyll/PhonationDuration,
+        .groups = "drop"
       ) |>
       full_join(df.pint, by = c("Dyad", "Identifier")) |>
       group_by(Dyad) |>
@@ -149,7 +151,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
       )
     
     # use the function to detect turns
-    df.turns = detectTurns(df.speak, rs.path, suffix = suffix,
+    df.turns = detectTurns(df.speak, rs.path = rs.path, suffix = suffix,
                            verbose = verbose, recompute = T, return = T)
     
     # aggregate and merge all the information
@@ -157,8 +159,10 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
     df.out = df.turns |> 
       group_by(Dyad, Identifier) |> 
       summarise(SPCH_TurnGapsMedian = median(TTG, na.rm = T),
-                SPCH_TurnGapsSD     = sd(TTG, na.rm = T)) |>
-      full_join(df.turns |> group_by(Dyad) |> summarise(DyadSPCH_nTurns = max(Turn)),
+                SPCH_TurnGapsSD     = sd(TTG, na.rm = T),
+                .groups = "drop") |>
+      full_join(df.turns |> group_by(Dyad) |> summarise(DyadSPCH_nTurns = max(Turn),
+                                                        .groups = "drop"),
                 by = 'Dyad') |>
       full_join(df, by = c('Dyad', 'Identifier')) |>
       select(where(~ any(!is.na(.x))))
@@ -184,7 +188,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
 #'   can be created using [convertGrid()] and needs to contain the columns
 #'   `Dyad`, `Identifier`, `Turn`, `Start`, `End` and `Duration`.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
-#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
+#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -197,7 +201,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path, suffix = '',
 #' @export
 #' 
 
-detectTurns = function(df.speak, rs.path, suffix = '',
+detectTurns = function(df.speak, rs.path = c(), suffix = '',
                        verbose = T, recompute = F, return = F) {
   
   
@@ -243,8 +247,8 @@ detectTurns = function(df.speak, rs.path, suffix = '',
     if (verbose) cat(format(Sys.time(), "%X %Z"), ": Detect turns\n")
     df.turns = df.speak |>
       ungroup() |>
-      mutate(rown = row_number()) |>             # add row number
-      group_by(Dyad, Identifier) |>              # group by the person speaking
+      mutate(rown = row_number()) |>              # add row number
+      group_by(Dyad, Identifier) |>               # group by the person speaking
       mutate(
         tn = cumsum(c(TRUE, diff(rown) > 1))      # always keep the lowest row number of this turn as turn number
       ) |>
@@ -252,12 +256,12 @@ detectTurns = function(df.speak, rs.path, suffix = '',
       mutate(
         Turn = paste0(Identifier, "_", tn)        # add this turn number to the person speaking
       ) |>
-      group_by(Dyad, Identifier, Turn) |>        # summarise by Dyad, Identifier and Turn
+      group_by(Dyad, Identifier, Turn) |>         # summarise by Dyad, Identifier and Turn
       summarise(
         StartTurn = min(Start, na.rm = T),        # take the start of the first sounding instance
         EndTurn   = max(End, na.rm = T),          # take the end of the last sounding instance
-        DurTurn   = EndTurn - StartTurn           # compute duration of the turn
-      ) |> 
+        DurTurn   = EndTurn - StartTurn,          # compute duration of the turn
+        .groups = "drop") |> 
       arrange(Dyad, StartTurn) |>
       group_by(Dyad) |>
       mutate(
@@ -285,7 +289,7 @@ detectTurns = function(df.speak, rs.path, suffix = '',
 #'
 #' @param ls.files Character vector. Paths for the TextGrid files, including filename and extension.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
-#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
+#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param prefix Character. Prefix for the filename allowing extraction of Dyad and Identifier from filenames. Default is `""`.
 #' @param extract Logical. Whether Dyad and Identifier variables are extracted from the file names.
@@ -304,7 +308,7 @@ detectTurns = function(df.speak, rs.path, suffix = '',
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
 #' 
-convertGrid = function(ls.files, rs.path, suffix = '', prefix = '', extract = T, 
+convertGrid = function(ls.files, rs.path = c(), suffix = '', prefix = '', extract = T, 
                        verbose = T, recompute = F, return = F) {
   
   # check rs.path
@@ -391,7 +395,7 @@ convertGrid = function(ls.files, rs.path, suffix = '', prefix = '', extract = T,
 #'   typically created using [convertGrid()]. 
 #'   Must contain the columns `Dyad`, `Identifier`, `Start`, and `End` (both in seconds).
 #' @param rs.path Character. Path to the directory where the output files will be saved.
-#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
+#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -406,11 +410,8 @@ convertGrid = function(ls.files, rs.path, suffix = '', prefix = '', extract = T,
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
 #' 
-addCommunication = function(df, df.speak, rs.path, suffix = '',
+addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
                             verbose = T, recompute = F, return = T) { 
-  
-  checkDF(df, c("Dyad", "Time", "Frame", "Timestamp"))
-  checkDF(df.speak, c("Dyad", "Identifier", "Start", "End"))
   
   # check rs.path
   if (is.null(rs.path)) {
@@ -430,6 +431,10 @@ addCommunication = function(df, df.speak, rs.path, suffix = '',
   } else {
     # give some info
     if (verbose) cat("----------- Adding speaking info from uhm-o-meter to df -----------\n")
+    
+    # check for columns
+    checkDF(df, c("Dyad", "Time", "Frame", "Timestamp"))
+    checkDF(df.speak, c("Dyad", "Identifier", "Start", "End"))
     
     # rename the Listening, Speaking, Communication columns if they exist
     if (any(c("Listening", "Speaking", "Communication") %in% colnames(df))) {

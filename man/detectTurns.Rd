@@ -6,7 +6,7 @@
 \usage{
 detectTurns(
   df.speak,
-  rs.path,
+  rs.path = c(),
   suffix = "",
   verbose = T,
   recompute = F,
@@ -19,7 +19,7 @@ can be created using \code{\link[=convertGrid]{convertGrid()}} and needs to cont
 \code{Dyad}, \code{Identifier}, \code{Turn}, \code{Start}, \code{End} and \code{Duration}.}
 
 \item{rs.path}{Character. Path to the directory where the output files will be saved.
-If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk.}
+If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk. Default is \code{c()}.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 

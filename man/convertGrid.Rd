@@ -6,7 +6,7 @@
 \usage{
 convertGrid(
   ls.files,
-  rs.path,
+  rs.path = c(),
   suffix = "",
   prefix = "",
   extract = T,
@@ -19,7 +19,7 @@ convertGrid(
 \item{ls.files}{Character vector. Paths for the TextGrid files, including filename and extension.}
 
 \item{rs.path}{Character. Path to the directory where the output files will be saved.
-If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk.}
+If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk. Default is \code{c()}.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 
