@@ -1,7 +1,8 @@
 #' Plot Head Gestures Extracted from Time Series Data
 #'
-#' Plot the results from \code{\link{featHeadGestures}} for one Dataset of one Identifier. 
-#' One subplot for the nodding and one for the head shaking. These gestures are extracte
+#' Input should be data of one Identifier preprocessed using \code{\link{preproHead}}. This 
+#' data is then used to compute and plot the results from \code{\link{featHeadGestures}}. 
+#' One subplot for the nodding and one for the head shaking. These gestures are extracted
 #' by detecting Zero Crossing using \code{\link{featZCrossing}}. Gestures are classified
 #' exclusively as nodding, head shaking or nothing for each Frame.
 #'
