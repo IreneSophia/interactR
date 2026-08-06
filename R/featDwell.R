@@ -12,7 +12,7 @@
 #'   then the first AOI is chosen. E.g., if ls.AOI = c("Self", "Laptop"), then "Self Laptop" is classified as "Self".
 #'   If empty (`is.null(ls.AOI) == TRUE`), existing classification is used.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
-#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk.
+#'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
@@ -25,14 +25,8 @@
 #' @export
 #' 
 
-featDwell = function(df, ls.AOI, rs.path, suffix = "", 
+featDwell = function(df, ls.AOI, rs.path = c(), suffix = "", 
                      verbose = T, recompute = F, return = T) {
-  
-  checkDF(df, c("Dyad", "Identifier", "Frame", "Time"))
-  
-  if (!("AOI" %in% colnames(df)) & !all(c("AOI.left", "AOI.right") %in% colnames(df))) {
-    stop("Dataframe df must contain either column AOI or columns AOI.left & AOI.right")
-  }
   
   # check rs.path
   if (is.null(rs.path)) {
@@ -45,12 +39,17 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
   
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
-    if (return) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading dwell times\n")
-      df.out = readr::read_csv(flnm, show_col_types = F)
-    }
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading dwell times\n")
+    df.out = readr::read_csv(flnm, show_col_types = F)
   } else {
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Preprocessing dwell times\n")
+    
+    # check columns
+    checkDF(df, c("Dyad", "Identifier", "Frame", "Time"))
+    if (!("AOI" %in% colnames(df)) & !all(c("AOI.left", "AOI.right") %in% colnames(df))) {
+      stop("Dataframe df must contain either column AOI or columns AOI.left & AOI.right")
+    }
+    
     # combine the AOI list into a pattern
     if (!is.null(ls.AOI)) pattern = paste(gsub("[^a-zA-Z]", "", ls.AOI), collapse = "|")
     
@@ -104,7 +103,8 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
     df.dwell.agg = df.dwell |>
       group_by(Dyad, Time, AOI, Identifier, Frames.total) |>
       summarise(
-        AOI.frames = n()
+        AOI.frames = n(),
+        .groups = "drop"
       ) |> ungroup() |>
       mutate(
         Dwell = AOI.frames * 100 / Frames.total
@@ -118,7 +118,8 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
         df.dwell |> 
           group_by(Dyad, Time, AOI, Identifier, Communication, Frames.total) |>
           summarise(
-            AOI.frames = n()
+            AOI.frames = n(),
+            .groups = "drop"
           ) |> ungroup() |>
           mutate(
             Dwell = AOI.frames * 100 / Frames.total
@@ -136,7 +137,8 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
       rename(AOI = actor0) |>
       group_by(Dyad, Time, AOI, Frames.total) |>
       summarise(
-        value = n()*100
+        value = n()*100,
+        .groups = "drop"
       ) |> mutate(value = value/Frames.total) |>
       tidyr::pivot_wider(names_from = AOI,
                          names_glue = "DyadDwell_{AOI}_Total") |>
@@ -146,7 +148,10 @@ featDwell = function(df, ls.AOI, rs.path, suffix = "",
       mutate(across(where(is.numeric), \(x) coalesce(x, 0)))
     
     # save speech dwell dataframe
-    if (!is.null(rs.path)) readr::write_csv(df.out, flnm)
+    if (!is.null(rs.path)) {
+      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the Dwell feature csv\n")
+      readr::write_csv(df.out, flnm)
+      }
     
   }
   

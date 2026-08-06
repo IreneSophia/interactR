@@ -7,7 +7,7 @@
 featDwell(
   df,
   ls.AOI,
-  rs.path,
+  rs.path = c(),
   suffix = "",
   verbose = T,
   recompute = F,
@@ -25,7 +25,7 @@ then the first AOI is chosen. E.g., if ls.AOI = c("Self", "Laptop"), then "Self 
 If empty (\code{is.null(ls.AOI) == TRUE}), existing classification is used.}
 
 \item{rs.path}{Character. Path to the directory where the output files will be saved.
-If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk.}
+If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk. Default is \code{c()}.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 
