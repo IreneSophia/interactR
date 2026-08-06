@@ -288,7 +288,8 @@ readCSVs = function(Filename, cols = 1:186) {
 #' Utility function to read in raw VERSE environmental logs from an underlying `EventLog.txt` structure.
 #' 
 #' @param fl.ls Character vector. File system paths pointing to target `EventLog.txt` documents.
-#' @param timezone Character. Timezone in which the data collection was conducted.
+#' @param timezone Character. Timezone in which the data collection was conducted. 
+#'   If this is null, then the tiemzone is determined using `Sys.timezone()`. Default is `c()`.
 #' @param type Character string. Target format of parsing outcome. Use `"list"` to compile all 
 #'   unprocessed elements dynamically, or `"df"` to extract structured tabular fields. Default is `"df"`.
 #'
@@ -299,7 +300,10 @@ readCSVs = function(Filename, cols = 1:186) {
 #' @export
 #' 
 
-extractEventsVERSE = function(fl.ls, timezone, type = "df") {
+extractEventsVERSE = function(fl.ls, timezone = c(), type = "df") {
+  
+  # check whether a timezone was provided or should be extracted
+  if (is.null(timezone)) timezone = Sys.timezone()
   
   # return all the information as a list
   if (type == "list") {
