@@ -208,7 +208,8 @@ extractWLCC = function(df, winSample, incSample, lagSample, colname,
       df.sel = rbind(
         df |> filter(Identifier == df.dyad$left_Identifier[i]   & Time == df.dyad$left_Time[i])   |> arrange(Frame) |> mutate(Side = "left"),
         df |> filter(Identifier == df.dyad$right_Identifier[i]  & Time == df.dyad$right_Time[i])  |> arrange(Frame) |> mutate(Side = "right")) |>
-        select(-Identifier) |>
+        select(-Identifier, -Time) |>
+        mutate(Dyad = df.dyad$Dyad[i]) |>
         tidyr::pivot_wider(names_from = Side, values_from = all_of(colname))
       
       if (pseudoSegment) {
@@ -219,7 +220,7 @@ extractWLCC = function(df, winSample, incSample, lagSample, colname,
             mutate(
               right = unlist(sample(split(right, ceiling(seq_along(right) / winSample))), 
                              use.names = FALSE)
-              )
+            )
           # compute the WLCC
           df.wlcc = rbind(df.wlcc, 
                           computeWLCC(df.sel, winSample, incSample, lagSample) |>
