@@ -199,6 +199,8 @@ extractWLCC = function(df, winSample, incSample, lagSample, colname,
     # loop through the Dyads
     for (i in 1:nrow(df.dyad)) {
       
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Starting with WLCC from dyad ", i, " of ", nrow(df.dyad), "\n")
+      
       # check whether all information here
       if (sum(is.na(df.dyad[i,])) > 0) stop("Dyad ", df.dyad$Dyad[i], " is missing crucial information (Dyad, Time or Identifier)")
       
