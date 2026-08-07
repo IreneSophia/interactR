@@ -159,12 +159,11 @@ aggWTC = function(df, minFreq, maxFreq, withinCOI = T, rs.path = c(), suffix = "
 #' @param rs.path Character. Path to destination directory for saved files. 
 #'   If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
-#' @param nsim. Numeric. Number of Monte Carlo randomisations for computing WTC. Default is `300`.
-#' @param df.pseudo Dataframe. If it contains row, then instead of using the observed 
+#' @param nsim. Numeric. Number of Monte Carlo randomisations for computing WTC. Default is `0`.
+#' @param df.pseudo Dataframe. If it contains rows, then instead of using the observed 
 #'    dyads listed in `df`, these pairings are tested for pseudo-WTC. Dataframe can be 
-#'    created using [shuffleIdentifier()] or [shuffleDyads()]. Default is an empty dataframe, 
-#'    leading to observed and not pseudo WTC being extracted.
-#' @param seed Character or Numeric. Seed supporting reproducibility. Takes an integer seed or `"random"`. Default is `"random"`.
+#'    created using [shuffleIdentifier()] or [shuffleDyads()]. Default is `data.frame()`.
+#' @param seed Numeric. Seed supporting reproducibility. Takes an integer seed or `NA` for random. Default is `NA`.
 #' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
 #' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
@@ -180,11 +179,11 @@ aggWTC = function(df, minFreq, maxFreq, withinCOI = T, rs.path = c(), suffix = "
 #' @export
 #' 
 extractWTC = function(df, colname, fps, order = 8, rs.path = c(), suffix = "", 
-                      nsim = 300, df.pseudo = data.frame(), seed = "random",
+                      nsim = 0, df.pseudo = data.frame(), seed = NA,
                       verbose = T, recompute = F, return = T) {
   
   # get a random seed
-  if (!is.numeric(seed)) {
+  if (is.na(seed)) {
     seed = sample(1000:9999, 1)
   }
   
@@ -221,7 +220,7 @@ extractWTC = function(df, colname, fps, order = 8, rs.path = c(), suffix = "",
     cols = c("Dyad", "Identifier", "Time", "Frame", colname)
     checkDF(df, cols)
     
-    # if pseudoDyad, then create a random list of combinations
+    # if pseudoDyad, then use the provided list of combinations
     if (pseudoDyad) {
       df.dyad = df.pseudo
     } else {

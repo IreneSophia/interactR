@@ -11,9 +11,9 @@ extractWTC(
   order = 8,
   rs.path = c(),
   suffix = "",
-  nsim = 300,
+  nsim = 0,
   df.pseudo = data.frame(),
-  seed = "random",
+  seed = NA,
   verbose = T,
   recompute = F,
   return = T
@@ -35,12 +35,11 @@ If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is \code{c()
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
 
-\item{df.pseudo}{Dataframe. If it contains row, then instead of using the observed
+\item{df.pseudo}{Dataframe. If it contains rows, then instead of using the observed
 dyads listed in \code{df}, these pairings are tested for pseudo-WTC. Dataframe can be
-created using \code{\link[=shuffleIdentifier]{shuffleIdentifier()}} or \code{\link[=shuffleDyads]{shuffleDyads()}}. Default is an empty dataframe,
-leading to observed and not pseudo WTC being extracted.}
+created using \code{\link[=shuffleIdentifier]{shuffleIdentifier()}} or \code{\link[=shuffleDyads]{shuffleDyads()}}. Default is \code{data.frame()}.}
 
-\item{seed}{Character or Numeric. Seed supporting reproducibility. Takes an integer seed or \code{"random"}. Default is \code{"random"}.}
+\item{seed}{Numeric. Seed supporting reproducibility. Takes an integer seed or \code{NA} for random. Default is \code{NA}.}
 
 \item{verbose}{Logical. Whether progress and output are printed to the console. Default is \code{TRUE}.}
 
@@ -48,7 +47,7 @@ leading to observed and not pseudo WTC being extracted.}
 
 \item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
 
-\item{nsim.}{Numeric. Number of Monte Carlo randomisations for computing WTC. Default is \code{300}.}
+\item{nsim.}{Numeric. Number of Monte Carlo randomisations for computing WTC. Default is \code{0}.}
 }
 \value{
 If \code{return = TRUE}, returns list with the results. If provided, the full list is saved as rds to \code{rs.path}.
