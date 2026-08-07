@@ -4,7 +4,7 @@
 \alias{shuffleIdentifier}
 \title{Shuffle one identifier of a dyad to create pseudo-dyads}
 \usage{
-shuffleIdentifier(df, seed = NULL, side = "right", nsim = 100)
+shuffleIdentifier(df, seed = NA, side = "right", nsim = NA)
 }
 \arguments{
 \item{df}{Dataframe. Must contain the columns \code{Dyad}, \code{Time} and \code{Identifier}
@@ -12,11 +12,12 @@ to unequivocally identify one session. Each Dyad has one row per Identifier.
 Dyad ID must consist of \verb{[Identifier]-[Identifier]}.}
 
 \item{seed}{Numeric or other. Seed for reproducibility. If seed is not
-numeric, then a random seed is chosen. Default is \code{NULL}.}
+numeric, then a random seed is chosen. Default is \code{NA}.}
 
 \item{side}{Character. Which side to shuffle. Default is \code{right}.}
 
-\item{nsim}{Numeric. Number of pseudo-dyads to be returned. Default is \code{100}.
+\item{nsim}{Numeric. Number of pseudo-dyads to be returned. Default is \code{NA},
+corresponding to the number of original dyads, i.e., one shuffle.
 If nsim > nrow(df), then it shuffles until enough unique pseudo dyads are created.}
 }
 \value{

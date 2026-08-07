@@ -150,9 +150,10 @@ shuffleDyads = function(df, seed = NULL, considerTime = T, inOrder = F, nsim = 1
 #'   to unequivocally identify one session. Each Dyad has one row per Identifier. 
 #'   Dyad ID must consist of `[Identifier]-[Identifier]`. 
 #' @param seed Numeric or other. Seed for reproducibility. If seed is not 
-#'   numeric, then a random seed is chosen. Default is `NULL`.
+#'   numeric, then a random seed is chosen. Default is `NA`.
 #' @param side Character. Which side to shuffle. Default is `right`.
-#' @param nsim Numeric. Number of pseudo-dyads to be returned. Default is `100`.
+#' @param nsim Numeric. Number of pseudo-dyads to be returned. Default is `NA`,
+#'   corresponding to the number of original dyads, i.e., one shuffle.
 #'   If nsim > nrow(df), then it shuffles until enough unique pseudo dyads are created.
 #'
 #' @return Returns a dataframe with pseudo-dyads, including the information of
@@ -164,7 +165,7 @@ shuffleDyads = function(df, seed = NULL, considerTime = T, inOrder = F, nsim = 1
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
 #' 
-shuffleIdentifier = function(df, seed = NULL, side = "right", nsim = 100) {
+shuffleIdentifier = function(df, seed = NA, side = "right", nsim = NA) {
   
   checkDF(df, c("Dyad", "Time", "Identifier"))
   
@@ -172,7 +173,7 @@ shuffleIdentifier = function(df, seed = NULL, side = "right", nsim = 100) {
   timezone = attr(df$Time[1],"tzone")
   
   # set the seed
-  if (is.numeric(seed)) set.seed(seed) else set.seed(sample(1000:9999, 1))
+  if (!is.na(seed)) set.seed(seed) else set.seed(sample(1000:9999, 1))
   
   # preprocess the dataframe
   df = df |>
@@ -190,6 +191,9 @@ shuffleIdentifier = function(df, seed = NULL, side = "right", nsim = 100) {
   df.out = data.frame()
   x = 0
   
+  # if no simulation number was provided, use the number of original dyads
+  if (is.na(nsim)) nsim = nrow(df)
+  
   while (nrow(df.out) < nsim) {
     
     x = x + 1
@@ -199,8 +203,11 @@ shuffleIdentifier = function(df, seed = NULL, side = "right", nsim = 100) {
     
     # shuffle either the right or the left ensuring no entry is in its original place
     shuffled = sample(df.tmp[[side]])
+    y = 0
     while (any(shuffled == df.tmp[[side]])) {
+      y = y + 1
       shuffled = sample(df.tmp[[side]])
+      if (y > 1000) stop("Unable to find unique shuffles in this input dataframe when shuffling ", side)
     }
     
     # replace original column
@@ -218,6 +225,8 @@ shuffleIdentifier = function(df, seed = NULL, side = "right", nsim = 100) {
     
     # add to df.out and only keep unique rows
     df.out = rbind(df.out, df.tmp |> select(-pseudoDyad)) |> distinct()
+    
+    if (x > 1000) stop("Unable to find enough unique shuffled dyads by shuffling ", side)
     
   }
   
