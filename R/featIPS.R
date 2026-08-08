@@ -289,7 +289,7 @@ extractIPS = function(df, colname, type, fps, featname = NA,
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (return) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading ",method ," features\n")
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading ",type ," features\n")
       df.out = readRDS(flnm)
     }
   } else {
