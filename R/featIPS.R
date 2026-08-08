@@ -417,8 +417,10 @@ extractIPS = function(df, colname, method, fps, featname = NA,
       },
       .options = furrr::furrr_options(seed = seed)
     )
+    
     # clean up parallelisation
     future::plan(future::sequential)
+    invisible(gc())
     
     # unpack the data into a dataframe
     df.out = purrr::list_rbind(ls.out)
