@@ -214,7 +214,7 @@ computeWLCC = function(df, winSample, incSample, lagSample) {
 #' @param df Dataframe. Must contain the columns `Dyad`, `Time`, `Identifier`, 
 #'   `Frame` as well as the column described by `colname`.
 #' @param colname Character. Name of the column from which IPS is extracted. 
-#' @param method Character. Name of the method to compute IPS: either "WTC" for 
+#' @param type Character. Name of the method to compute IPS: either "WTC" for 
 #'   wavelet coherence or "WLCC" for windowed lagged cross correlation. 
 #' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
 #' @param featname Character. Name of the Feature. If `NA`, then the colname is used. Default is `NA`. 
@@ -245,7 +245,7 @@ computeWLCC = function(df, winSample, incSample, lagSample) {
 #' @export
 #' 
 
-extractIPS = function(df, colname, method, fps, featname = NA,
+extractIPS = function(df, colname, type, fps, featname = NA,
                       rs.path = c(), suffix = "", cores = NA,
                       winSample = NA, incSample = NA, lagSample = NA, # settings for WLCC 
                       order = 8,                                      # settings for WTC
@@ -276,13 +276,13 @@ extractIPS = function(df, colname, method, fps, featname = NA,
     # create filename depending on whether this is pseudo or not
     if (pseudoDyad) {
       flnm  = file.path(rs.path, sprintf("data%s_%s_seed-%d-pseudoDyad%s.rds", 
-                                         method, featname, seed, suffix))
+                                         type, featname, seed, suffix))
     } else if (pseudoSegment) {
       flnm  = file.path(rs.path, sprintf("data%s_%s_seed-%d-pseudoSegment%s.rds", 
-                                         method, featname, seed, suffix))
+                                         type, featname, seed, suffix))
     } else {
       flnm  = file.path(rs.path, sprintf("data%s_%s_seed-%d%s.rds", 
-                                         method, featname, seed, suffix))
+                                         type, featname, seed, suffix))
     }
   }
   
@@ -293,9 +293,7 @@ extractIPS = function(df, colname, method, fps, featname = NA,
       df.out = readRDS(flnm)
     }
   } else {
-    
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extracting ", method, " features from ", colname, "\n")
-    
+  
     # check which Method is computed
     if (pseudoDyad) {
       Method = "pseudoDyad"
@@ -305,14 +303,18 @@ extractIPS = function(df, colname, method, fps, featname = NA,
       Method = "observed"
     }
     
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extracting ", type, Method, " from ", colname, "\n")
+    
     # check whether settings for WLCC are complete, if needed
-    if (method == "WLCC") {
+    if (type == "WLCC") {
       if (any(is.na(c(incSample, lagSample, winSample)))) {
         stop("To use WLCC, incSample, lagSample and winSample need to be determined.")
       }
-    } else if (method == "WTC") {
+    } else if (type == "WTC") {
       # for segment shuffling in WTC, one second is used
       winSample = fps
+    } else {
+          stop("type must be either WTC or WLCC.")
     }
     
     # check whether all columns in dataframe
@@ -390,14 +392,14 @@ extractIPS = function(df, colname, method, fps, featname = NA,
             )
         } 
         # compute IPS
-        if (method == "WLCC") {
+        if (type == "WLCC") {
           minFrame = min(df.sel$Frame)
           computeWLCC(df.sel, winSample, incSample, lagSample) |>
             mutate(Method = Method, Feature = featname, Time = df.dyad$left_Time[dyadRow],
                    seed = seed, iteration = df.dyad$k[dyadRow],
                    # adjust the WLCC indices with the Frame
                    winStart = winStart + minFrame - 1, winEnd = winEnd + minFrame - 1)
-        } else if (method == "WTC") {
+        } else if (type == "WTC") {
           if (pseudoSegment) {
             # do not save the iterations
             computeWTC(df.sel, fps, featname, order = order, rs.path = c(), suffix = suffix, 
@@ -411,8 +413,6 @@ extractIPS = function(df, colname, method, fps, featname = NA,
               mutate(Method = Method, Feature = featname, Time = df.dyad$left_Time[dyadRow],
                      seed = seed, iteration = df.dyad$k[dyadRow])
           }
-        } else {
-          stop("method must be either WTC or WLCC.")
         }
       },
       .options = furrr::furrr_options(seed = seed)

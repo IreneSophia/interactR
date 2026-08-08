@@ -7,7 +7,7 @@
 extractIPS(
   df,
   colname,
-  method,
+  type,
   fps,
   featname = NA,
   rs.path = c(),
@@ -31,7 +31,7 @@ extractIPS(
 
 \item{colname}{Character. Name of the column from which IPS is extracted.}
 
-\item{method}{Character. Name of the method to compute IPS: either "WTC" for
+\item{type}{Character. Name of the method to compute IPS: either "WTC" for
 wavelet coherence or "WLCC" for windowed lagged cross correlation.}
 
 \item{fps}{Numeric. Frame processing rate frequency profile (frames per second) of the dataset.}
