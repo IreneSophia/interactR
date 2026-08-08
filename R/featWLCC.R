@@ -197,7 +197,7 @@ compareWTC = function(df.observed, df.pseudo, Bayesian = T, perm = F, rs.path = 
 #' @export
 #' 
 
-featWTC = function(df, FUN, absolute = F, r2z = F, rs.path = c(), suffix = "", 
+featWLCC = function(df, FUN, absolute = F, r2z = F, rs.path = c(), suffix = "", 
                    verbose = T, recompute = F, return = T) {
   
   # check rs.path
