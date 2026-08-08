@@ -9,6 +9,7 @@ extractIPS(
   colname,
   method,
   fps,
+  featname = NA,
   rs.path = c(),
   suffix = "",
   cores = NA,
@@ -28,12 +29,14 @@ extractIPS(
 \item{df}{Dataframe. Must contain the columns \code{Dyad}, \code{Time}, \code{Identifier},
 \code{Frame} as well as the column described by \code{colname}.}
 
-\item{colname}{Character. Name of the column from which WLCC is extracted.}
+\item{colname}{Character. Name of the column from which IPS is extracted.}
 
 \item{method}{Character. Name of the method to compute IPS: either "WTC" for
 wavelet coherence or "WLCC" for windowed lagged cross correlation.}
 
 \item{fps}{Numeric. Frame processing rate frequency profile (frames per second) of the dataset.}
+
+\item{featname}{Character. Name of the Feature. If \code{NA}, then the colname is used. Default is \code{NA}.}
 
 \item{rs.path}{Character. Path to destination directory for saved files.
 If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is \code{c()}.}

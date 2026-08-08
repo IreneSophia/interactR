@@ -12,6 +12,7 @@
 #'   Must explicitly feature columns `Dyad`, `Frame`, `left` and `right`. 
 #'   For each Dyad, there must be exactly two Identifiers in the data. 
 #' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
+#' @param featname Character. Name of the Feature from which WTC is computed. 
 #' @param order Numeric. Order for the wavelet transformation. Default is `8` based on Issartel et al. (2006).
 #' @param rs.path Character. Path to destination directory for saved files. 
 #'   If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is `c()`.
@@ -30,8 +31,8 @@
 #' @import dplyr
 #' @export
 #' 
-computeWTC = function(df, fps, order = 8, rs.path = c(), suffix = "", 
-                      seed = NA, 
+computeWTC = function(df, fps, featname,
+                      order = 8, rs.path = c(), suffix = "", seed = NA, 
                       verbose = T, recompute = F, return = T) {
   
   # get a random seed
@@ -46,7 +47,7 @@ computeWTC = function(df, fps, order = 8, rs.path = c(), suffix = "",
   } else {
     # create filename including the dyad
     flnm  = file.path(rs.path, sprintf("dataWTC_%s_%s_seed-%d%s.rds", 
-                                       colname, df$Dyad[1], seed, suffix))
+                                       featname, df$Dyad[1], seed, suffix))
   }
   
   # if no recompute and the file exists, it is simply loaded
@@ -212,10 +213,11 @@ computeWLCC = function(df, winSample, incSample, lagSample) {
 #'
 #' @param df Dataframe. Must contain the columns `Dyad`, `Time`, `Identifier`, 
 #'   `Frame` as well as the column described by `colname`.
-#' @param colname Character. Name of the column from which WLCC is extracted. 
+#' @param colname Character. Name of the column from which IPS is extracted. 
 #' @param method Character. Name of the method to compute IPS: either "WTC" for 
 #'   wavelet coherence or "WLCC" for windowed lagged cross correlation. 
 #' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
+#' @param featname Character. Name of the Feature. If `NA`, then the colname is used. Default is `NA`. 
 #' @param rs.path Character. Path to destination directory for saved files. 
 #'   If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
@@ -243,7 +245,7 @@ computeWLCC = function(df, winSample, incSample, lagSample) {
 #' @export
 #' 
 
-extractIPS = function(df, colname, method, fps,
+extractIPS = function(df, colname, method, fps, featname = NA,
                       rs.path = c(), suffix = "", cores = NA,
                       winSample = NA, incSample = NA, lagSample = NA, # settings for WLCC 
                       order = 8,                                      # settings for WTC
@@ -254,6 +256,9 @@ extractIPS = function(df, colname, method, fps,
   if (is.na(seed)) {
     seed = sample(1000:9999, 1)
   }
+  
+  # potentially get feature name
+  if (is.na(featname)) featname = colname
   
   # get whether this is pseudo or not
   if (nrow(df.pseudo) > 0) pseudoDyad = T else pseudoDyad = F
@@ -271,13 +276,13 @@ extractIPS = function(df, colname, method, fps,
     # create filename depending on whether this is pseudo or not
     if (pseudoDyad) {
       flnm  = file.path(rs.path, sprintf("data%s_%s_seed-%d-pseudoDyad%s.rds", 
-                                         method, colname, seed, suffix))
+                                         method, featname, seed, suffix))
     } else if (pseudoSegment) {
       flnm  = file.path(rs.path, sprintf("data%s_%s_seed-%d-pseudoSegment%s.rds", 
-                                         method, colname, seed, suffix))
+                                         method, featname, seed, suffix))
     } else {
       flnm  = file.path(rs.path, sprintf("data%s_%s_seed-%d%s.rds", 
-                                         method, colname, seed, suffix))
+                                         method, featname, seed, suffix))
     }
   }
   
@@ -388,24 +393,22 @@ extractIPS = function(df, colname, method, fps,
         if (method == "WLCC") {
           minFrame = min(df.sel$Frame)
           computeWLCC(df.sel, winSample, incSample, lagSample) |>
-            mutate(Type = Type, Feature = colname,
+            mutate(Type = Type, Feature = featname,
                    seed = seed, iteration = df.dyad$k[dyadRow],
                    # adjust the WLCC indices with the Frame
                    winStart = winStart + minFrame - 1, winEnd = winEnd + minFrame - 1)
         } else if (method == "WTC") {
           if (pseudoSegment) {
             # do not save the iterations
-            computeWTC(df.sel, fps, order = order, rs.path = c(), suffix = suffix, 
-                       seed = seed, 
-                       verbose = F, recompute = recompute, return = T) |>
-              mutate(Type = Type, Feature = colname,
+            computeWTC(df.sel, fps, featname, order = order, rs.path = c(), suffix = suffix, 
+                       seed = seed, verbose = F, recompute = recompute, return = T) |>
+              mutate(Type = Type, Feature = featname,
                      seed = seed, iteration = df.dyad$k[dyadRow])
           } else {
             # save the wtc output
-            computeWTC(df.sel, fps, order = order, rs.path = rs.path, suffix = suffix, 
-                       seed = seed, 
-                       verbose = F, recompute = recompute, return = T) |>
-              mutate(Type = Type, Feature = colname,
+            computeWTC(df.sel, fps, featname, order = order, rs.path = rs.path, suffix = suffix, 
+                       seed = seed, verbose = F, recompute = recompute, return = T) |>
+              mutate(Type = Type, Feature = featname,
                      seed = seed, iteration = df.dyad$k[dyadRow])
           }
         } else {

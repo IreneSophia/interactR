@@ -7,6 +7,7 @@
 computeWTC(
   df,
   fps,
+  featname,
   order = 8,
   rs.path = c(),
   suffix = "",
@@ -22,6 +23,8 @@ Must explicitly feature columns \code{Dyad}, \code{Frame}, \code{left} and \code
 For each Dyad, there must be exactly two Identifiers in the data.}
 
 \item{fps}{Numeric. Frame processing rate frequency profile (frames per second) of the dataset.}
+
+\item{featname}{Character. Name of the Feature from which WTC is computed.}
 
 \item{order}{Numeric. Order for the wavelet transformation. Default is \code{8} based on Issartel et al. (2006).}
 
