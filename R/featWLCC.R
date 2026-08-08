@@ -17,6 +17,8 @@
 #' @param perm Logical. Switch to use permutation testing instead of comparison across Dyads.
 #'   If the dataset is smaller, then one can create a larger set of pseudo values 
 #'   against which the mean observed value per Lag can be compared. Default is `FALSE`.
+#' @param minBF Numeric. Threshold above which log Bayes Factor is considered credible evidence. Default is `log(3)`.
+#' @param alpha Numeric. Threshold above which permutation and Frequentist is considered significant. Default is `0.05`.
 #' @param rs.path Character. Path to destination directory for saved files. 
 #'   If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
@@ -31,7 +33,9 @@
 #' @export
 #' 
 
-compareWTC = function(df.observed, df.pseudo, Bayesian = T, perm = F, rs.path = c(), suffix = "", 
+compareWLCC = function(df.observed, df.pseudo, Bayesian = T, perm = F, 
+                       minBF = log(3), alpha = 0.05,
+                       rs.path = c(), suffix = "", 
                       verbose = T, recompute = F, return = T) {
   # check rs.path
   if (is.null(rs.path)) {
@@ -91,12 +95,12 @@ compareWTC = function(df.observed, df.pseudo, Bayesian = T, perm = F, rs.path = 
           group_by(Feature) |>
           rstatix::adjust_pvalue(method = "BH") |>
           mutate(
-            Sig  = if_else(p.adj < 0.05, "*", "")
+            Sig  = if_else(p.adj < alpha, "*", "")
           ) |> rename(p_BH = p.adj)
         
         # add to the aggregated dataframe
         df.agg = df.agg |>
-          left_join(df.stat |> select(Feature, Lag, p, p.adj, Sig),
+          left_join(df.stat |> select(Feature, Lag, p, p_BH, Sig),
                     by = c("Lag", "Feature"))
         
       } else {
@@ -116,7 +120,7 @@ compareWTC = function(df.observed, df.pseudo, Bayesian = T, perm = F, rs.path = 
           }) |>
           ungroup() |>
           mutate(
-            Cred = if_else(logBF > log(3) & Direction == "greater", "*", "")
+            Cred = if_else(logBF > minBF & Direction == "greater", "*", "")
           )
         
         # add to the aggregated dataframe
@@ -148,15 +152,11 @@ compareWTC = function(df.observed, df.pseudo, Bayesian = T, perm = F, rs.path = 
         group_by(Feature, Lag) |>
         summarise(
           Probability = mean(observed > WLCC),
-          p = 1 - Probability,
           .groups = "drop"
         ) |> group_by(Feature) |> 
-        # adjust the permutation value for the number of lags
-        rstatix::adjust_pvalue(method = "BH") |>
         mutate(
-          Probability_BH = 1 - p.adj,
-          Sig  = if_else(p.adj < 0.05, "*", "")
-        ) |> select(-p, -p.adj) |> ungroup()
+          Sig  = if_else(Probability > (1 - alpha), "*", "")
+        )
       
       # add the result to the aggregated dataframe
       df.agg = df.agg |>
