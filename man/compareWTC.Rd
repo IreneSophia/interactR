@@ -7,6 +7,8 @@
 compareWTC(
   df.observed,
   df.pseudo,
+  Bayesian = T,
+  perm = F,
   rs.path = c(),
   suffix = "",
   verbose = T,
@@ -18,6 +20,12 @@ compareWTC(
 \item{df.observed}{Dataframe. Dataframe created by \code{\link[=extractIPS]{extractIPS()}} extracting observed values.}
 
 \item{df.pseudo}{Dataframe. Dataframe created by \code{\link[=extractIPS]{extractIPS()}} extracting pseudo values.}
+
+\item{Bayesian}{Logical. Switch to perform Bayesian or frequentist testing. Default is \code{TRUE}.}
+
+\item{perm}{Logical. Switch to use permutation testing instead of comparison across Dyads.
+If the dataset is smaller, then one can create a larger set of pseudo values
+against which the mean observed value per Lag can be compared. Default is \code{FALSE}.}
 
 \item{rs.path}{Character. Path to destination directory for saved files.
 If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is \code{c()}.}
@@ -35,7 +43,15 @@ If \code{return = TRUE}, returns dataframe. If provided, the dataframe is saved 
 }
 \description{
 Takes the dataframe created by \code{\link[=extractIPS]{extractIPS()}} with method WLCC and compares
-the pseudo and the observed WLCC values based on the mean.
+the pseudo and the observed WLCC values based on the mean. Comparison
+can be either made by aggregating the values across Dyads and then comparing
+the pseudo and the observed values for each lag with a t-test to assess whether
+observed is larger than pseudo. Frequentist or Bayesian t-tests can be chosen
+by using the \code{Bayesian} logical switch. Alternatively, if the sample of dyads is small,
+observed WLCC can be aggregated across all dyads and compared with a larger sample of
+pseudo WLCC in a permutation test by setting \code{perm = TRUE}.
+When frequentist t-tests are computed, multiple comparison correction is applied based on
+Benjamini & Hochberg's (1995) FDR method for the number of lags.
 }
 \author{
 Irene Sophia Plank (\email{10planki@gmail.com})

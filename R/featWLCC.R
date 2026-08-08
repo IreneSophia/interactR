@@ -1,10 +1,22 @@
 #' Compares pseudo and observed WLCC for each Lag
 #'
 #' Takes the dataframe created by [extractIPS()] with method WLCC and compares 
-#' the pseudo and the observed WLCC values based on the mean. 
+#' the pseudo and the observed WLCC values based on the mean. Comparison 
+#' can be either made by aggregating the values across Dyads and then comparing
+#' the pseudo and the observed values for each lag with a t-test to assess whether 
+#' observed is larger than pseudo. Frequentist or Bayesian t-tests can be chosen
+#' by using the `Bayesian` logical switch. Alternatively, if the sample of dyads is small, 
+#' observed WLCC can be aggregated across all dyads and compared with a larger sample of 
+#' pseudo WLCC in a permutation test by setting `perm = TRUE`. 
+#' When frequentist t-tests are computed, multiple comparison correction is applied based on 
+#' Benjamini & Hochberg's (1995) FDR method for the number of lags. 
 #'
 #' @param df.observed Dataframe. Dataframe created by [extractIPS()] extracting observed values.
 #' @param df.pseudo Dataframe. Dataframe created by [extractIPS()] extracting pseudo values. 
+#' @param Bayesian Logical. Switch to perform Bayesian or frequentist testing. Default is `TRUE`.
+#' @param perm Logical. Switch to use permutation testing instead of comparison across Dyads.
+#'   If the dataset is smaller, then one can create a larger set of pseudo values 
+#'   against which the mean observed value per Lag can be compared. Default is `FALSE`.
 #' @param rs.path Character. Path to destination directory for saved files. 
 #'   If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
@@ -19,7 +31,7 @@
 #' @export
 #' 
 
-compareWTC = function(df.observed, df.pseudo, rs.path = c(), suffix = "", 
+compareWTC = function(df.observed, df.pseudo, Bayesian = T, perm = F, rs.path = c(), suffix = "", 
                       verbose = T, recompute = F, return = T) {
   # check rs.path
   if (is.null(rs.path)) {
@@ -40,10 +52,10 @@ compareWTC = function(df.observed, df.pseudo, rs.path = c(), suffix = "",
   } else {
     
     # get the shared Features
-    features = union(df.pseudo$Feature, df.observed$Feature)
+    features = intersect(df.pseudo$Feature, df.observed$Feature)
     
     # check that df.pseudo only contains one type of pseudo WLCC
-    if (length(unique(df.pseudo$Method)))
+    if (length(unique(df.pseudo$Method)) != 1) stop("Function performs comparison with one pseudo method.")
     
     # combine the dataframes
     df = rbind(df.pseudo, df.observed) |>
@@ -51,43 +63,113 @@ compareWTC = function(df.observed, df.pseudo, rs.path = c(), suffix = "",
     
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Comparing pseudo and observed WLCC from", features, "\n")
     
-    # aggregate the values
-    df = df |>
+    # aggregate the values across the windows
+    df.lag = df |>
       group_by(Lag, Dyad, Method, Feature) |>
       summarise(
         WLCC = mean(WLCC, na.rm = T),
         .groups = "drop"
       )
     
-    # use non-parametric tests to assess differences
-    df.stat = df |> 
-      group_by(Feature, Lag) |> 
-      rstatix::wilcox_test(WLCC ~ Method, detailed = T) |> 
-      rstatix::adjust_pvalue(method = "BH") |>
-      mutate(
-        Sig  = if_else(p.adj < 0.05, "*", ""),
-        Direction = case_when(estimate > 0 & p.adj < 0.05 ~ "correlation",
-                         estimate < 0 & p.adj < 0.05 ~ "hypo-correlation",
-                         T ~ "")
-      )
-    
-    # aggregate for plotting
-    df.agg = df |>
+    # aggregate values for plotting
+    df.agg = df.lag |>
       group_by(Lag, Method, Feature) |>
       summarise(
         STD = sd(WLCC),
         AVG = mean(WLCC),
         .groups = "drop"
-      ) |>
-      left_join(df.stat |> select(Feature, Lag, statistic, p, p.adj, estimate, conf.low, conf.high, Sig, Direction),
-                by = c("Lag", "Feature"))
+      )
+    
+    if (!perm) {
+      
+      if (!Bayesian) {
+      
+        # use non-parametric tests to assess differences
+        df.stat = df.lag |> 
+          group_by(Feature, Lag) |> 
+          rstatix::t_test(WLCC ~ Method, detailed = T, alternative = "g") |> 
+          group_by(Feature) |>
+          rstatix::adjust_pvalue(method = "BH") |>
+          mutate(
+            Sig  = if_else(p.adj < 0.05, "*", "")
+          ) |> rename(p_BH = p.adj)
+        
+        # add to the aggregated dataframe
+        df.agg = df.agg |>
+          left_join(df.stat |> select(Feature, Lag, p, p.adj, Sig),
+                    by = c("Lag", "Feature"))
+        
+      } else {
+        
+        # compute the Bayesian t-tests
+        df.stat = df.lag |>
+          group_by(Feature, Lag) |>
+          group_modify(~ {
+            observed = .x |>
+              filter(Method == "observed") |>
+              summarise(mean = mean(WLCC, na.rm = TRUE)) |> pull(mean)
+            pseudo = .x |>
+              filter(Method != "observed") |>
+              summarise(mean = mean(WLCC, na.rm = TRUE)) |> pull(mean)
+            ttest = BayesFactor::ttestBF(formula = WLCC ~ Method, data = as.data.frame(.x))
+            data.frame(logBF = ttest@bayesFactor$bf, Direction = if_else(observed > pseudo, "greater", "lesser"))
+          }) |>
+          ungroup() |>
+          mutate(
+            Cred = if_else(logBF > log(3) & Direction == "greater", "*", "")
+          )
+        
+        # add to the aggregated dataframe
+        df.agg = df.agg |>
+          left_join(df.stat |> select(Feature, Lag, logBF, Cred),
+                    by = c("Lag", "Feature"))
+        
+      }
+      
+    } else {
+      
+      # aggregate the observed values to get grand average per Lag
+      df.perm = df.observed |>
+        group_by(Lag, Dyad, Feature) |>
+        summarise(
+          WLCC = mean(WLCC, na.rm = T),
+          .groups = "drop"
+        ) |> 
+        group_by(Lag, Feature) |>
+        summarise(
+          observed = mean(WLCC, na.rm = T),
+          .groups = "drop"
+        ) |> 
+        # merge with the pseudo dataframe
+        right_join(df.pseudo, by = c("Lag", "Feature"))
+      
+      # calculate permutation values
+      df.stat = df.perm |>
+        group_by(Feature, Lag) |>
+        summarise(
+          Probability = mean(observed > WLCC),
+          p = 1 - Probability,
+          .groups = "drop"
+        ) |> group_by(Feature) |> 
+        # adjust the permutation value for the number of lags
+        rstatix::adjust_pvalue(method = "BH") |>
+        mutate(
+          Probability_BH = 1 - p.adj,
+          Sig  = if_else(p.adj < 0.05, "*", "")
+        ) |> select(-p, -p.adj) |> ungroup()
+      
+      # add the result to the aggregated dataframe
+      df.agg = df.agg |>
+        left_join(df.stat, by = c("Lag", "Feature"))
+        
+    }
     
     # save the data
-    if (!is.null(rs.path)) write_csv(df.rsq, file = flnm)
+    if (!is.null(rs.path)) write_csv(df.agg, file = flnm)
     
   }
   
-  if (return) return(df.rsq)
+  if (return) return(df.agg)
   
 }
 
@@ -159,13 +241,13 @@ featWTC = function(df, FUN, absolute = F, r2z = F, rs.path = c(), suffix = "",
         )
       ) |> tidyr::drop_na() |>
       # first, aggregate using FUN for each window
-      group_by(Dyad, Time, Type, Identifier, Feature, Window) |>
+      group_by(Dyad, Time, Method, Identifier, Feature, Window) |>
       summarise(
         WLCC = FUN(WLCC),
         .groups = "drop"
       ) |> 
       # then, aggregate for each Dyad over all windows
-      group_by(Dyad, Time, Type, Identifier, Feature) |>
+      group_by(Dyad, Time, Method, Identifier, Feature) |>
       summarise(
         STD   = sd(WLCC),
         AVG = mean(WLCC),
@@ -177,13 +259,13 @@ featWTC = function(df, FUN, absolute = F, r2z = F, rs.path = c(), suffix = "",
     # get overall WLCC
     df.dyad = df |>
       # first, aggregate using FUN for each window
-      group_by(Dyad, Time, Type, Feature, Window) |>
+      group_by(Dyad, Time, Method, Feature, Window) |>
       summarise(
         WLCC = FUN(WLCC),
         .groups = "drop"
       ) |> 
       # then, aggregate for each Dyad over all windows
-      group_by(Dyad, Time, Type, Feature) |>
+      group_by(Dyad, Time, Method, Feature) |>
       summarise(
         STD   = sd(WLCC),
         AVG = mean(WLCC),
