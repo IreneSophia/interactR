@@ -393,7 +393,7 @@ extractIPS = function(df, colname, method, fps, featname = NA,
         if (method == "WLCC") {
           minFrame = min(df.sel$Frame)
           computeWLCC(df.sel, winSample, incSample, lagSample) |>
-            mutate(Type = Type, Feature = featname,
+            mutate(Type = Type, Feature = featname, Time = df.dyad$left_Time[dyadRow],
                    seed = seed, iteration = df.dyad$k[dyadRow],
                    # adjust the WLCC indices with the Frame
                    winStart = winStart + minFrame - 1, winEnd = winEnd + minFrame - 1)
@@ -402,13 +402,13 @@ extractIPS = function(df, colname, method, fps, featname = NA,
             # do not save the iterations
             computeWTC(df.sel, fps, featname, order = order, rs.path = c(), suffix = suffix, 
                        seed = seed, verbose = F, recompute = recompute, return = T) |>
-              mutate(Type = Type, Feature = featname,
+              mutate(Type = Type, Feature = featname, Time = df.dyad$left_Time[dyadRow],
                      seed = seed, iteration = df.dyad$k[dyadRow])
           } else {
             # save the wtc output
             computeWTC(df.sel, fps, featname, order = order, rs.path = rs.path, suffix = suffix, 
                        seed = seed, verbose = F, recompute = recompute, return = T) |>
-              mutate(Type = Type, Feature = featname,
+              mutate(Type = Type, Feature = featname, Time = df.dyad$left_Time[dyadRow],
                      seed = seed, iteration = df.dyad$k[dyadRow])
           }
         } else {
