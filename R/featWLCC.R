@@ -144,14 +144,19 @@ compareWLCC = function(df.observed, df.pseudo, Bayesian = T, perm = F,
           observed = mean(WLCC, na.rm = T),
           .groups = "drop"
         ) |> 
-        # merge with the pseudo dataframe
-        right_join(df.pseudo, by = c("Lag", "Feature"))
+        # merge with the aggregated pseudo dataframe
+        right_join(df.pseudo |>
+                     group_by(Lag, Dyad, Feature, iteration) |>
+                     summarise(
+                       pseudo = mean(WLCC, na.rm = T),
+                       .groups = "drop"
+                     ), by = c("Lag", "Feature"))
       
       # calculate permutation values
       df.stat = df.perm |>
         group_by(Feature, Lag) |>
         summarise(
-          Probability = mean(observed > WLCC),
+          Probability = mean(observed > pseudo),
           .groups = "drop"
         ) |> group_by(Feature) |> 
         mutate(
