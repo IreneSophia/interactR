@@ -186,9 +186,9 @@ computeWLCC = function(df, winSample, incSample, lagSample) {
       winStart = Start - lagSample,
       winEnd   = Start + winSample + lagSample,
       # interpret the lag as to who was acting before whom
-      Direction = case_when(
-        Lag < 0 ~ "rightLeading",
-        Lag > 0 ~ "leftLeading",
+      Leading = case_when(
+        Lag < 0 ~ "Right",
+        Lag > 0 ~ "Left",
         T ~ "Simultaneous"
       ),
       # add the Dyad
@@ -296,13 +296,13 @@ extractIPS = function(df, colname, method, fps, featname = NA,
     
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extracting ", method, " features from ", colname, "\n")
     
-    # check which type is computed
+    # check which Method is computed
     if (pseudoDyad) {
-      Type = "pseudoDyad"
+      Method = "pseudoDyad"
     } else if (pseudoSegment) {
-      Type = "pseudoSegment"
+      Method = "pseudoSegment"
     } else {
-      Type = "observed"
+      Method = "observed"
     }
     
     # check whether settings for WLCC are complete, if needed
@@ -393,7 +393,7 @@ extractIPS = function(df, colname, method, fps, featname = NA,
         if (method == "WLCC") {
           minFrame = min(df.sel$Frame)
           computeWLCC(df.sel, winSample, incSample, lagSample) |>
-            mutate(Type = Type, Feature = featname, Time = df.dyad$left_Time[dyadRow],
+            mutate(Method = Method, Feature = featname, Time = df.dyad$left_Time[dyadRow],
                    seed = seed, iteration = df.dyad$k[dyadRow],
                    # adjust the WLCC indices with the Frame
                    winStart = winStart + minFrame - 1, winEnd = winEnd + minFrame - 1)
@@ -402,13 +402,13 @@ extractIPS = function(df, colname, method, fps, featname = NA,
             # do not save the iterations
             computeWTC(df.sel, fps, featname, order = order, rs.path = c(), suffix = suffix, 
                        seed = seed, verbose = F, recompute = recompute, return = T) |>
-              mutate(Type = Type, Feature = featname, Time = df.dyad$left_Time[dyadRow],
+              mutate(Method = Method, Feature = featname, Time = df.dyad$left_Time[dyadRow],
                      seed = seed, iteration = df.dyad$k[dyadRow])
           } else {
             # save the wtc output
             computeWTC(df.sel, fps, featname, order = order, rs.path = rs.path, suffix = suffix, 
                        seed = seed, verbose = F, recompute = recompute, return = T) |>
-              mutate(Type = Type, Feature = featname, Time = df.dyad$left_Time[dyadRow],
+              mutate(Method = Method, Feature = featname, Time = df.dyad$left_Time[dyadRow],
                      seed = seed, iteration = df.dyad$k[dyadRow])
           }
         } else {

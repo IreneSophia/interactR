@@ -25,6 +25,7 @@ Imports:
     lubridate,
     purrr,
     readr,
+    rstatix,
     slider,
     stringr,
     tidyr
