@@ -459,12 +459,15 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
     data.table::set(df, j = "row_id", value = seq_len(nrow(df)))
     
     # check if Identifier is speaking
-    idxSpeaking = df.speak[
-      df, 
-      on = .(Dyad = Dyad, Identifier = Identifier, Start <= Timepoint, End >= Timepoint), 
-      nomatch = NULL, 
-      unique(i.row_id)
-    ]
+    idxSpeaking = df |>
+      inner_join(
+        df.speak,
+        # join_by with between() handles the time interval overlap efficiently
+        join_by(Dyad, Identifier, between(Timepoint, Start, End)),
+        relationship = "many-to-many"
+      ) %>%
+      pull(.row_id) %>%
+      unique()
     
     # assign the speaking to the dataframe
     data.table::set(df, j = "Speaking", value = FALSE)
