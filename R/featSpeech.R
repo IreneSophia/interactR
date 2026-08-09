@@ -461,6 +461,7 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
       mutate(row_id = row_number())
     
     # check if Identifier is speaking
+    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Get speaking indices\n")
     idxSpeaking = df |>
       inner_join(
         df.speak,
@@ -472,6 +473,7 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
       unique()
 
     # add back
+    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Merge information back into dataframe\n")
     df = df |>
       mutate(
         Speaking = row_id %in% idxSpeaking
