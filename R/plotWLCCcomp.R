@@ -24,7 +24,8 @@ plotWLCCcomp = function(df, ncol = 2,
   # convert method to be uniform
   df = df |>
     mutate(
-      Method = if_else(Method == "observed", "observed", "pseudo")
+      Method = if_else(Method == "observed", "observed", "pseudo"),
+      Evaluation = if_else(is.na(Evaluation), "comparable", "different")
     )
   
   # get the peak lags
@@ -36,23 +37,18 @@ plotWLCCcomp = function(df, ncol = 2,
       ypos  = AVG + STD
     )
     
-  df |>
+  p = df |>
      ggplot() +  
      geom_ribbon(aes(x = Lag, y = AVG, group = Method, fill = Method, 
                      ymin = AVG - STD, ymax = AVG + STD), 
-                 alpha = 0.2) +
-     geom_ribbon(data = df |> filter(Evaluation == "*"),
-                 aes(x = Lag, y = AVG, group = Method, fill = Method, 
-                     ymin = AVG - STD, ymax = AVG + STD), 
                  alpha = 0.4) +
-     geom_line(aes(x = Lag, y = AVG, group = Method, colour = Method), linewidth = 1, alpha = 0.4) +
-     geom_line(data = df |> filter(Evaluation == "*"),
-               aes(x = Lag, y = AVG, group = Method, colour = Method), linewidth = 1, alpha = 0.8) +
+     geom_line(aes(x = Lag, y = AVG, group = Method, colour = Method, linetype = Evaluation), linewidth = 1, alpha = 0.8) +
      geom_vline(data = df.lag, aes(xintercept = Lag), colour = "black") + 
      geom_label(data = df.lag, aes(x = Lag, y = ypos, label = label),  size = 2.5) + 
      facet_wrap(. ~ Feature, scale = "free_y", ncol = ncol) +  
      scale_fill_manual(values = col.plot) +
      scale_colour_manual(values = col.plot) +
+     scale_linetype_manual(values = c(different = "solid", comparable = "dotted")) +
      theme_bw() + 
      theme(legend.position = "bottom", legend.title = element_blank(),
            axis.title.y = element_blank())
