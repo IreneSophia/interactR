@@ -1,3 +1,195 @@
+#' Compares pseudo and observed IPS for each Lag (WLCC) or each Frequency (WTC)
+#'
+#' Takes the dataframe created by [extractIPS()] and compares the pseudo and the 
+#' observed IPS values based on the mean. Comparison can be either made by 
+#' aggregating the values across Dyads and then comparing the pseudo and the 
+#' observed z-transformed values for each lag or Frequency with a t-test to assess. 
+#' Frequentist or Bayesian t-tests can be chosen with the `Bayesian` logical switch. 
+#' Alternatively, if the sample of dyads is small, observed IPS can be aggregated 
+#' across all dyads and compared with a larger sample of pseudo IPS in a 
+#' permutation test by setting `perm = TRUE`. When frequentist t-tests are computed, 
+#' multiple comparison correction is applied based on Benjamini & Hochberg's (1995) FDR. 
+#'
+#' @param df.observed Dataframe. Dataframe created by [extractIPS()] extracting observed values.
+#' @param df.pseudo Dataframe. Dataframe created by [extractIPS()] extracting pseudo values. 
+#' @param Bayesian Logical. Switch to perform Bayesian or frequentist testing. Default is `TRUE`.
+#' @param perm Logical. Switch to use permutation testing instead of comparison across Dyads.
+#'   If the dataset is smaller, then one can create a larger set of pseudo values 
+#'   against which the mean observed value per Lag can be compared. Default is `FALSE`.
+#' @param minBF Numeric. Threshold above which log Bayes Factor is considered credible evidence. Default is `log(3)`.
+#' @param alpha Numeric. Threshold above which permutation and Frequentist is considered significant. Default is `0.05`.
+#' @param rs.path Character. Path to destination directory for saved files. 
+#'   If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is `c()`.
+#' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
+#' @param verbose Logical. Whether progress and output are printed to the console. Default is `TRUE`.
+#' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
+#' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
+#'
+#' @return If `return = TRUE`, returns dataframe. If provided, the dataframe is saved as rds to `rs.path`.
+#' 
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' @import dplyr
+#' @export
+#' 
+
+compareIPS = function(df, Bayesian = T, perm = F, 
+                      minBF = log(3), alpha = 0.05, freqLimits = c(0.2, 8),
+                      rs.path = c(), suffix = "", 
+                      verbose = T, recompute = F, return = T) {
+  # check rs.path
+  if (is.null(rs.path)) {
+    # create empty filename because nothing will be saved
+    flnm = ''
+  } else {
+    # create filename 
+    flnm  = file.path(rs.path, 
+                      sprintf("featWLCC_pseudo-comp%s.csv", suffix))
+  }
+  
+  # if no recompute and the file exists, it is simply loaded
+  if (!recompute & file.exists(flnm)) {
+    if (return) {
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading WLCC comparison\n")
+      df.rsq = readr::read_csv(flnm)
+    }
+  } else {
+    
+    # check that df only contains one type of pseudo WLCC and must contain observed values
+    if ((length(unique(df$Method)) != 2) | !("observed" %in% unique(df$Method))) stop("Function performs comparison of observed with one pseudo method.")
+    
+    # rename the main column depending on whether WTC or WLCC
+    if ("Rsq" %in% colnames(df)) {
+      df = df |>
+        # if WTC, then filter out the frequencies outside of the limits
+        filter(Frequency >= freqLimits[1] & Frequency <= freqLimits[2]) |>
+        rename(value = Rsq) |>
+        select(value, Frame, Frequency, Dyad, Method, Feature, iteration)
+      colnm = "Frequency"
+    } else {
+      df = df |>
+        rename(value = WLCC) |>
+        select(value, Lag, Dyad, Method, Feature, iteration)
+      colnm = "Lag"
+    }
+    
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Comparing pseudo and observed WLCC from", unique(df$Feature), "\n")
+    
+    # aggregate the values across the windows
+    df.tmp = df |>
+      group_by(across(all_of(colnm)), Dyad, Method, Feature) |>
+      summarise(
+        value = mean(value, na.rm = T),
+        .groups = "drop"
+      )
+    
+    # aggregate values for plotting
+    df.agg = df.tmp |>
+      group_by(across(all_of(colnm)), Method, Feature) |>
+      summarise(
+        STD = sd(value),
+        AVG = mean(value),
+        .groups = "drop"
+      )
+    
+    if (!perm) {
+      
+      if (!Bayesian) {
+        
+        # use non-parametric tests to assess differences
+        df.stat = df.tmp |> 
+          # z-transform to achieve normal distribution
+          mutate(zvalue = atanh(pmin(pmax(value, -0.9999), 0.9999))) |>
+          group_by(Feature, across(all_of(colnm))) |> 
+          rstatix::t_test(zvalue ~ Method, detailed = T, p.adjust.method = "BH") |> 
+          mutate(
+            Evaluation = if_else(p < alpha, "*", ""), 
+            Direction  = if_else(estimate1 > estimate2, "greater", "lesser")
+          )
+        
+        # add to the aggregated dataframe
+        df.agg = df.agg |>
+          left_join(df.stat |> select(Feature, all_of(colnm), p, Evaluation, Direction),
+                    by = c(colnm, "Feature"))
+        
+      } else {
+        
+        # compute the Bayesian t-tests
+        df.stat = df.tmp |>
+          # z-transform to achieve normal distribution
+          mutate(zvalue = atanh(pmin(pmax(value, -0.9999), 0.9999))) |>
+          group_by(Feature, across(all_of(colnm))) |>
+          group_modify(~ {
+            observed = .x |>
+              filter(Method == "observed") |>
+              summarise(mean = mean(value, na.rm = TRUE)) |> pull(mean)
+            pseudo = .x |>
+              filter(Method != "observed") |>
+              summarise(mean = mean(value, na.rm = TRUE)) |> pull(mean)
+            ttest = BayesFactor::ttestBF(formula = zvalue ~ Method, data = as.data.frame(.x))
+            data.frame(logBF = ttest@bayesFactor$bf, Direction = if_else(observed > pseudo, "greater", "lesser"))
+          }) |>
+          ungroup() |>
+          mutate(
+            Evaluation = if_else(logBF > minBF, "*", "")
+          )
+        
+        # add to the aggregated dataframe
+        df.agg = df.agg |>
+          left_join(df.stat |> select(Feature, all_of(colnm), logBF, Evaluation, Direction),
+                    by = c(colnm, "Feature"))
+        
+      }
+      
+    } else {
+      
+      # aggregate the observed values to get grand average per Lag or Frequency
+      df.perm = df |> filter(Method == "observed") |>
+        group_by(across(all_of(colnm)), Dyad, Feature) |>
+        summarise(
+          value = mean(value, na.rm = T),
+          .groups = "drop"
+        ) |> 
+        group_by(across(all_of(colnm)), Feature) |>
+        summarise(
+          observed = mean(value, na.rm = T),
+          .groups = "drop"
+        ) |> 
+        # merge with the aggregated pseudo dataframe (across windows)
+        right_join(df |> filter(Method != "observed") |>
+                     group_by(across(all_of(colnm)), Dyad, Feature, iteration) |>
+                     summarise(
+                       pseudo = mean(value, na.rm = T),
+                       .groups = "drop"
+                     ), by = c(colnm, "Feature"))
+      
+      # calculate permutation values
+      df.stat = df.perm |>
+        group_by(Feature, across(all_of(colnm))) |>
+        summarise(
+          Probability = max(c(mean(observed > pseudo), mean(pseudo > observed))),
+          Direction   = if_else(mean(observed > pseudo) > mean(pseudo > observed),
+                                "greater", "lesser"),
+          .groups = "drop"
+        ) |> group_by(Feature) |> 
+        mutate(
+          Evaluation = if_else(Probability > (1 - alpha), "*", "")
+        )
+      
+      # add the result to the aggregated dataframe
+      df.agg = df.agg |>
+        left_join(df.stat, by = c(colnm, "Feature"))
+      
+    }
+    
+    # save the data
+    if (!is.null(rs.path)) readr::write_csv(df.agg, file = flnm)
+    
+  }
+  
+  if (return) return(df.agg)
+  
+}
+
 #' Compute Wavelet Coherence for Time-course Data
 #'
 #' Uses the \code{\link{biwavelet::wtc}} function to compute the Wavelet Coherence
