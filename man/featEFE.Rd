@@ -4,19 +4,28 @@
 \alias{featEFE}
 \title{Combine ARKit52 Facial Expressions into Emotional Facial Expressions (EFE)}
 \usage{
-featEFE(df, rs.path = c(), suffix = "", verbose = T, recompute = F, return = T)
+featEFE(
+  df,
+  catEFE = "Aldenhoven2026",
+  rescaleVERSE = T,
+  rs.path = c(),
+  suffix = "",
+  verbose = T,
+  recompute = F,
+  return = T
+)
 }
 \arguments{
 \item{df}{Dataframe containing the facial data. Must contain the columns \code{Dyad},
-\code{Identifier}, \code{Time} and \code{Frame}, as well as columns with ARKit52 values.
-Specifically, the algorithm uses the following patterns (\verb{.*} denotes sides):
-\code{"Facial_BrowDown.*"}, \code{"Facial_.*Eye_Squint"}, \code{"Facial_.*Eye_Wide"},
-\code{"Facial_MouthPucker"}, \code{"Facial_MouthFrown.*"}, \code{"Facial_MouthLowerDown.*"},
-\code{"Facial_NoseSneer.*"}, \code{"Facial_CheekSquint.*"}, \code{"Facial_MouthSmile.*"},
-\code{"Facial_BrowInnerUp"}, \code{"Facial_BrowOuterUp.*"}, \code{"Facial_JawOpen"},
-\code{"Facial_MouthStretch.*"} and \code{"Facial_MouthDimple.*"}.
+\code{Identifier}, \code{Time} and \code{Frame}, as well as columns detailed in \code{catEFE}.
 If the dataframe contains a \code{Communication} column, EFEs are also
 aggregated based on Speaking, Listening, Both and None.}
+
+\item{catEFE}{List or character. If it is character, then it must be "Aldenhoven" to use
+the predefined categorisation of EFEs. If it is a list, then each list entry
+should have the name of the EFE and contain a character vector with the associated column names.}
+
+\item{rescaleVERSE}{Logical. Switch whether to correct for composite scores in VERSE Blendshapes. Default is \code{TRUE}.}
 
 \item{rs.path}{Character. Path to the directory where the output files will be saved.
 If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk. Default is \code{c()}.}
@@ -35,14 +44,12 @@ Otherwise, returns \code{NULL} invisibly. Saves \verb{dataEFE[suffix].rds} and \
 }
 \description{
 This function combines individual facial expressions into emotional facial expressions
-(EFE) based on the classification proposed in Aldenhoven et al. (2026).
-While these are based on the ARKit52 system collected in the VERSE environment,
-similar facial expressions can also be extracted using computer vision (e.g., OpenFace),
-provided the column names are adjusted to fit the system described below.
+(EFE) either based on the classification proposed in Aldenhoven et al. (2026) or
+by using a provided list of EFEs and associated columns.
 }
 \details{
 #' @details
-Emotions are aggregates as the mean of the following Facial Expressions:
+If \code{catEFE} is set to Aldenhoven, then emotions are aggregates as the mean of the following Facial Expressions:
 \enumerate{
 \item \strong{Anger:} \code{"Facial_BrowDown.*"}, \code{"Facial_.*Eye_Squint"}, \code{"Facial_.*Eye_Wide"},
 \code{"Facial_MouthPucker"}
@@ -54,7 +61,6 @@ Emotions are aggregates as the mean of the following Facial Expressions:
 \item \strong{Sadness:} \code{"Facial_BrowDown.*"}, \code{"Facial_BrowInnerUp"}, \code{"Facial_MouthFrown.*"}
 \item \strong{Surprise:} \code{"Facial_BrowInnerUp"}, \code{"Facial_BrowOuterUp.*"}, \code{"Facial_.*Eye_Wide"},
 \code{"Facial_JawOpen"}
-\item \strong{Contempt:} Difference between sides in \code{"Facial_MouthDimple.*"}, \code{"Facial_MouthSmile.*"}
 }
 }
 \references{
