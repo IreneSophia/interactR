@@ -80,40 +80,40 @@ plotPhaseRose = function(df, Bins, col.plot = "#4B9C79"){
   
   # label with Identifiers or with left and right in the case of pseudoDyad
   if (df$pseudoDyad[1]) {
-    ll = "Left Leading"
-    rl = "Right Leading"
+    ll = "Left\nLeading"
+    rl = "Right\nLeading"
   } else {
-    ll = sprintf("%s Leading", gsub("-.*", "", df$Dyad[1]))
-    rl = sprintf("%s Leading", gsub(".*-", "", df$Dyad[1]))
+    ll = sprintf("%s\nLeading", gsub("-.*", "", df$Dyad[1]))
+    rl = sprintf("%s\nLeading", gsub(".*-", "", df$Dyad[1]))
   }
   
   p = df |> 
     filter(WithinCOI) |> 
     mutate(
-      phaseBin = cut(Phase, breaks = seq(-pi, pi, length.out = Bins), include.lowest = TRUE)
+      phaseBin = cut(Phase, breaks = seq(-pi, pi, length.out = Bins + 1), include.lowest = TRUE)
     ) |> 
     count(phaseBin, .drop = F) |> 
     mutate(
-      Angle = seq(-pi + (pi/Bins), pi - (pi/Bins), length.out = Bins-1)
+      row   = row_number(),
+      xPos  = as.factor(row)
     ) |> 
-    ggplot(aes(x = Angle, y = n)) +
-    geom_col(fill = col.plot, color = "white") +
-    coord_polar(start = pi, clip = "off") +
-    scale_x_continuous(
-      limits = c(-pi, pi), 
-      breaks = c(-pi, -pi/2, 0, pi/2),
+    ggplot(aes(x = xPos, y = n)) +
+    geom_col(fill = col.plot, color = "white", alpha = 0.9) +
+    coord_polar(start = pi - (pi / Bins), clip = "off") +
+    scale_x_discrete(
+      breaks = seq(1, Bins-1, by = Bins/4),
       labels = c("Anti-phase", ll, "In-phase", rl)
     ) +
     labs(
       title = "Phase Difference Distribution",
-      subtitle = expression("Thresholded to be significant and inside valid COI"),
       x = NULL,
       y = NULL
     ) + theme_bw() +
     theme(
       axis.text.y = element_blank(),
       axis.ticks.y = element_blank(), 
-      panel.border = element_blank()
+      panel.border = element_blank(),
+      axis.text.x = element_text(face = "bold")
     )
   
   return(p)
