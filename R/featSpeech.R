@@ -443,73 +443,45 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
                     any_of(c("Listening", "Speaking", "Communication")))
     }
     
-    # add needed information
-    df.dyad = df |> ungroup() |>
-      select(Dyad, Time, Frame, Timestamp) |> distinct() |>
-      group_by(Dyad, Time) |>
-      mutate(
-        # add the Timepoint based on the Timestamp
-        Timepoint = Timestamp - min(Timestamp),
-        actor0speaking = NA,
-        actor1speaking = NA
-      ) |>
-      # extract the Information of the actors
-      tidyr::separate(Dyad, into = c("actor0", "actor1"), sep = "-", remove = F) |>
+    # add a Timepoint
+    df = df |> group_by(Dyad, Identifier, Time) |> 
+      mutate(Timepoint = Timestamp - min(Timestamp)) |> 
       ungroup()
     
-    # remove dyads from df.speak that are not in df
-    df.speak = df.speak |> filter(Dyad %in% unique(df$Dyad))
+    # Ensure dataframes are data.tables
+    data.table::setDT(df)
+    data.table::setDT(df.speak)
     
-    # give a warning if there was no row left and exit the function
-    if (nrow(df.speak) == 0) {
-      warning("No overlap between the two dataframes. Nothing was added.")
-      return(c())
-    }
+    # enable multi-threading for data.table (speeds up operations automatically)
+    data.table::setDTthreads(0) # uses all available cores
     
-    # loop through the turns and add the information
-    for (i in 1:nrow(df.speak)) { #    
-      
-      # only print every 100 turns
-      if (verbose & (i%%100 == 1)) cat(format(Sys.time(), "%X %Z"), ": Processing turn", i, "of", nrow(df.speak),"\n")
-  
-      d = df.speak$Dyad[i]
-      startFrame = which.min(abs(df.dyad[df.dyad$Dyad == df.speak$Dyad[i],]$Timepoint - 
-                              df.speak$Start[i]))
-      endFrame   = which.min(abs(df.dyad[df.dyad$Dyad == df.speak$Dyad[i],]$Timepoint - 
-                              df.speak$End[i]))
-      if (endFrame < nrow(df.dyad)) endFrame = endFrame + 1
-      if (df.speak$Identifier[i] == df.dyad[df.dyad$Dyad == d & df.dyad$Frame == startFrame,]$actor0) {
-        df.dyad[df.dyad$Dyad == d & df.dyad$Frame == startFrame,]$actor0speaking = TRUE
-        df.dyad[df.dyad$Dyad == d & df.dyad$Frame == endFrame,]$actor0speaking = FALSE
-      } else {
-        df.dyad[df.dyad$Dyad == d & df.dyad$Frame == startFrame,]$actor1speaking = TRUE
-        df.dyad[df.dyad$Dyad == d & df.dyad$Frame == endFrame,]$actor1speaking = FALSE
-      }
-    }
+    # Add a temporary row index to track rows after joining
+    df[, row_id := .I]
     
-    # info
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Merging with original dataframe\n")
+    # check if Identifier is speaking
+    idxSpeaking = df.speak[
+      df, 
+      on = .(Dyad = Dyad, Identifier = Identifier, Start <= Timepoint, End >= Timepoint), 
+      nomatch = NULL, 
+      unique(i.row_id)
+    ]
     
-    # fill in the speaking time between startFrame and endFrame
-    df.dyad = df.dyad |>
-      group_by(Dyad, Time) |>
-      tidyr::fill(ends_with("speaking")) |>
-      tidyr::replace_na(list(actor1speaking = F, actor0speaking = F))
+    # assign the speaking to the dataframe
+    df[, Speaking := row_id %in% idxSpeaking]
     
-    # merge with the original dataframe
+    # who is speaking dataframe
+    otherSpeaking = df[, .(Dyad, Timepoint, Identifier, Other_Speaking = Speaking)]
+    
+    # join back to df where Dyad and Timepoint match, but the Identifier is different
+    df[otherSpeaking, on = .(Dyad, Timepoint, Identifier != i.Identifier), 
+       Listening := i.Other_Speaking]
+    
+    # clean up temporary row index
+    df[, row_id := NULL]
+    
+    # merge speaking and listening columns
     df = df |>
-      merge(rbind(
-              df.dyad |> rename(Identifier = actor0, 
-                               Speaking = actor0speaking,
-                               Listening = actor1speaking) |>
-                select(Dyad, Time, Identifier, Frame, Timepoint, Speaking, Listening),
-              df.dyad |> rename(Identifier = actor1, 
-                                 Speaking = actor1speaking,
-                                 Listening = actor0speaking) |>
-                select(Dyad, Time, Identifier, Frame, Timepoint, Speaking, Listening)),
-            all.x = T) |>
       mutate(
-        # merge speaking and listening columns
         Communication = case_when(
           Speaking & Listening ~ "Both",
           Speaking ~ "Speaking",
