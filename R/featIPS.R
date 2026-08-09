@@ -50,7 +50,7 @@ compareIPS = function(df, Bayesian = T, perm = F,
   if (!recompute & file.exists(flnm)) {
     if (return) {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading WLCC comparison\n")
-      df.rsq = readr::read_csv(flnm)
+      df.agg = readr::read_csv(flnm, show_col_types = F)
     }
   } else {
     
