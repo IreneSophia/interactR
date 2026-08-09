@@ -129,7 +129,7 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
       df.face = df.face |>
         select(-all_of(ls.cols)) |>
         mutate(
-          EFE_All = rowMeans(across(select(starts_with("EFE_"))))
+          EFE_All = rowMeans(across(starts_with("EFE_")))
         )
       # save the preprocessed facial data
       if (!is.null(rs.path)) saveRDS(df.face, flrds)
