@@ -158,7 +158,7 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
           summarise(value = mean(value),
                     .groups = "drop") |> 
           tidyr::pivot_wider(names_from = c(Emotion, Communication), 
-                             names_glue = "EFE_{Emotion}_{Communication}")) |>
+                             names_glue = "{Emotion}_{Communication}")) |>
         merge(
           df.face |> 
             group_by(Dyad, Identifier, Time, across(any_of('Partner')), Communication) |> 
