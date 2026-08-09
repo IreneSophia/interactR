@@ -445,18 +445,9 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
     
     # add a Timepoint
     df = df |> group_by(Dyad, Identifier, Time) |> 
-      mutate(Timepoint = Timestamp - min(Timestamp)) |> 
-      ungroup()
-    
-    # Ensure dataframes are data.tables
-    data.table::setDT(df)
-    data.table::setDT(df.speak)
-    
-    # enable multi-threading for data.table (speeds up operations automatically)
-    data.table::setDTthreads(0) # uses all available cores
-    
-    # Add a temporary row index to track rows after joining
-    data.table::set(df, j = "row_id", value = seq_len(nrow(df)))
+      mutate(Timepoint = as.numeric(Timestamp - min(Timestamp))) |> 
+      ungroup() |>
+      mutate(row_id = row_number())
     
     # check if Identifier is speaking
     idxSpeaking = df |>
@@ -466,15 +457,14 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
         join_by(Dyad, Identifier, between(Timepoint, Start, End)),
         relationship = "many-to-many"
       ) %>%
-      pull(.row_id) %>%
+      pull(row_id) %>%
       unique()
-    
-    # assign the speaking to the dataframe
-    data.table::set(df, j = "Speaking", value = FALSE)
-    data.table::set(df, i = which(df$row_id %in% idxSpeaking), j = "Speaking", value = TRUE)
 
-    # additional preprocessing    
+    # add back
     df = df |>
+      mutate(
+        Speaking = row_id %in% idxSpeaking
+      ) |>
       # add the Listening - only two rows per Dyad and Timepoint
       group_by(Dyad, Time, Timepoint) |>
       mutate(Listening = rev(Speaking)) |>
