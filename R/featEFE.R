@@ -132,7 +132,10 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
           EFE_All = rowMeans(across(starts_with("EFE_")))
         )
       # save the preprocessed facial data
-      if (!is.null(rs.path)) saveRDS(df.face, flrds)
+      if (!is.null(rs.path)) {
+        if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the preprocessed data\n")
+        saveRDS(df.face, flrds)
+      }
     }
     # convert to long
     df.face = df.face |> select(-starts_with("Facial_")) |> 
@@ -176,7 +179,10 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
       mutate(across(everything(), ~ tidyr::replace_na(.x, 0)))
     
     # save feature face dataframe
-    if (!is.null(rs.path)) readr::write_csv(df.out, flcsv)
+    if (!is.null(rs.path)) {
+      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      readr::write_csv(df.out, flcsv)
+    }
   }
   
   # return aggregated dataframe

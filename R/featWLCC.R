@@ -103,7 +103,10 @@ featWLCC = function(df, FUN, absolute = F, r2z = F, rs.path = c(), suffix = "",
       relocate(Dyad, Time, Identifier)
     
     # save the data
-    if (!is.null(rs.path)) saveRDS(df.out, file = flnm)
+    if (!is.null(rs.path)) {
+      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      saveRDS(df.out, file = flnm)
+    }
     
   }
   

@@ -133,8 +133,11 @@ featZCrossing = function(df, colnames, fps, minDegree, rs.path = c(), suffix = "
         )
     }
     
-    # save the data for plotting
-    if (!is.null(rs.path)) saveRDS(df, file = flnm)
+    # save the data frame
+    if (!is.null(rs.path)) {
+      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      saveRDS(df, file = flnm)
+    }
     
   }
   
@@ -233,7 +236,11 @@ aggZCrossing = function(df, colnames, rs.path = c(), suffix = "",
     }
     
     # save speech dwell dataframe
-    if (!is.null(rs.path)) readr::write_csv(df.out, flnm)
+    # save the data frame
+    if (!is.null(rs.path)) {
+      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      readr::write_csv(df.out, flnm)
+    }
     
   }
   

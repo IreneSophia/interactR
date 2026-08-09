@@ -114,7 +114,10 @@ featWTC = function(df, Limits, Funs, Bins = 8,
   df.agg = merge(df.rsq, df.phase)
   
   # save the data
-  if (!is.null(rs.path)) saveRDS(df.agg, file = flnm)
+  if (!is.null(rs.path)) {
+    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+    saveRDS(df.agg, file = flnm)
+  }
   
   if (return) return(df.agg)
   

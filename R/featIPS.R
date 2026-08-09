@@ -182,7 +182,10 @@ compareIPS = function(df, Bayesian = T, perm = F,
     }
     
     # save the data
-    if (!is.null(rs.path)) readr::write_csv(df.agg, file = flnm)
+    if (!is.null(rs.path)) {
+      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      readr::write_csv(df.agg, file = flnm)
+    }
     
   }
   
@@ -626,7 +629,10 @@ extractIPS = function(df, colname, type, fps, featname = NA,
     }
     
     # save the data
-    if (!is.null(rs.path)) saveRDS(df.out, file = flnm)
+    if (!is.null(rs.path)) {
+      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      saveRDS(df.out, file = flnm)
+    }
     
   }
   

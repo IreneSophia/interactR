@@ -96,7 +96,10 @@ featHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
       )  
     
     # save the data for plotting
-    if (!is.null(rs.path)) saveRDS(df, file = flnm)
+    if (!is.null(rs.path)) {
+      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      saveRDS(df, file = flnm)
+    }
     
   }
   

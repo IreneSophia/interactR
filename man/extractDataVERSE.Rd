@@ -6,7 +6,7 @@
 \usage{
 extractDataVERSE(
   df.info,
-  timezone = c(),
+  timezone = "UTC",
   rs.path = c(),
   suffix = "",
   anonymise = F,
@@ -24,8 +24,7 @@ Can optionally contain parameters defining windows:
 \code{start.use} (first Timestamp), \code{end.use} (last Timestamp),
 or \code{frame.use} (number of frames starting at \code{start.use} or sequence origin).}
 
-\item{timezone}{Character. Timezone in which the data collection was conducted.
-If this is null, then the tiemzone is determined using \code{Sys.timezone()}. Default is \code{c()}.}
+\item{timezone}{Character. Timezone in which the data collection was conducted. Default is \code{"UTC"}.}
 
 \item{rs.path}{Path to the directory where the output file will be saved, if empty (is.null(rs.path) == TRUE),
 then nothing is saved. Default is \code{c()}.}

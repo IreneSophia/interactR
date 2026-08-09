@@ -9,8 +9,7 @@
 #'   Can optionally contain parameters defining windows: 
 #'   `start.use` (first Timestamp), `end.use` (last Timestamp), 
 #'   or `frame.use` (number of frames starting at `start.use` or sequence origin).
-#' @param timezone Character. Timezone in which the data collection was conducted. 
-#'   If this is null, then the tiemzone is determined using `Sys.timezone()`. Default is `c()`.
+#' @param timezone Character. Timezone in which the data collection was conducted. Default is `"UTC"`.
 #' @param rs.path Path to the directory where the output file will be saved, if empty (is.null(rs.path) == TRUE), 
 #'   then nothing is saved. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
@@ -27,7 +26,7 @@
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
 
-extractDataVERSE = function(df.info, timezone = c(), 
+extractDataVERSE = function(df.info, timezone = "UTC", 
                             rs.path = c(), suffix = '', anonymise = F, 
                             verbose = T, recompute = F, return = T) {
   
@@ -38,9 +37,6 @@ extractDataVERSE = function(df.info, timezone = c(),
   } else {
     save = T
   }
-  
-  # check whether a timezone was provided or should be extracted
-  if (is.null(timezone)) timezone = Sys.timezone()
   
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(file.path(rs.path, sprintf("dataVERSE%s.rds", suffix)))) {
@@ -290,8 +286,7 @@ readCSVs = function(Filename, cols = 1:186) {
 #' Utility function to read in raw VERSE environmental logs from an underlying `EventLog.txt` structure.
 #' 
 #' @param fl.ls Character vector. File system paths pointing to target `EventLog.txt` documents.
-#' @param timezone Character. Timezone in which the data collection was conducted. 
-#'   If this is null, then the tiemzone is determined using `Sys.timezone()`. Default is `c()`.
+#' @param timezone Character. Timezone in which the data collection was conducted. Default is `"UTC"`.
 #' @param type Character string. Target format of parsing outcome. Use `"list"` to compile all 
 #'   unprocessed elements dynamically, or `"df"` to extract structured tabular fields. Default is `"df"`.
 #'
@@ -302,10 +297,7 @@ readCSVs = function(Filename, cols = 1:186) {
 #' @export
 #' 
 
-extractEventsVERSE = function(fl.ls, timezone = c(), type = "df") {
-  
-  # check whether a timezone was provided or should be extracted
-  if (is.null(timezone)) timezone = Sys.timezone()
+extractEventsVERSE = function(fl.ls, timezone = "UTC", type = "df") {
   
   # return all the information as a list
   if (type == "list") {

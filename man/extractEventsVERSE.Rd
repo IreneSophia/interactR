@@ -4,13 +4,12 @@
 \alias{extractEventsVERSE}
 \title{Extract Information from VERSE Environment Event Files}
 \usage{
-extractEventsVERSE(fl.ls, timezone = c(), type = "df")
+extractEventsVERSE(fl.ls, timezone = "UTC", type = "df")
 }
 \arguments{
 \item{fl.ls}{Character vector. File system paths pointing to target \code{EventLog.txt} documents.}
 
-\item{timezone}{Character. Timezone in which the data collection was conducted.
-If this is null, then the tiemzone is determined using \code{Sys.timezone()}. Default is \code{c()}.}
+\item{timezone}{Character. Timezone in which the data collection was conducted. Default is \code{"UTC"}.}
 
 \item{type}{Character string. Target format of parsing outcome. Use \code{"list"} to compile all
 unprocessed elements dynamically, or \code{"df"} to extract structured tabular fields. Default is \code{"df"}.}
