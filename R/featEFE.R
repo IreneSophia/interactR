@@ -127,7 +127,10 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
         filter(value == 0) |> pull(name)
       # remove them from the dataframe
       df.face = df.face |>
-        select(-all_of(ls.cols))
+        select(-all_of(ls.cols)) |>
+        mutate(
+          EFE_All = rowMeans(select(., starts_with("EFE_")))
+        )
       # save the preprocessed facial data
       if (!is.null(rs.path)) saveRDS(df.face, flrds)
     }
