@@ -375,8 +375,8 @@ computeWLCC = function(df, winSample, incSample, lagSample) {
     ) |> ungroup() |> tidyr::fill(Window, .direction = "down") |>
     mutate(
       # add the start and end index of each window
-      winStart = Start - lagSample,
-      winEnd   = Start + winSample + lagSample,
+      startFrame = Start - lagSample,
+      endFrame   = Start + winSample + lagSample,
       # interpret the lag as to who was acting before whom
       Leading = case_when(
         Lag < 0 ~ "Right",
@@ -590,7 +590,7 @@ extractIPS = function(df, colname, type, fps, featname = NA,
             mutate(Method = Method, Feature = featname, Time = df.dyad$left_Time[dyadRow],
                    seed = seed, iteration = df.dyad$k[dyadRow],
                    # adjust the WLCC indices with the Frame
-                   winStart = winStart + minFrame - 1, winEnd = winEnd + minFrame - 1)
+                   startFrame = startFrame + minFrame - 1, endFrame = endFrame + minFrame - 1)
         } else if (type == "WTC") {
           if (pseudoSegment) {
             # do not save the iterations
@@ -616,6 +616,14 @@ extractIPS = function(df, colname, type, fps, featname = NA,
     
     # unpack the data into a dataframe
     df.out = purrr::list_rbind(ls.out)
+    
+    # if WLCC, then divide by fps
+    if (type == "WLCC") {
+      df.out = df.out |>
+        mutate(
+          Lag = Lag / fps
+        )
+    }
     
     # save the data
     if (!is.null(rs.path)) saveRDS(df.out, file = flnm)
