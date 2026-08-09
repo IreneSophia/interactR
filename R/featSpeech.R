@@ -491,7 +491,7 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
       ) |> select(-row_id)
     
     # save to disk
-    if (!is.null(rs.path) & !loaded) {
+    if (!is.null(rs.path)) {
       if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
       saveRDS(df, file = flnm)
     }
