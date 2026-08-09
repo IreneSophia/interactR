@@ -456,7 +456,7 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
     data.table::setDTthreads(0) # uses all available cores
     
     # Add a temporary row index to track rows after joining
-    df[, row_id := .I]
+    data.table::set(df, j = "row_id", value = seq_len(nrow(df)))
     
     # check if Identifier is speaking
     idxSpeaking = df.speak[
@@ -467,20 +467,16 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
     ]
     
     # assign the speaking to the dataframe
-    df[, Speaking := row_id %in% idxSpeaking]
-    
-    # who is speaking dataframe
-    otherSpeaking = df[, .(Dyad, Timepoint, Identifier, Other_Speaking = Speaking)]
-    
-    # join back to df where Dyad and Timepoint match, but the Identifier is different
-    df[otherSpeaking, on = .(Dyad, Timepoint, Identifier != i.Identifier), 
-       Listening := i.Other_Speaking]
-    
-    # clean up temporary row index
-    df[, row_id := NULL]
-    
-    # merge speaking and listening columns
+    data.table::set(df, j = "Speaking", value = FALSE)
+    data.table::set(df, i = which(df$row_id %in% idxSpeaking), j = "Speaking", value = TRUE)
+
+    # additional preprocessing    
     df = df |>
+      # add the Listening - only two rows per Dyad and Timepoint
+      group_by(Dyad, Time, Timepoint) |>
+      mutate(Listening = rev(Speaking)) |>
+      ungroup() |>
+      # merge speaking and listening columns
       mutate(
         Communication = case_when(
           Speaking & Listening ~ "Both",
@@ -488,7 +484,7 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
           Listening ~ "Listening",
           T ~ "None"
         )
-      )
+      ) |> select(-row_id)
   }
   
   # save to disk
