@@ -333,7 +333,7 @@ convertGrid = function(ls.files, rs.path = c(), suffix = '', prefix = '', extrac
       df.speak = readRDS(flnm)
     }
   } else {
-  
+    
     # give some info
     if (verbose) cat("----------- Extracting speak df from", length(ls.files), "TextGrids -----------\n")
     
@@ -381,12 +381,12 @@ convertGrid = function(ls.files, rs.path = c(), suffix = '', prefix = '', extrac
           Identifier = gsub(sprintf("^%s.*_(.+)_.*", prefix), "\\1", basename(Path)),
         ) |> select(-Path) |> relocate(Dyad, Identifier)
     }
-  }
-  
-  # potentially save to disk
-  if (!is.null(rs.path)) {
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
-    saveRDS(df.speak, file = flnm)
+    
+    # potentially save to disk
+    if (!is.null(rs.path)) {
+      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      saveRDS(df.speak, file = flnm)
+    }
   }
   
   if (return) return(df.speak |> ungroup())
@@ -435,10 +435,8 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
   
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
-    if (return) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading uhm-adjusted data\n")
-      df = readRDS(flnm)
-    }
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading uhm-adjusted data\n")
+    df = readRDS(flnm)
   } else {
     # give some info
     if (verbose) cat("----------- Adding speaking info from uhm-o-meter to df -----------\n")
@@ -491,12 +489,13 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
           T ~ "None"
         )
       ) |> select(-row_id)
-  }
-  
-  # save to disk
-  if (!is.null(rs.path)) {
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
-    saveRDS(df, file = flnm)
+    
+    # save to disk
+    if (!is.null(rs.path) & !loaded) {
+      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      saveRDS(df, file = flnm)
+    }
+    
   }
   
   if (return) return(df |> ungroup())
