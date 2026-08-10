@@ -378,8 +378,12 @@ computeWLCC = function(df, winSample, incSample, lagSample) {
         s = .x                  # start index
         e = .x + winSample - 1  # end index
         l = .y                  # lag
-        # compute the cross correlation
-        cor(left[s:e], right[(s+l):(e+l)], use = "complete.obs")
+        # compute the cross correlation or NA if no variance
+        if (sd(left[s:e]) == 0 || sd(right[(s+l):(e+l))) {
+          NA
+        } else {
+          cor(left[s:e], right[(s+l):(e+l)], use = "na.or.complete")
+        }
       })
     ) |>
     # add the window number
@@ -511,7 +515,7 @@ extractIPS = function(df, colname, type, fps, featname = NA,
       Method = "observed"
     }
     
-    if (verbose) cat(format(Sys.time(), "%X"), ": Extracting ", type, Method, " from ", colname, "\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Extracting", type, Method, "from", colname, "\n")
     
     # check whether settings for WLCC are complete, if needed
     if (type == "WLCC") {
