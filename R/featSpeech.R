@@ -138,7 +138,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
     # extract the PhonationBalance for each participant
     df = df |>
       full_join(
-        df |> select(Dyad, Identifier, SPCH_PhonationDuration, any_of('Time')) |>
+        df |> select(Dyad, Identifier, SPCH_PhonationDuration) |>
           mutate(
             actor = if_else(gsub("(.+)-.*", "\\1", Dyad) == Identifier, "left", "right")
           ) |> select(-Identifier) |>
