@@ -68,7 +68,7 @@ featHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
     checkDF(df, c("Dyad", "Identifier", "Frame", "Time", colNodding, colShaking))
     
     # process the dataframe to extract Zero Crossings
-    df = extractZCrossing(df, c(), c(colNodding, colShaking), fps, minDegree,
+    df = extractZCrossing(df, c(colNodding, colShaking), fps, minDegree,
                           win = win, minFreq = minFreq, maxFreq = maxFreq, 
                           winCentre = winCentre, winSmooth = winSmooth, verbose = F)
     
@@ -82,19 +82,19 @@ featHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
     if (verbose) cat(format(Sys.time(), "%X"), ": Preprocessing extracted Z-crossings\n")
     df = df |>
       # rename the columns to nodding and shaking
-      rename_with(~ gsub(colNodding, "nodding", .x), .cols = matches(colNodding)) |>
-      rename_with(~ gsub(colShaking, "shaking", .x), .cols = matches(colShaking)) |>
+      rename_with(~ gsub(colNodding, "Nodding", .x), .cols = matches(colNodding)) |>
+      rename_with(~ gsub(colShaking, "Shaking", .x), .cols = matches(colShaking)) |>
       # if both are relevant, then use the one with the larger frame-wise difference
       mutate(
-        shaking_rel = case_when(
-          shaking_rel & nodding_rel & shaking_diff >  nodding_diff ~ TRUE,
-          shaking_rel & nodding_rel & shaking_diff <= nodding_diff ~ FALSE,
-          T ~ shaking_rel
+        Shaking_rel = case_when(
+          Shaking_rel & Nodding_rel & Shaking_diff >  Nodding_diff ~ TRUE,
+          Shaking_rel & Nodding_rel & Shaking_diff <= Nodding_diff ~ FALSE,
+          T ~ Shaking_rel
         ),
-        nodding_rel = case_when(
-          shaking_rel & nodding_rel & shaking_diff >  nodding_diff ~ FALSE,
-          shaking_rel & nodding_rel & shaking_diff <= nodding_diff ~ TRUE,
-          T ~ nodding_rel
+        Nodding_rel = case_when(
+          Shaking_rel & Nodding_rel & Shaking_diff >  Nodding_diff ~ FALSE,
+          Shaking_rel & Nodding_rel & Shaking_diff <= Nodding_diff ~ TRUE,
+          T ~ Nodding_rel
         )
       )  
     
