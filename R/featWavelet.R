@@ -130,8 +130,8 @@ featWTC = function(df, Limits, Funs, Bins = 8,
       readr::write_csv(df.agg, flnm)
     }
   }
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
   if (return) return(df.agg)
-  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }

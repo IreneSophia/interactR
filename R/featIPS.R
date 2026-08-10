@@ -198,9 +198,9 @@ compareIPS = function(df, Bayesian = T, perm = F,
     
   }
   
-  if (return) return(df.agg)
-  
   if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
+  
+  if (return) return(df.agg)
   
 }
 
@@ -648,10 +648,9 @@ extractIPS = function(df, colname, type, fps, featname = NA,
     }
     
   }
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
   if (return) return(df.out)
-  
-  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }
 

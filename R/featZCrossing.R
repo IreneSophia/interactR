@@ -142,9 +142,9 @@ extractZCrossing = function(df, colnames, fps, minDegree, rs.path = c(), suffix 
     }
     
   }
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
   if (return) return(df)
-  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }
 
@@ -249,8 +249,9 @@ featZCrossing = function(df, colnames, rs.path = c(), suffix = "",
     
   }
   
-  if (return) return(df.out)
   if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
+  
+  if (return) return(df.out)
   
 }
 

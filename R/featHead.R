@@ -79,7 +79,7 @@ featHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
     }
     
     # preprocess the extracted z crossings
-    if (verbose) cat(format(Sys.time(), "%X"), ": Preprocess extracted Z-crossings\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Preprocessing extracted Z-crossings\n")
     df = df |>
       # rename the columns to nodding and shaking
       rename_with(~ gsub(colNodding, "nodding", .x), .cols = matches(colNodding)) |>
@@ -105,9 +105,9 @@ featHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
     }
     
   }
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
   if (return) return(df)
-  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }
 
@@ -244,7 +244,7 @@ preproHead = function(df, rotnames, tranames, rs.path = c(), suffix = '',
         df[[new_name]] = rotDiff(df[[rotnames[i]]], df[[cornames[i]]])
       }
     }
-    if (verbose) cat(format(Sys.time(), "%X"), ": Detrend non-difference columns\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Detrending non-difference columns\n")
     fixnames = paste0(rotnames, "_fixCirc")
     df = df |>
       # de-trended translational and fixCirc values by subtracting mean value
@@ -258,8 +258,8 @@ preproHead = function(df, rotnames, tranames, rs.path = c(), suffix = '',
       }
     
   }
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
   if (return) return(df)
-  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
 
 }

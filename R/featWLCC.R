@@ -25,6 +25,8 @@
 featWLCC = function(df, FUN, absolute = F, r2z = F, rs.path = c(), suffix = "", 
                    verbose = T, recompute = F, return = T) {
   
+  if (verbose) cat("-------------- Extracting IPS features based on WLCC  --------------\n")
+  
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
@@ -109,6 +111,8 @@ featWLCC = function(df, FUN, absolute = F, r2z = F, rs.path = c(), suffix = "",
     }
     
   }
+  
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
   if (return) return(df.out)
   

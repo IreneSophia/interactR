@@ -157,12 +157,12 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
       )
     
     # use the function to detect turns
-    if (verbose) cat(format(Sys.time(), "%X"), ": Detect turns\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Detecting turns\n")
     df.turns = detectTurns(df.speak, rs.path = rs.path, suffix = suffix,
                            verbose = F, recompute = recompute, return = T)
     
     # aggregate and merge all the information
-    if (verbose) cat(format(Sys.time(), "%X"), ": Aggregate features\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Aggregating features\n")
     df.out = df.turns |> 
       group_by(Dyad, Identifier) |> 
       summarise(SPCH_TurnGapsMedian = median(TTG, na.rm = T),
@@ -182,9 +182,9 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
     
   }
   
-  if (return) return(df.out |> ungroup())
-  
   if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
+  
+  if (return) return(df.out |> ungroup())
   
 }
 
@@ -293,9 +293,9 @@ detectTurns = function(df.speak, rs.path = c(), suffix = '',
     
   }
   
-  if (return) return(df.turns |> ungroup())
-  
   if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
+  
+  if (return) return(df.turns |> ungroup())
   
 }
 
@@ -399,9 +399,9 @@ convertGrid = function(ls.files, rs.path = c(), suffix = '', prefix = '', extrac
       arrow::write_feather(df.speak, flnm, compression = "zstd")
     }
   }
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
   if (return) return(df.speak |> ungroup())
-  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }
 
@@ -473,7 +473,7 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
       mutate(row_id = row_number())
     
     # check if Identifier is speaking
-    if (verbose) cat(format(Sys.time(), "%X"), ": Get speaking indices\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Getting speaking indices\n")
     idxSpeaking = df |>
       inner_join(
         df.speak,
@@ -485,7 +485,7 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
       unique()
 
     # add back
-    if (verbose) cat(format(Sys.time(), "%X"), ": Merge information back into dataframe\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Merging information back into dataframe\n")
     df = df |>
       mutate(
         Speaking = row_id %in% idxSpeaking
@@ -511,9 +511,9 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
     }
     
   }
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
   if (return) return(df |> ungroup())
-  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }
 

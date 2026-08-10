@@ -157,9 +157,9 @@ featDwell = function(df, ls.AOI, rs.path = c(), suffix = "",
     
   }
   
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
+  
   # return feature dwell dataframe
   if (return) return(df.out)
-  
-  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
 
 }

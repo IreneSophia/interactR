@@ -242,10 +242,10 @@ extractDataVERSE = function(df.info, timezone = "UTC",
       }
   }
   
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
+  
   # return the ungrouped dataframe
   if (return) return(df |> ungroup())
-  
-  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }
 

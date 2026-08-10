@@ -45,7 +45,7 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
                    rs.path = c(), suffix = "", verbose = T,
                    recompute = F, return = T) {
   
-  if (verbose) cat("--------- Extracting emotional facial expressions features  ---------\n")
+  if (verbose) cat("--------- Extracting emotional facial expressions features ---------\n")
   
   # check rs.path
   if (is.null(rs.path)) {
@@ -183,9 +183,9 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
     }
   }
   
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
+  
   # return aggregated dataframe
   if (return) return(df.out)
-  
-  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }
