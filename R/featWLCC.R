@@ -69,6 +69,7 @@ featWLCC = function(df, FUN, absolute = F, r2z = F, rs.path = c(), suffix = "",
       ) |> tidyr::drop_na() |>
       # first, aggregate using FUN for each window
       group_by(Dyad, Time, Method, Identifier, Feature, Window) |>
+      filter(!is.na(WLCC)),
       summarise(
         WLCC = FUN(WLCC),
         .groups = "drop"
@@ -76,8 +77,8 @@ featWLCC = function(df, FUN, absolute = F, r2z = F, rs.path = c(), suffix = "",
       # then, aggregate for each Dyad over all windows
       group_by(Dyad, Time, Method, Identifier, Feature) |>
       summarise(
-        STD   = sd(WLCC),
-        AVG = mean(WLCC),
+        STD = sd(WLCC, na.rm = T),
+        AVG = mean(WLCC, na.rm = T),
         .groups = "drop"
       ) |>
       tidyr::pivot_wider(names_from = Feature, values_from = c(AVG, STD),
@@ -87,6 +88,7 @@ featWLCC = function(df, FUN, absolute = F, r2z = F, rs.path = c(), suffix = "",
     df.dyad = df |>
       # first, aggregate using FUN for each window
       group_by(Dyad, Time, Method, Feature, Window) |>
+      filter(!is.na(WLCC)) |>
       summarise(
         WLCC = FUN(WLCC),
         .groups = "drop"
@@ -94,8 +96,8 @@ featWLCC = function(df, FUN, absolute = F, r2z = F, rs.path = c(), suffix = "",
       # then, aggregate for each Dyad over all windows
       group_by(Dyad, Time, Method, Feature) |>
       summarise(
-        STD   = sd(WLCC),
-        AVG = mean(WLCC),
+        STD = sd(WLCC, na.rm = T),
+        AVG = mean(WLCC, na.rm = T),
         .groups = "drop"
       ) |>
       tidyr::pivot_wider(names_from = Feature, values_from = c(AVG, STD),
