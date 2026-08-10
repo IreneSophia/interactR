@@ -47,7 +47,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
   
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading speech features\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Loading speech features\n")
     df.out = readr::read_csv(flnm, show_col_types = F)
   } else {
     
@@ -61,7 +61,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
       }
       
       # give some info
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extracting features from praat output\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Extracting features from praat output\n")
       
       # read in the praat output capturing pitch and intensity
       df.pint = readr::read_csv(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv")),
@@ -79,7 +79,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
     else {
       # OPTION 2: ASSUMING VERSE DATAFRAME
       
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extracting features from VERSE tracked data\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Extracting features from VERSE tracked data\n")
       
       cols = c("Dyad", "Identifier", "Time", "Frame", "Timestamp", "Speaking")
       checkDF(df.speak, cols)
@@ -114,7 +114,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
       
     }
     
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Computing new features\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Computing new features\n")
     
     # summarise the articulation rate (number of syllables / phonation duration)  
     # and the silence-to-turn ratio (level of the dyad)
@@ -157,12 +157,12 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
       )
     
     # use the function to detect turns
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Detect turns\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Detect turns\n")
     df.turns = detectTurns(df.speak, rs.path = rs.path, suffix = suffix,
                            verbose = F, recompute = recompute, return = T)
     
     # aggregate and merge all the information
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Aggregate features\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Aggregate features\n")
     df.out = df.turns |> 
       group_by(Dyad, Identifier) |> 
       summarise(SPCH_TurnGapsMedian = median(TTG, na.rm = T),
@@ -176,7 +176,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
     
     # save the features
     if (!is.null(rs.path)) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Saving the data\n")
       readr::write_csv(df.out, file = flnm)
     }
     
@@ -184,7 +184,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
   
   if (return) return(df.out |> ungroup())
   
-  if (verbose) cat(format(Sys.time(), "%X %Z"), ": Done\n")
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }
 
@@ -230,7 +230,7 @@ detectTurns = function(df.speak, rs.path = c(), suffix = '',
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (return) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading turns\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Loading turns\n")
       df.turns = arrow::read_feather(flnm)
     }
   } else {
@@ -245,7 +245,7 @@ detectTurns = function(df.speak, rs.path = c(), suffix = '',
       )
     
     # we need to get rid of all sounding instance that are completely engulfed in another
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Removing engulfed sounds\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Removing engulfed sounds\n")
     for (i in 2:nrow(df.speak)) {
       if (sum((df.speak$Start[i] >= df.speak[(df.speak$Dyad == df.speak$Dyad[i]),]$Start) &  
               (df.speak$End[i]   <= df.speak[(df.speak$Dyad == df.speak$Dyad[i]),]$End)) > 1 ) { 
@@ -257,7 +257,7 @@ detectTurns = function(df.speak, rs.path = c(), suffix = '',
     # identify turns: here, turns are defined as starting with the first sounding
     # instance of a person until the end of the last sounding instance of this 
     # person before a non-engulfed sounding instance of another person
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Detecting turns\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Detecting turns\n")
     df.turns = df.speak |>
       ungroup() |>
       mutate(rown = row_number()) |>              # add row number
@@ -287,7 +287,7 @@ detectTurns = function(df.speak, rs.path = c(), suffix = '',
     
     # save the features
     if (!is.null(rs.path)) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Saving the data\n")
       arrow::write_feather(df.turns, flnm, compression = "zstd")
     }
     
@@ -295,7 +295,7 @@ detectTurns = function(df.speak, rs.path = c(), suffix = '',
   
   if (return) return(df.turns |> ungroup())
   
-  if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Done\n")
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }
 
@@ -343,22 +343,19 @@ convertGrid = function(ls.files, rs.path = c(), suffix = '', prefix = '', extrac
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (return) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading sounding instances\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Loading sounding instances\n")
       df.speak = arrow::read_feather(flnm)
     }
   } else {
     
     # give some info
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extracting speak df from", length(ls.files), "TextGrids\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Extracting speak df from", length(ls.files), "TextGrids\n")
     
     # initialise a dataframe
     df.speak = data.frame()
-    counter  = 0
-    
+
     # loop through the paths
     for (path in ls.files) {
-      counter = counter + 1
-      if (verbose & (counter %% 50) == 1) cat(format(Sys.time(), "%X %Z"), ": Converting", counter, "of", length(ls.files), "\n")
       
       # read in the TextGrid file
       txt = scan(path, what = "", sep = "\n", quiet = T)
@@ -398,13 +395,13 @@ convertGrid = function(ls.files, rs.path = c(), suffix = '', prefix = '', extrac
     
     # potentially save to disk
     if (!is.null(rs.path)) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Saving the data\n")
       arrow::write_feather(df.speak, flnm, compression = "zstd")
     }
   }
   
   if (return) return(df.speak |> ungroup())
-  if (verbose) cat(format(Sys.time(), "%X %Z"), ": Done\n")
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }
 
@@ -452,11 +449,11 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
   
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading uhm-adjusted data\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Loading uhm-adjusted data\n")
     df = arrow::read_feather(flnm)
   } else {
     # give some info
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Adding uhm-adjusted speaking and listening\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Adding uhm-adjusted speaking and listening\n")
     
     # check for columns
     checkDF(df, c("Dyad", "Time", "Frame", "Timestamp"))
@@ -476,7 +473,7 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
       mutate(row_id = row_number())
     
     # check if Identifier is speaking
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Get speaking indices\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Get speaking indices\n")
     idxSpeaking = df |>
       inner_join(
         df.speak,
@@ -488,7 +485,7 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
       unique()
 
     # add back
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Merge information back into dataframe\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Merge information back into dataframe\n")
     df = df |>
       mutate(
         Speaking = row_id %in% idxSpeaking
@@ -509,14 +506,14 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
     
     # save to disk
     if (!is.null(rs.path)) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Saving the data\n")
       arrow::write_feather(df, flnm, compression = "zstd")
     }
     
   }
   
   if (return) return(df |> ungroup())
-  if (verbose) cat(format(Sys.time(), "%X %Z"), ": Done\n")
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }
 

@@ -59,15 +59,15 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
   
   # if no recompute and the CSV file exists, it is simply loaded
   if (!recompute & file.exists(flcsv)) {
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading aggregated facial expressions\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Loading aggregated facial expressions\n")
     df.out = readr::read_csv(flcsv, show_col_types = F)
   } else {
     # no recompute and the file exists, it is simply loaded
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading preprocessed facial expressions\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Loading preprocessed facial expressions\n")
     if (!recompute & file.exists(flfft)) {
       df.face = arrow::read_feather(flfft)
     } else {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Preprocessing facial expressions\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Preprocessing facial expressions\n")
       
       # check the general columns
       checkDF(df, c("Dyad", "Identifier", "Frame", "Time"))
@@ -100,7 +100,7 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
       # rescale some of the facial expressions from VERSE if they are composites
       # of multiple shapes
       if (rescaleVERSE) {
-        if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Rescaling VERSE facial expressions\n")
+        if (verbose) cat(format(Sys.time(), "%X"), ": Rescaling VERSE facial expressions\n")
         df = df |>
           mutate(
             Facial_BrowInnerUp      = Facial_BrowInnerUp / 2, # combines InnerBrowRaiserR and InnerBrowRaiserL
@@ -117,7 +117,7 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
       }
       
       # preprocessing facial expressions
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Categorising facial expressions\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Categorising facial expressions\n")
       df.face = df |> 
         (\(.data) {
           colsEFE = purrr::imap(catEFE, ~ rowMeans(.data[.x], na.rm = TRUE))
@@ -127,7 +127,7 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
         })()
       
       # get a list of columns that don't contain any data
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Removing empty columns\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Removing empty columns\n")
       ls.cols = df.face |> 
         summarise(across(where(is.numeric), sum),
                   .groups = "drop") |>
@@ -143,12 +143,12 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
       
       # save the preprocessed facial data
       if (!is.null(rs.path)) {
-        if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the preprocessed data\n")
+        if (verbose) cat(format(Sys.time(), "%X"), ": Saving the preprocessed data\n")
         arrow::write_feather(df.face, flfft, compression = "zstd")
       }
     }
     
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Aggregating facial expressions\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Aggregating facial expressions\n")
     
     # aggregate the emotional expressions
     df.out = df.face |>
@@ -178,7 +178,7 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
     
     # save feature face dataframe
     if (!is.null(rs.path)) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Saving the data\n")
       readr::write_csv(df.out, flcsv)
     }
   }
@@ -186,6 +186,6 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
   # return aggregated dataframe
   if (return) return(df.out)
   
-  if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Done\n")
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }

@@ -70,12 +70,12 @@ extractZCrossing = function(df, colnames, fps, minDegree, rs.path = c(), suffix 
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (return) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading Zero Crossing features\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Loading Zero Crossing features\n")
       df = arrow::read_feather(flnm)
     }
   } else {
     
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Exctracting Zero Crossings from ", paste(colnames, collapse = ", "), "\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Exctracting Zero Crossings from ", paste(colnames, collapse = ", "), "\n")
     
     checkDF(df, c("Dyad", "Identifier", "Time", "Frame", "Timestamp", colnames))
     
@@ -137,14 +137,14 @@ extractZCrossing = function(df, colnames, fps, minDegree, rs.path = c(), suffix 
     
     # save the data frame
     if (!is.null(rs.path)) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Saving the data\n")
       arrow::write_feather(df, flnm, compression = "zstd")
     }
     
   }
   
   if (return) return(df)
-  if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Done\n")
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }
 
@@ -189,13 +189,13 @@ featZCrossing = function(df, colnames, rs.path = c(), suffix = "",
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (return) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading Zero Crossing features\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Loading Zero Crossing features\n")
       df.out = readr::read_csv(flnm, show_col_types = F)
     }
   } else {
     
     # aggregate the ZC information
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Aggregating information\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Aggregating information\n")
     checkDF(df, c("Dyad", "Identifier", "Time", "Frame", colnames))
     
     # overall ZC information
@@ -243,14 +243,14 @@ featZCrossing = function(df, colnames, rs.path = c(), suffix = "",
     # save speech dwell dataframe
     # save the data frame
     if (!is.null(rs.path)) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Saving the data\n")
       readr::write_csv(df.out, flnm)
     }
     
   }
   
   if (return) return(df.out)
-  if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Done\n")
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }
 

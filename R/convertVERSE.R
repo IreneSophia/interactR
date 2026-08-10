@@ -41,12 +41,11 @@ extractDataVERSE = function(df.info, timezone = "UTC",
   }
   
   flnm = file.path(rs.path, sprintf("dataVERSE%s.arrow", suffix))
-  cat(format(Sys.time(), "%X %Z"), flnm)
   
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     # give some info
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Loading VERSE experiments\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Loading VERSE experiments\n")
     df = arrow::read_feather(flnm)
     # check if the file content corresponds to the df.info file
     if (length(c(setdiff(unique(df$Time), df.info$Time), setdiff(df.info$Time, unique(df$Time))) > 0)) {
@@ -55,7 +54,7 @@ extractDataVERSE = function(df.info, timezone = "UTC",
   } else {
     
     # give some info
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Extracting data from", nrow(df.info), "VERSE experiments\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Extracting data from", nrow(df.info), "VERSE experiments\n")
 
     checkDF(df.info, c("Filename", "Time"))
     
@@ -76,9 +75,9 @@ extractDataVERSE = function(df.info, timezone = "UTC",
       header = c(header, "Partner", "Listening")
       
       # read in the left and the right participant separately
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Reading data from left participants\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Reading data from left participants\n")
       df0 = readCSVs(df.info$Filename, c(1:188))
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Reading data from right participants\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Reading data from right participants\n")
       df1 = readCSVs(df.info$Filename, c(1, 187:371, 2:3))
 
       # set the colnames
@@ -120,17 +119,17 @@ extractDataVERSE = function(df.info, timezone = "UTC",
     
     # if the df.info contains start and end times, then cut out everything in-between
     if (sum(c("start.use", "end.use") %in% colnames(df.info)) == 2) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Cutting out relevant time window\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Cutting out relevant time window\n")
       df = df |>
         filter(Timestamp >= start.use & Timestamp <= end.use) |>
         select(-start.use, -end.use)
     } else if ("start.use" %in% colnames(df.info)) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Cutting out based on starting point\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Cutting out based on starting point\n")
       df = df |>
         filter(Timestamp >= start.use) |>
         select(-start.use)
     } else if ("end.use" %in% colnames(df.info)) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Cutting out based on end point\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Cutting out based on end point\n")
       df = df |>
         filter(Timestamp <= end.use) |>
         select(-end.use)
@@ -148,14 +147,14 @@ extractDataVERSE = function(df.info, timezone = "UTC",
     
     # if the df.info contains a number of frames, then only keep that many
     if ("frame.use" %in% colnames(df.info)) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Cutting out number of frames\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Cutting out number of frames\n")
       df = df |>
         filter(Frame <= frame.use) |>
         select(-frame.use)
     }
     
     # now let's do some data wrangling
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Adding information\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Adding information\n")
     df = df |>
       group_by(Identifier) |> 
       mutate(
@@ -223,7 +222,7 @@ extractDataVERSE = function(df.info, timezone = "UTC",
     
     # potentially anonymise the data
     if (anonymise) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Anonymising the data\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Anonymising the data\n")
       # reset the time to 0
       df = df |> 
         mutate(Timestamp = as.POSIXct(as.numeric(Timestamp) - as.numeric(Time)),
@@ -238,7 +237,7 @@ extractDataVERSE = function(df.info, timezone = "UTC",
     
     # save the data frame
     if (save) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Saving the data\n")
       arrow::write_feather(df |> ungroup(), flnm, compression = "zstd")
       }
   }
@@ -246,7 +245,7 @@ extractDataVERSE = function(df.info, timezone = "UTC",
   # return the ungrouped dataframe
   if (return) return(df |> ungroup())
   
-  if (verbose) cat(format(Sys.time(), "%X %Z"), ": Done\n")
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }
 

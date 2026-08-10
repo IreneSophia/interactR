@@ -54,12 +54,12 @@ featWTC = function(df, Limits, Funs, Bins = 8,
   
   # if no recompute and the CSV file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading WTC features\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Loading WTC features\n")
     df.agg = readr::read_csv(flnm, show_col_types = F)
     
   } else {
     # no recompute and the file exists, it is simply loaded
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extracting WTC features\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Extracting WTC features\n")
   
     # if two Limits but only one Fun, then use the same Fun twice
     if ((length(Limits) == 2) & (length(Funs) == 1)) {
@@ -126,12 +126,12 @@ featWTC = function(df, Limits, Funs, Bins = 8,
     
     # save the data
     if (!is.null(rs.path)) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Saving the data\n")
       readr::write_csv(df.agg, flnm)
     }
   }
   
   if (return) return(df.agg)
-  if (verbose) cat(format(Sys.time(), "%X %Z"), ": Done\n")
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }

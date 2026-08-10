@@ -41,10 +41,10 @@ featDwell = function(df, ls.AOI, rs.path = c(), suffix = "",
   
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading dwell times\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Loading dwell times\n")
     df.out = readr::read_csv(flnm, show_col_types = F)
   } else {
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Preprocessing dwell times\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Preprocessing dwell times\n")
     
     # check columns
     checkDF(df, c("Dyad", "Identifier", "Frame", "Time"))
@@ -151,7 +151,7 @@ featDwell = function(df, ls.AOI, rs.path = c(), suffix = "",
     
     # save speech dwell dataframe
     if (!is.null(rs.path)) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the Dwell feature csv\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Saving the Dwell feature csv\n")
       readr::write_csv(df.out, flnm)
       }
     
@@ -160,6 +160,6 @@ featDwell = function(df, ls.AOI, rs.path = c(), suffix = "",
   # return feature dwell dataframe
   if (return) return(df.out)
   
-  if (verbose) cat(format(Sys.time(), "%X %Z"), ": Done\n")
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
 
 }

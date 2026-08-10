@@ -58,12 +58,12 @@ featHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (return) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading Head Gesture features\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Loading Head Gesture features\n")
       df = arrow::read_feather(flnm)
     }
   } else {
     
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Exctracting Head Gestures from ", paste(c(colNodding, colShaking), collapse = ", "), "\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Exctracting Head Gestures from ", paste(c(colNodding, colShaking), collapse = ", "), "\n")
     
     checkDF(df, c("Dyad", "Identifier", "Frame", "Time", colNodding, colShaking))
     
@@ -79,7 +79,7 @@ featHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
     }
     
     # preprocess the extracted z crossings
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Preprocess extracted Z-crossings\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Preprocess extracted Z-crossings\n")
     df = df |>
       # rename the columns to nodding and shaking
       rename_with(~ gsub(colNodding, "nodding", .x), .cols = matches(colNodding)) |>
@@ -100,14 +100,14 @@ featHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
     
     # save the data for plotting
     if (!is.null(rs.path)) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Saving the data\n")
       arrow::write_feather(df, flnm, compression = "zstd")
     }
     
   }
   
   if (return) return(df)
-  if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Done\n")
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }
 
@@ -216,10 +216,10 @@ preproHead = function(df, rotnames, tranames, rs.path = c(), suffix = '',
   
   # give some info
   if (file.exists(flnm) & !recompute) {
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Reading in head movement data\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Reading in head movement data\n")
     df = arrow::read_feather(flnm)
   } else {
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Preprocessing head movement data\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Preprocessing head movement data\n")
     # focus on relevant columns
     df = df |> 
       select(Dyad, Identifier, Frame, Timestamp, Time,
@@ -228,7 +228,7 @@ preproHead = function(df, rotnames, tranames, rs.path = c(), suffix = '',
       arrange(Dyad, Identifier, Frame)
     
     if (performFixCirc) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Fixing circularity\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Fixing circularity\n")
       df = df |>
         group_by(Dyad, Identifier, Time) |>
         # fix circularity based on the algorithm of Hale et al. (2020),
@@ -237,14 +237,14 @@ preproHead = function(df, rotnames, tranames, rs.path = c(), suffix = '',
         ungroup()
     }
     if (length(cornames) == length(rotnames)) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Rotational difference with to other body part\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Rotational difference with to other body part\n")
       # compute rotational difference to a different body part
       for (i in 1:length(cornames)) {
         new_name = paste0(rotnames[i], "_rotDiff")
         df[[new_name]] = rotDiff(df[[rotnames[i]]], df[[cornames[i]]])
       }
     }
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Detrend non-difference columns\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Detrend non-difference columns\n")
     fixnames = paste0(rotnames, "_fixCirc")
     df = df |>
       # de-trended translational and fixCirc values by subtracting mean value
@@ -253,13 +253,13 @@ preproHead = function(df, rotnames, tranames, rs.path = c(), suffix = '',
       ungroup() |> arrange(Dyad, Identifier, Frame)
     
     if (!is.null(rs.path)) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Saving data\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Saving data\n")
       arrow::write_feather(df, flnm, compression = "zstd")
       }
     
   }
   
   if (return) return(df)
-  if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Done\n")
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
 
 }

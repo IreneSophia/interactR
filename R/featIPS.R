@@ -52,7 +52,7 @@ compareIPS = function(df, Bayesian = T, perm = F,
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (return) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading IPS comparison\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Loading IPS comparison\n")
       df.agg = readr::read_csv(flnm, show_col_types = F)
     }
   } else {
@@ -75,7 +75,7 @@ compareIPS = function(df, Bayesian = T, perm = F,
       colnm = "Lag"
     }
     
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Comparing pseudo and observed IPS from", unique(df$Feature), "\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Comparing pseudo and observed IPS from", unique(df$Feature), "\n")
     
     # aggregate the values across the windows
     df.tmp = df |>
@@ -98,7 +98,7 @@ compareIPS = function(df, Bayesian = T, perm = F,
       
       if (!Bayesian) {
         
-        if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Computing frequentist stats\n")
+        if (verbose) cat(format(Sys.time(), "%X"), ": Computing frequentist stats\n")
 
                 # use t-tests to assess differences
         df.stat = df.tmp |> 
@@ -118,7 +118,7 @@ compareIPS = function(df, Bayesian = T, perm = F,
         
       } else {
         
-        if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Computing Bayesian stats\n")
+        if (verbose) cat(format(Sys.time(), "%X"), ": Computing Bayesian stats\n")
         
         # compute the Bayesian t-tests
         df.stat = df.tmp |>
@@ -149,7 +149,7 @@ compareIPS = function(df, Bayesian = T, perm = F,
       
     } else {
       
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Computing stats with permutation\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Computing stats with permutation\n")
       
       # aggregate the observed values to get grand average per Lag or Frequency
       df.perm = df |> filter(Method == "observed") |>
@@ -192,7 +192,7 @@ compareIPS = function(df, Bayesian = T, perm = F,
     
     # save the data
     if (!is.null(rs.path)) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Saving the data\n")
       readr::write_csv(df.agg, file = flnm)
     }
     
@@ -200,7 +200,7 @@ compareIPS = function(df, Bayesian = T, perm = F,
   
   if (return) return(df.agg)
   
-  if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Done\n")
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }
 
@@ -259,12 +259,12 @@ computeWTC = function(df, fps, featname,
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (return) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading WTC of ", df$Dyad[1], "\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Loading WTC of ", df$Dyad[1], "\n")
       wtc = readRDS(flnm)
     }
   } else {
     
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Starting WTC for dyad ", df$Dyad[1], "\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Starting WTC for dyad ", df$Dyad[1], "\n")
   
     # check if the correct columns
     checkDF(df, c("Dyad", "Frame", "left", "right"))
@@ -497,7 +497,7 @@ extractIPS = function(df, colname, type, fps, featname = NA,
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (return) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading ",type ," features\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Loading ",type ," features\n")
       df.out = arrow::read_feather(flnm)
     }
   } else {
@@ -511,7 +511,7 @@ extractIPS = function(df, colname, type, fps, featname = NA,
       Method = "observed"
     }
     
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extracting ", type, Method, " from ", colname, "\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Extracting ", type, Method, " from ", colname, "\n")
     
     # check whether settings for WLCC are complete, if needed
     if (type == "WLCC") {
@@ -569,7 +569,7 @@ extractIPS = function(df, colname, type, fps, featname = NA,
     ls.out = furrr::future_map(
       1:nrow(df.dyad), 
       \(dyadRow) {
-        if (verbose & (dyadRow%%10 == 1)) cat(format(Sys.time(), "%x %X %Z"), ": Starting with dyad ", dyadRow, " of ", nrow(df.dyad), "\n")
+        if (verbose & (dyadRow%%10 == 1)) cat(format(Sys.time(), "%X"), ": Starting with dyad ", dyadRow, " of ", nrow(df.dyad), "\n")
         
         # check whether all information here
         if (sum(is.na(df.dyad[dyadRow,])) > 0) stop("Dyad ", df.dyad$Dyad[dyadRow], " is missing crucial information (Dyad, Time or Identifier)")
@@ -643,7 +643,7 @@ extractIPS = function(df, colname, type, fps, featname = NA,
     
     # save the data
     if (!is.null(rs.path)) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Saving the data\n")
       arrow::write_feather(df.out, flnm, compression = "zstd")
     }
     
@@ -651,7 +651,7 @@ extractIPS = function(df, colname, type, fps, featname = NA,
   
   if (return) return(df.out)
   
-  if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Done\n")
+  if (verbose) cat(format(Sys.time(), "%X"), ": Done\n")
   
 }
 

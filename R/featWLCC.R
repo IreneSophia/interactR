@@ -37,12 +37,12 @@ featWLCC = function(df, FUN, absolute = F, r2z = F, rs.path = c(), suffix = "",
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (return) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading WLCC feature dataframe\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Loading WLCC feature dataframe\n")
       df.out = read_csv(flnm)
     }
   } else {
     
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extracting WLCC features from dataframe\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Extracting WLCC features from dataframe\n")
     
     # potentially use Fisher's z-transformation
     if (r2z) {
@@ -104,7 +104,7 @@ featWLCC = function(df, FUN, absolute = F, r2z = F, rs.path = c(), suffix = "",
     
     # save the data
     if (!is.null(rs.path)) {
-      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      if (verbose) cat(format(Sys.time(), "%X"), ": Saving the data\n")
       saveRDS(df.out, file = flnm)
     }
     
