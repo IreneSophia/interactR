@@ -23,7 +23,7 @@ plotZCrossings(
 \arguments{
 \item{df}{Dataframe. The dataset containing the variables to be processed, potentially created by \code{\link{preproHead}}.
 Must explicitly feature columns \code{Identifier}, \code{Frame} and the column \code{colname}. This dataframe
-will be processed using \code{\link{featZCrossing}} to extract relevant zero crossings.
+will be processed using \code{\link{extractZCrossing}} to extract relevant zero crossings.
 If \code{Communication} is a column, Speaking and Listening information is highlighted. If
 no \code{Communication} column is provided, the plot focuses on the different steps to extract
 relevant Zero Crossings from the signal.}
@@ -60,10 +60,10 @@ present in more than half of this time window, this translates to true. Default 
 ggplot element
 }
 \description{
-Plot the results from \code{\link{featZCrossing}} for one Dyad or one Identifier.
+Plot the results from \code{\link{extractZCrossing}} for one Dyad or one Identifier.
 }
 \seealso{
-\code{\link{featZCrossing}} \code{\link{preproHead}}
+\code{\link{extractZCrossing}} \code{\link{preproHead}}
 }
 \author{
 Irene Sophia Plank (\email{10planki@gmail.com})

@@ -42,7 +42,7 @@ If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is \code{c()
 \item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
 }
 \value{
-If \code{return = TRUE}, returns dataframe. If provided, the dataframe is saved as rds to \code{rs.path}.
+If \code{return = TRUE}, returns dataframe. If provided, the dataframe is saved as a csv to \code{rs.path}.
 }
 \description{
 Takes the dataframe created by \code{\link[=extractIPS]{extractIPS()}} and aggregates the results in prespecified Frequency

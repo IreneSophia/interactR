@@ -62,15 +62,15 @@ present in more than half of this time window, this translates to true. Default 
 \item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
 }
 \value{
-If \code{return = TRUE}, returns the dataframe or saves RDS file to \code{rs.path} if provided.
+If \code{return = TRUE}, returns the dataframe or saves file to \code{rs.path} if provided.
 }
 \description{
-Extracts nodding and head shaking by detecting Zero Crossing using \code{\link{featZCrossing}}.
+Extracts nodding and head shaking by detecting Zero Crossing using \code{\link{extractZCrossing}}.
 Gestures are classified exclusively as nodding, head shaking or nothing for each Frame.
 Input can be data preprocessed using \code{\link{preproHead}}.
 }
 \seealso{
-\code{\link{featZCrossing}} \code{\link{preproHead}}
+\code{\link{extractZCrossing}} \code{\link{preproHead}}
 }
 \author{
 Irene Sophia Plank (\email{10planki@gmail.com})

@@ -34,7 +34,7 @@ If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk. Default is
 \item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
 }
 \value{
-If \code{return = TRUE}, returns the processed dataframe. Saves \verb{data[suffix].rds} to disk if \code{rs.path} is provided.
+If \code{return = TRUE}, returns the processed dataframe. Saves \verb{data[suffix].arrow} to disk if \code{rs.path} is provided.
 }
 \description{
 This function adds the \code{Listening}, \code{Speaking}, and \code{Communication} state columns

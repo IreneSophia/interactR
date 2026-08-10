@@ -2,53 +2,30 @@
 % Please edit documentation in R/featZCrossing.R
 \name{featZCrossing}
 \alias{featZCrossing}
-\title{Extract Zero-Crossing Frequency from Time Series Data}
+\title{Agreggate Zero-Crossing Features Extracted from Time Series Data}
 \usage{
 featZCrossing(
   df,
   colnames,
-  fps,
-  minDegree,
   rs.path = c(),
   suffix = "",
-  win = 2,
-  minFreq = 1.5,
-  maxFreq = 6.5,
-  winCentre = NULL,
-  winSmooth = 0,
   verbose = T,
   recompute = F,
   return = T
 )
 }
 \arguments{
-\item{df}{Dataframe. The dataset containing the variables to be processed. Must explicitly feature columns \code{Dyad},
-\code{Identifier}, \code{Frame}, \code{Timestamp}, \code{Time} as well as all columns contained in \code{colnames}.}
+\item{df}{Dataframe. The dataset containing the variables to be processed, created by \code{\link{extractZCrossing}}.
+Must explicitly feature columns \code{Dyad}, \code{Identifier}, \code{Frame}, \code{Time}, all columns contained in \code{colnames}.
+If \code{Communication} is a column, zero crossings are also aggregated based on its classification.}
 
 \item{colnames}{Character vector. The exact name or names of the column(s) in \code{df} from which
 to extract zero-crossing features.}
-
-\item{fps}{Numeric. Frame processing rate frequency profile (frames per second) of the dataset.}
-
-\item{minDegree}{Numeric. How many degree of rotational difference are needed for the movement to be considered relevant.
-Depends on the fps and the specific movement. Setting to negative number leads to no thresholding based on degrees.}
 
 \item{rs.path}{Path to the directory where the output file will be saved, if empty (is.null(rs.path) == TRUE),
 then nothing is saved. Default is \code{c()}.}
 
 \item{suffix}{Character. Suffix to be added to the files saved to disk. Default is \code{""}.}
-
-\item{win}{Numeric. Window duration scale evaluated in seconds for the moving frequency summary. Default is \code{2}.}
-
-\item{minFreq}{Numeric. The lower cutoff boundary of the targeted frequency band in Hz. Default is \code{1.5}.}
-
-\item{maxFreq}{Numeric. The upper cutoff boundary of the targeted frequency band in Hz. Default is \code{6.5}.}
-
-\item{winCentre}{Numeric. Seconds for detrending before zero crossings are extracted.
-Default is \code{NULL} translating to same size as \code{win}. Setting it to \code{0} translates to no centring.}
-
-\item{winSmooth}{Numeric. Seconds for smoothing to remove noise based on majority presence - only if relevant ZCrossings are
-present in more than half of this time window, this translates to true. Default is \code{0} translating to no smoothing.}
 
 \item{verbose}{Logical. Whether progress and output are printed to the console. Default is \code{TRUE}.}
 
@@ -57,35 +34,14 @@ present in more than half of this time window, this translates to true. Default 
 \item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
 }
 \value{
-If \code{return = TRUE}, returns the dataframe or saves RDS file to \code{rs.path} if provided.
+If \code{return = TRUE}, returns the dataframe or saves consolidated summary CSV to \code{rs.path} if provided.
 }
 \description{
-Evaluates localised oscillatory characteristics within specified time series
-channels by quantifying zero-crossing counts over moving windows. This allows
-for the extraction of nodding and head shaking from rotational head movement.
-The function is loosely based on the algorithm presented in Hale et al. (2020) and
-shifts data dynamically against a running local mean, calculates zero-crossing
-frequencies, filters outcomes within a target frequency band and applies a
-smoothing threshold filter across the results.
-}
-\details{
-The calculation executes sequentially across one or more specified columns:
-\enumerate{
-\item \strong{Baseline Centering:} Removes slow-moving baseline drift using a running mean (\code{\link[=aggSlide]{aggSlide()}}).
-\item \strong{Frequency Mapping:} Counts sign inversions using \code{\link[=findZCrossing]{findZCrossing()}} over an explicit window interval.
-\item \strong{Bandpass Filtering:} Identifies sequences falling strictly within the bounds defined by \code{minFreq} and \code{maxFreq}.
-\item \strong{Smoothing:} Enforcing a secondary duration validation window with only segments of at least half its length considered relevant.
-}
-
-Newly generated vectors are appended back to the source data frame utilizing a
-systematic naming template (e.g., \verb{[column]_centred}, \verb{[column]_sum},
-\verb{[column]_rel}, and \verb{[column]_smooth}).
-}
-\references{
-Hale et al. (2020). Journal of Nonverbal Behavior.
+Aggregates the results from \code{\link{extractZCrossing}} or \code{\link{featHeadGestures}} to provide one
+absolute and one relative value per Identifier per time series.
 }
 \seealso{
-\code{\link{aggSlide}}, \code{\link{findZCrossing}}
+\code{\link{extractZCrossing}}
 }
 \author{
 Irene Sophia Plank (\email{10planki@gmail.com})

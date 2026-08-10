@@ -28,6 +28,8 @@
 featDwell = function(df, ls.AOI, rs.path = c(), suffix = "", 
                      verbose = T, recompute = F, return = T) {
   
+  if (verbose) cat("------------------ Extracting dwell time features ------------------\n")
+  
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
@@ -157,5 +159,7 @@ featDwell = function(df, ls.AOI, rs.path = c(), suffix = "",
   
   # return feature dwell dataframe
   if (return) return(df.out)
+  
+  if (verbose) cat(format(Sys.time(), "%X %Z"), ": Done\n")
 
 }

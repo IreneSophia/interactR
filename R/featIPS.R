@@ -36,6 +36,9 @@ compareIPS = function(df, Bayesian = T, perm = F,
                       minBF = log(3), alpha = 0.05, freqLimits = c(0.2, 8),
                       rs.path = c(), suffix = "", 
                       verbose = T, recompute = F, return = T) {
+  
+  if (verbose) cat("---------------- Comparing pseudo and observed IPS  ----------------\n")
+  
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
@@ -43,13 +46,13 @@ compareIPS = function(df, Bayesian = T, perm = F,
   } else {
     # create filename 
     flnm  = file.path(rs.path, 
-                      sprintf("featWLCC_pseudo-comp%s.csv", suffix))
+                      sprintf("featIPS_pseudo-comp%s.csv", suffix))
   }
   
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (return) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading WLCC comparison\n")
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading IPS comparison\n")
       df.agg = readr::read_csv(flnm, show_col_types = F)
     }
   } else {
@@ -72,7 +75,7 @@ compareIPS = function(df, Bayesian = T, perm = F,
       colnm = "Lag"
     }
     
-    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Comparing pseudo and observed WLCC from", unique(df$Feature), "\n")
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Comparing pseudo and observed IPS from", unique(df$Feature), "\n")
     
     # aggregate the values across the windows
     df.tmp = df |>
@@ -95,7 +98,9 @@ compareIPS = function(df, Bayesian = T, perm = F,
       
       if (!Bayesian) {
         
-        # use non-parametric tests to assess differences
+        if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Computing frequentist stats\n")
+
+                # use t-tests to assess differences
         df.stat = df.tmp |> 
           # z-transform to achieve normal distribution
           mutate(zvalue = atanh(pmin(pmax(value, -0.9999), 0.9999))) |>
@@ -112,6 +117,8 @@ compareIPS = function(df, Bayesian = T, perm = F,
                     by = c(colnm, "Feature"))
         
       } else {
+        
+        if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Computing Bayesian stats\n")
         
         # compute the Bayesian t-tests
         df.stat = df.tmp |>
@@ -141,6 +148,8 @@ compareIPS = function(df, Bayesian = T, perm = F,
       }
       
     } else {
+      
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Computing stats with permutation\n")
       
       # aggregate the observed values to get grand average per Lag or Frequency
       df.perm = df |> filter(Method == "observed") |>
@@ -190,6 +199,8 @@ compareIPS = function(df, Bayesian = T, perm = F,
   }
   
   if (return) return(df.agg)
+  
+  if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Done\n")
   
 }
 
@@ -446,6 +457,8 @@ extractIPS = function(df, colname, type, fps, featname = NA,
                       order = 8,                                      # settings for WTC
                       nSegment = 0, df.pseudo = data.frame(), seed = NA,
                       verbose = T, recompute = F, return = T) {
+
+  if (verbose) cat(sprintf("---------------------- Extract IPS using %-4s ----------------------\n", type))
   
   # get a random seed
   if (is.na(seed)) {
@@ -470,13 +483,13 @@ extractIPS = function(df, colname, type, fps, featname = NA,
   } else {
     # create filename depending on whether this is pseudo or not
     if (pseudoDyad) {
-      flnm  = file.path(rs.path, sprintf("data%s_%s_seed-%d-pseudoDyad%s.rds", 
+      flnm  = file.path(rs.path, sprintf("data%s_%s_seed-%d-pseudoDyad%s.arrow", 
                                          type, featname, seed, suffix))
     } else if (pseudoSegment) {
-      flnm  = file.path(rs.path, sprintf("data%s_%s_seed-%d-pseudoSegment%s.rds", 
+      flnm  = file.path(rs.path, sprintf("data%s_%s_seed-%d-pseudoSegment%s.arrow", 
                                          type, featname, seed, suffix))
     } else {
-      flnm  = file.path(rs.path, sprintf("data%s_%s_seed-%d%s.rds", 
+      flnm  = file.path(rs.path, sprintf("data%s_%s_seed-%d%s.arrow", 
                                          type, featname, seed, suffix))
     }
   }
@@ -485,7 +498,7 @@ extractIPS = function(df, colname, type, fps, featname = NA,
   if (!recompute & file.exists(flnm)) {
     if (return) {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading ",type ," features\n")
-      df.out = readRDS(flnm)
+      df.out = arrow::read_feather(flnm)
     }
   } else {
   
@@ -631,12 +644,14 @@ extractIPS = function(df, colname, type, fps, featname = NA,
     # save the data
     if (!is.null(rs.path)) {
       if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
-      saveRDS(df.out, file = flnm)
+      arrow::write_feather(df.out, flnm, compression = "zstd")
     }
     
   }
   
   if (return) return(df.out)
+  
+  if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Done\n")
   
 }
 

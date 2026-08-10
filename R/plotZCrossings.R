@@ -1,10 +1,10 @@
 #' Plot Zero-Crossings Extracted from Time Series Data
 #'
-#' Plot the results from \code{\link{featZCrossing}} for one Dyad or one Identifier. 
+#' Plot the results from \code{\link{extractZCrossing}} for one Dyad or one Identifier. 
 #'
 #' @param df Dataframe. The dataset containing the variables to be processed, potentially created by \code{\link{preproHead}}. 
 #'   Must explicitly feature columns `Identifier`, `Frame` and the column `colname`. This dataframe
-#'   will be processed using \code{\link{featZCrossing}} to extract relevant zero crossings. 
+#'   will be processed using \code{\link{extractZCrossing}} to extract relevant zero crossings. 
 #'   If `Communication` is a column, Speaking and Listening information is highlighted. If
 #'   no `Communication` column is provided, the plot focuses on the different steps to extract
 #'   relevant Zero Crossings from the signal. 
@@ -28,7 +28,7 @@
 #' @return ggplot element
 #' 
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
-#' @seealso \code{\link{featZCrossing}} \code{\link{preproHead}}
+#' @seealso \code{\link{extractZCrossing}} \code{\link{preproHead}}
 #' @import dplyr
 #' @import ggplot2
 #' @export
@@ -48,9 +48,9 @@ plotZCrossings = function(df, colname, fps, minDegree,
   if (!("Dyad") %in% colnames(df)) df = df |> mutate(Dyad = "tmp1-dyad")
   
   # process the dataframe to extract Zero Crossings
-  df = featZCrossing(df, c(), colname, fps, minDegree,
-                     win = win, minFreq = minFreq, maxFreq = maxFreq, 
-                     winCentre = winCentre, winSmooth = winSmooth, verbose = F)
+  df = extractZCrossing(df, c(), colname, fps, minDegree,
+                        win = win, minFreq = minFreq, maxFreq = maxFreq, 
+                        winCentre = winCentre, winSmooth = winSmooth, verbose = F)
   
   # rename the columns depending on whether centred or not
   if (winCentre > 0) {

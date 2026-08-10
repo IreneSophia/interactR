@@ -30,6 +30,8 @@ extractDataVERSE = function(df.info, timezone = "UTC",
                             rs.path = c(), suffix = '', anonymise = F, 
                             verbose = T, recompute = F, return = T) {
   
+  if (verbose) cat("-------------- Extracting data from VERSE experiments --------------\n")
+  
   # check whether the data should be saved
   if (is.null(rs.path)) {
     save = F
@@ -38,11 +40,13 @@ extractDataVERSE = function(df.info, timezone = "UTC",
     save = T
   }
   
+  flnm = file.path(rs.path, sprintf("dataVERSE%s.arrow", suffix))
+  
   # if no recompute and the file exists, it is simply loaded
-  if (!recompute & file.exists(file.path(rs.path, sprintf("dataVERSE%s.rds", suffix)))) {
+  if (!recompute & file.exists(flnm)) {
     # give some info
-    if (verbose) cat("----------- Loading data from VERSE experiments -----------\n")
-    df = readRDS(file.path(rs.path, sprintf("dataVERSE%s.rds", suffix)))
+    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Loading VERSE experiments\n")
+    df = arrow::read_feather(flnm)
     # check if the file content corresponds to the df.info file
     if (length(c(setdiff(unique(df$Time), df.info$Time), setdiff(df.info$Time, unique(df$Time))) > 0)) {
       stop("Input df.info file differs from loaded file. Please set recompute = T to recompute the file.")
@@ -50,8 +54,8 @@ extractDataVERSE = function(df.info, timezone = "UTC",
   } else {
     
     # give some info
-    if (verbose) cat("----------- Extracting data from", nrow(df.info), "VERSE experiments -----------\n")
-    
+    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Extracting data from", nrow(df.info), "VERSE experiments\n")
+
     checkDF(df.info, c("Filename", "Time"))
     
     # extract the header from one of the files
@@ -234,12 +238,14 @@ extractDataVERSE = function(df.info, timezone = "UTC",
     # save the data frame
     if (save) {
       if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
-      saveRDS(df |> ungroup(), file.path(rs.path, sprintf("dataVERSE%s.rds", suffix)))
+      arrow::write_feather(df |> ungroup(), flnm, compression = "zstd")
       }
   }
   
   # return the ungrouped dataframe
   if (return) return(df |> ungroup())
+  
+  if (verbose) cat(format(Sys.time(), "%X %Z"), ": Done\n")
   
 }
 

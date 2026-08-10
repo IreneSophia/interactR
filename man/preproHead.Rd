@@ -43,7 +43,7 @@ If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk. Default is
 \item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{FALSE}.}
 }
 \value{
-If \code{return = TRUE}, returns an adjusted movement dataframe. Saves \verb{dataHead[suffix].rds} to \code{rs.path} if provided.
+If \code{return = TRUE}, returns an adjusted movement dataframe. Saves \verb{dataHead[suffix].arrow} to \code{rs.path} if provided.
 }
 \description{
 Preprocesses spatial head trajectory streams. Rotational paths are scrubbed of wrap-around geometric circularity

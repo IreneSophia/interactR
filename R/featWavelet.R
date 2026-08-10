@@ -26,7 +26,7 @@
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
 #' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
 #'
-#' @return If `return = TRUE`, returns dataframe. If provided, the dataframe is saved as rds to `rs.path`.
+#' @return If `return = TRUE`, returns dataframe. If provided, the dataframe is saved as a csv to `rs.path`.
 #' 
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @import dplyr
@@ -36,6 +36,8 @@
 featWTC = function(df, Limits, Funs, Bins = 8, 
                    rs.path = c(), suffix = "", 
                    verbose = T, recompute = F, return = T) {
+  
+  if (verbose) cat("--------------- Extracting IPS features based on WTC ---------------\n")
   
   # check if the variables are correct
   if ((class(Limits) != "list")  | (class(Funs) != "list")) stop("Both Limits and Funs need to be lists.")
@@ -50,75 +52,86 @@ featWTC = function(df, Limits, Funs, Bins = 8,
     flnm  = file.path(rs.path, sprintf("featWTC%s.csv", suffix))
   }
   
-  # if two Limits but only one Fun, then use the same Fun twice
-  if ((length(Limits) == 2) & (length(Funs) == 1)) {
-    Funs = c(Funs, Funs)
-  }
+  # if no recompute and the CSV file exists, it is simply loaded
+  if (!recompute & file.exists(flnm)) {
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading WTC features\n")
+    df.agg = readr::read_csv(flnm, show_col_types = F)
+    
+  } else {
+    # no recompute and the file exists, it is simply loaded
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extracting WTC features\n")
   
-  # if only one limits, use the same for both
-  if (length(Limits) == 1) Limits = list(Limits[[1]], Limits[[2]])
-  
-  # ensure only within COI
-  df = df |> filter(WithinCOI)
-  
-  # aggregate for Rsq
-  df.rsq = Limits[[1]] |>
-    left_join(
-      df, 
-      join_by(lower <= Frequency, upper > Frequency), 
-      relationship = "many-to-many"
-    ) |>
-    group_by(lower, upper, Dyad, Method) |>
-    summarise(
-      value = Funs[[1]](Rsq, na.rm = TRUE), 
-      .groups = "drop"
-    ) |>
-    mutate(
-      name = sprintf("Rsq_%d-%dHz", lower, upper)
-    ) |> select(Dyad, Method, name, value) |>
-    tidyr::pivot_wider()
-  
-  # aggregate for Phase
-  df.phase = Limits[[2]] |>
-    left_join(
-      df, 
-      join_by(lower <= Frequency, upper > Frequency), 
-      relationship = "many-to-many"
-    ) |>
-    group_by(lower, upper, Dyad, Method) |>
-    summarise(
-      data = list({
-        tibble(Phase = Phase) %>%
-          mutate(
-            Bin = cut(
-              Phase, 
-              breaks = seq(-pi, pi, length.out = Bins + 1), 
-              include.lowest = TRUE
-            )
-          ) %>%
-          count(Bin, name = "count", .drop = FALSE) |>
-          mutate(Bin = as.numeric(as.factor(Bin)),
-                 count = (count / sum(count)))
-        }),
-      Phase = Funs[[2]](Phase, na.rm = TRUE), 
-      .groups = "drop"
-    ) |>
-    mutate(
-      name = sprintf("%d-%dHz", lower, upper)
-    ) |> tidyr::unnest(data) |> 
-    select(Dyad, Method, name, Phase, count, Bin) |>
-    tidyr::pivot_wider(values_from = count, names_from = Bin, names_prefix = "PhaseBin") |>
-    tidyr::pivot_wider(values_from = starts_with("Phase"))
-  
-  # combine both
-  df.agg = merge(df.rsq, df.phase)
-  
-  # save the data
-  if (!is.null(rs.path)) {
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
-    saveRDS(df.agg, file = flnm)
+    # if two Limits but only one Fun, then use the same Fun twice
+    if ((length(Limits) == 2) & (length(Funs) == 1)) {
+      Funs = c(Funs, Funs)
+    }
+    
+    # if only one limits, use the same for both
+    if (length(Limits) == 1) Limits = list(Limits[[1]], Limits[[2]])
+    
+    # ensure only within COI
+    df = df |> filter(WithinCOI)
+    
+    # aggregate for Rsq
+    df.rsq = Limits[[1]] |>
+      left_join(
+        df, 
+        join_by(lower <= Frequency, upper > Frequency), 
+        relationship = "many-to-many"
+      ) |>
+      group_by(lower, upper, Dyad, Method) |>
+      summarise(
+        value = Funs[[1]](Rsq, na.rm = TRUE), 
+        .groups = "drop"
+      ) |>
+      mutate(
+        name = sprintf("Rsq_%d-%dHz", lower, upper)
+      ) |> select(Dyad, Method, name, value) |>
+      tidyr::pivot_wider()
+    
+    # aggregate for Phase
+    df.phase = Limits[[2]] |>
+      left_join(
+        df, 
+        join_by(lower <= Frequency, upper > Frequency), 
+        relationship = "many-to-many"
+      ) |>
+      group_by(lower, upper, Dyad, Method) |>
+      summarise(
+        data = list({
+          tibble(Phase = Phase) %>%
+            mutate(
+              Bin = cut(
+                Phase, 
+                breaks = seq(-pi, pi, length.out = Bins + 1), 
+                include.lowest = TRUE
+              )
+            ) %>%
+            count(Bin, name = "count", .drop = FALSE) |>
+            mutate(Bin = as.numeric(as.factor(Bin)),
+                   count = (count / sum(count)))
+          }),
+        Phase = Funs[[2]](Phase, na.rm = TRUE), 
+        .groups = "drop"
+      ) |>
+      mutate(
+        name = sprintf("%d-%dHz", lower, upper)
+      ) |> tidyr::unnest(data) |> 
+      select(Dyad, Method, name, Phase, count, Bin) |>
+      tidyr::pivot_wider(values_from = count, names_from = Bin, names_prefix = "PhaseBin") |>
+      tidyr::pivot_wider(values_from = starts_with("Phase"))
+    
+    # combine both
+    df.agg = merge(df.rsq, df.phase)
+    
+    # save the data
+    if (!is.null(rs.path)) {
+      if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
+      readr::write_csv(df.agg, flnm)
+    }
   }
   
   if (return) return(df.agg)
+  if (verbose) cat(format(Sys.time(), "%X %Z"), ": Done\n")
   
 }

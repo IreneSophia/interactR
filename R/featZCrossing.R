@@ -40,7 +40,7 @@
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
 #' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
 #'
-#' @return If `return = TRUE`, returns the dataframe or saves RDS file to `rs.path` if provided.
+#' @return If `return = TRUE`, returns the dataframe and saves file to `rs.path` if provided.
 #' 
 #' @references Hale et al. (2020). Journal of Nonverbal Behavior.
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
@@ -48,10 +48,12 @@
 #' @import dplyr
 #' @export
 
-featZCrossing = function(df, colnames, fps, minDegree, rs.path = c(), suffix = "", 
-                         win = 2, minFreq = 1.5, maxFreq = 6.5, 
-                         winCentre = NULL, winSmooth = 0, 
-                         verbose = T, recompute = F, return = T) {
+extractZCrossing = function(df, colnames, fps, minDegree, rs.path = c(), suffix = "", 
+                            win = 2, minFreq = 1.5, maxFreq = 6.5, 
+                            winCentre = NULL, winSmooth = 0, 
+                            verbose = T, recompute = F, return = T) {
+  
+  if (verbose) cat("------------------ Extracting Z Crossing Features ------------------\n")
   
   # check rs.path
   if (is.null(rs.path)) {
@@ -59,7 +61,7 @@ featZCrossing = function(df, colnames, fps, minDegree, rs.path = c(), suffix = "
     flnm = ''
   } else {
     # create filename
-    flnm  = file.path(rs.path, sprintf("dataZC%s.rds", suffix))
+    flnm  = file.path(rs.path, sprintf("dataZC%s.arrow", suffix))
   }
   
   # adjust winCentre if necessary
@@ -69,7 +71,7 @@ featZCrossing = function(df, colnames, fps, minDegree, rs.path = c(), suffix = "
   if (!recompute & file.exists(flnm)) {
     if (return) {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading Zero Crossing features\n")
-      df = readRDS(flnm)
+      df = arrow::read_feather(flnm)
     }
   } else {
     
@@ -136,21 +138,22 @@ featZCrossing = function(df, colnames, fps, minDegree, rs.path = c(), suffix = "
     # save the data frame
     if (!is.null(rs.path)) {
       if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
-      saveRDS(df, file = flnm)
+      arrow::write_feather(df, flnm, compression = "zstd")
     }
     
   }
   
   if (return) return(df)
+  if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Done\n")
   
 }
 
-#' Agreggate Zero-Crossing Frequency Extracted from Time Series Data
+#' Agreggate Zero-Crossing Features Extracted from Time Series Data
 #'
-#' Aggregates the results from \code{\link{featZCrossing}} or \code{\link{featHeadGestures}} to provide one 
+#' Aggregates the results from \code{\link{extractZCrossing}} or \code{\link{featHeadGestures}} to provide one 
 #' absolute and one relative value per Identifier per time series. 
 #'
-#' @param df Dataframe. The dataset containing the variables to be processed, created by \code{\link{featZCrossing}}. 
+#' @param df Dataframe. The dataset containing the variables to be processed, created by \code{\link{extractZCrossing}}. 
 #'   Must explicitly feature columns `Dyad`, `Identifier`, `Frame`, `Time`, all columns contained in `colnames`. 
 #'   If `Communication` is a column, zero crossings are also aggregated based on its classification. 
 #' @param colnames Character vector. The exact name or names of the column(s) in \code{df} from which
@@ -165,12 +168,14 @@ featZCrossing = function(df, colnames, fps, minDegree, rs.path = c(), suffix = "
 #' @return If `return = TRUE`, returns the dataframe or saves consolidated summary CSV to `rs.path` if provided.
 #' 
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
-#' @seealso \code{\link{featZCrossing}}
+#' @seealso \code{\link{extractZCrossing}}
 #' @import dplyr
 #' @export
 
-aggZCrossing = function(df, colnames, rs.path = c(), suffix = "",
+featZCrossing = function(df, colnames, rs.path = c(), suffix = "",
                         verbose = T, recompute = F, return = T) {
+  
+  if (verbose) cat("----------------- Aggregating Z Crossing Features  -----------------\n")
   
   # check rs.path
   if (is.null(rs.path)) {
@@ -245,6 +250,7 @@ aggZCrossing = function(df, colnames, rs.path = c(), suffix = "",
   }
   
   if (return) return(df.out)
+  if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Done\n")
   
 }
 

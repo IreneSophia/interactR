@@ -40,7 +40,7 @@ If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk. Default is
 }
 \value{
 If \code{return = TRUE}, returns a dataframe with aggregated results (one row per participant).
-Otherwise, returns \code{NULL} invisibly. Saves \verb{dataEFE[suffix].rds} and \verb{featEFE[suffix].csv} to disk if \code{rs.path} is provided.
+Otherwise, returns \code{NULL} invisibly. Saves \verb{dataEFE[suffix].arrow} and \verb{featEFE[suffix].csv} to disk if \code{rs.path} is provided.
 }
 \description{
 This function combines individual facial expressions into emotional facial expressions

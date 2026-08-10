@@ -34,6 +34,8 @@
 featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix = '',
                       verbose = T, recompute = F, return = F) {
   
+  if (verbose) cat("-------------------- Extracting speech features --------------------\n")
+  
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
@@ -59,7 +61,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
       }
       
       # give some info
-      if (verbose) cat("----------- Extracting and aggregating Speech features -----------\n")
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extracting features from praat output\n")
       
       # read in the praat output capturing pitch and intensity
       df.pint = readr::read_csv(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv")),
@@ -76,6 +78,8 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
     }
     else {
       # OPTION 2: ASSUMING VERSE DATAFRAME
+      
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extracting features from VERSE tracked data\n")
       
       cols = c("Dyad", "Identifier", "Time", "Frame", "Timestamp", "Speaking")
       checkDF(df.speak, cols)
@@ -109,6 +113,8 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
         distinct() |> rename(Duration = Exp.Duration)
       
     }
+    
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Computing new features\n")
     
     # summarise the articulation rate (number of syllables / phonation duration)  
     # and the silence-to-turn ratio (level of the dyad)
@@ -151,11 +157,12 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
       )
     
     # use the function to detect turns
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Detect turns\n")
     df.turns = detectTurns(df.speak, rs.path = rs.path, suffix = suffix,
-                           verbose = verbose, recompute = T, return = T)
+                           verbose = F, recompute = recompute, return = T)
     
     # aggregate and merge all the information
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Aggregate and save features\n")
+    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Aggregate features\n")
     df.out = df.turns |> 
       group_by(Dyad, Identifier) |> 
       summarise(SPCH_TurnGapsMedian = median(TTG, na.rm = T),
@@ -177,6 +184,8 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
   
   if (return) return(df.out |> ungroup())
   
+  if (verbose) cat(format(Sys.time(), "%X %Z"), ": Done\n")
+  
 }
 
 #' Detect Turns based on Sounding Instances
@@ -197,7 +206,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
 #' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `FALSE`.
 #'
-#' @return If `return = TRUE`, returns the processed dataframe. Saves `dataTurn[suffix].rds` to disk if `rs.path` is provided.
+#' @return If `return = TRUE`, returns the processed dataframe. Saves `dataTurn[suffix].arrow` to disk if `rs.path` is provided.
 #' 
 #' @import dplyr
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
@@ -207,6 +216,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
 detectTurns = function(df.speak, rs.path = c(), suffix = '',
                        verbose = T, recompute = F, return = F) {
   
+  if (verbose) cat("------------------ Detecting turns from speaking  ------------------\n")
   
   # check rs.path
   if (is.null(rs.path)) {
@@ -214,17 +224,17 @@ detectTurns = function(df.speak, rs.path = c(), suffix = '',
     flnm = ''
   } else {
     # create filename
-    flnm = file.path(rs.path, sprintf("dataTurn%s.rds", suffix))
+    flnm = file.path(rs.path, sprintf("dataTurn%s.arrow", suffix))
   }
   
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (return) {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading turns\n")
-      df.turns = readRDS(flnm)
+      df.turns = arrow::read_feather(flnm)
     }
   } else {
-  
+    
     checkDF(df.speak, c("Dyad", "Identifier", "Turn", "Start", "End", "Duration"))
     
     # ensure that the dataframe is properly arranged
@@ -235,7 +245,7 @@ detectTurns = function(df.speak, rs.path = c(), suffix = '',
       )
     
     # we need to get rid of all sounding instance that are completely engulfed in another
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Remove engulfed sounds\n")
+    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Removing engulfed sounds\n")
     for (i in 2:nrow(df.speak)) {
       if (sum((df.speak$Start[i] >= df.speak[(df.speak$Dyad == df.speak$Dyad[i]),]$Start) &  
               (df.speak$End[i]   <= df.speak[(df.speak$Dyad == df.speak$Dyad[i]),]$End)) > 1 ) { 
@@ -247,7 +257,7 @@ detectTurns = function(df.speak, rs.path = c(), suffix = '',
     # identify turns: here, turns are defined as starting with the first sounding
     # instance of a person until the end of the last sounding instance of this 
     # person before a non-engulfed sounding instance of another person
-    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Detect turns\n")
+    if (verbose) cat(format(Sys.time(), "%X %Z"), ": Detecting turns\n")
     df.turns = df.speak |>
       ungroup() |>
       mutate(rown = row_number()) |>              # add row number
@@ -278,12 +288,14 @@ detectTurns = function(df.speak, rs.path = c(), suffix = '',
     # save the features
     if (!is.null(rs.path)) {
       if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
-      saveRDS(df.turns, file = flnm)
+      arrow::write_feather(df.turns, flnm, compression = "zstd")
     }
     
   }
   
   if (return) return(df.turns |> ungroup())
+  
+  if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Done\n")
   
 }
 
@@ -304,7 +316,7 @@ detectTurns = function(df.speak, rs.path = c(), suffix = '',
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
 #' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
 #'
-#' @return If `return = TRUE`, returns the processed dataframe. Saves `dataUhm[suffix].rds` to disk if `rs.path` is provided.
+#' @return If `return = TRUE`, returns the processed dataframe. Saves `dataUhm[suffix].arrow` to disk if `rs.path` is provided.
 #' 
 
 #' @references de Jong & Wempe (2009). Behavior Research Methods.
@@ -316,26 +328,28 @@ detectTurns = function(df.speak, rs.path = c(), suffix = '',
 #' 
 convertGrid = function(ls.files, rs.path = c(), suffix = '', prefix = '', extract = T, 
                        verbose = T, recompute = F, return = F) {
-  
+
+  if (verbose) cat("----------------- Converting praat TextGrid files  -----------------\n")
+    
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
     flnm = ''
   } else {
     # create filename
-    flnm = file.path(rs.path, sprintf("dataUhm%s.rds", suffix))
+    flnm = file.path(rs.path, sprintf("dataUhm%s.arrow", suffix))
   }
   
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (return) {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading sounding instances\n")
-      df.speak = readRDS(flnm)
+      df.speak = arrow::read_feather(flnm)
     }
   } else {
     
     # give some info
-    if (verbose) cat("----------- Extracting speak df from", length(ls.files), "TextGrids -----------\n")
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Extracting speak df from", length(ls.files), "TextGrids\n")
     
     # initialise a dataframe
     df.speak = data.frame()
@@ -344,7 +358,7 @@ convertGrid = function(ls.files, rs.path = c(), suffix = '', prefix = '', extrac
     # loop through the paths
     for (path in ls.files) {
       counter = counter + 1
-      if (verbose & (counter %% 10) == 1) cat(format(Sys.time(), "%X %Z"), ": Converting", counter, "of", length(ls.files), "\n")
+      if (verbose & (counter %% 50) == 1) cat(format(Sys.time(), "%X %Z"), ": Converting", counter, "of", length(ls.files), "\n")
       
       # read in the TextGrid file
       txt = scan(path, what = "", sep = "\n", quiet = T)
@@ -385,11 +399,12 @@ convertGrid = function(ls.files, rs.path = c(), suffix = '', prefix = '', extrac
     # potentially save to disk
     if (!is.null(rs.path)) {
       if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
-      saveRDS(df.speak, file = flnm)
+      arrow::write_feather(df.speak, flnm, compression = "zstd")
     }
   }
   
   if (return) return(df.speak |> ungroup())
+  if (verbose) cat(format(Sys.time(), "%X %Z"), ": Done\n")
   
 }
 
@@ -412,7 +427,7 @@ convertGrid = function(ls.files, rs.path = c(), suffix = '', prefix = '', extrac
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
 #' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
 #'
-#' @return If `return = TRUE`, returns the processed dataframe. Saves `data[suffix].rds` to disk if `rs.path` is provided.
+#' @return If `return = TRUE`, returns the processed dataframe. Saves `data[suffix].arrow` to disk if `rs.path` is provided.
 #' 
 #' @references de Jong & Wempe (2009). Behavior Research Methods.
 #' @references de Jong, Pacilly & Heeren (2021). Assessment in Education: Principles, Policy and Practice.
@@ -423,23 +438,25 @@ convertGrid = function(ls.files, rs.path = c(), suffix = '', prefix = '', extrac
 #' 
 addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
                             verbose = T, recompute = F, return = T) { 
-  
+
+  if (verbose) cat("---------- Adding praat speaking / listening to VERSE df  ----------\n")
+    
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
     flnm = ''
   } else {
     # create filename
-    flnm = file.path(rs.path, sprintf("data%s.rds", suffix))
+    flnm = file.path(rs.path, sprintf("data%s.arrow", suffix))
   }
   
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {
     if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading uhm-adjusted data\n")
-    df = readRDS(flnm)
+    df = arrow::read_feather(flnm)
   } else {
     # give some info
-    if (verbose) cat("----------- Adding speaking info from uhm-o-meter to df -----------\n")
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Adding uhm-adjusted speaking and listening\n")
     
     # check for columns
     checkDF(df, c("Dyad", "Time", "Frame", "Timestamp"))
@@ -493,12 +510,13 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
     # save to disk
     if (!is.null(rs.path)) {
       if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
-      saveRDS(df, file = flnm)
+      arrow::write_feather(df, flnm, compression = "zstd")
     }
     
   }
   
   if (return) return(df |> ungroup())
+  if (verbose) cat(format(Sys.time(), "%X %Z"), ": Done\n")
   
 }
 

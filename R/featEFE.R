@@ -34,7 +34,7 @@
 #' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `FALSE`.
 #'
 #' @return If `return = TRUE`, returns a dataframe with aggregated results (one row per participant). 
-#'   Otherwise, returns `NULL` invisibly. Saves `dataEFE[suffix].rds` and `featEFE[suffix].csv` to disk if `rs.path` is provided.
+#'   Otherwise, returns `NULL` invisibly. Saves `dataEFE[suffix].arrow` and `featEFE[suffix].csv` to disk if `rs.path` is provided.
 #' 
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @import dplyr
@@ -45,23 +45,27 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
                    rs.path = c(), suffix = "", verbose = T,
                    recompute = F, return = T) {
   
+  if (verbose) cat("--------- Extracting emotional facial expressions features  ---------\n")
+  
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
-    flcsv = flrds = ''
+    flcsv = flfft = ''
   } else {
     # create filenames
     flcsv = file.path(rs.path, sprintf("featEFE%s.csv", suffix))
-    flrds = file.path(rs.path, sprintf("dataEFE%s.rds", suffix))
+    flfft = file.path(rs.path, sprintf("dataEFE%s.arrow", suffix))
   }
   
   # if no recompute and the CSV file exists, it is simply loaded
   if (!recompute & file.exists(flcsv)) {
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading aggregated facial expressions\n")
     df.out = readr::read_csv(flcsv, show_col_types = F)
   } else {
-    # no recompute and the RDS file exists, it is simply loaded
-    if (!recompute & file.exists(flrds)) {
-      df.face = readRDS(flrds)
+    # no recompute and the file exists, it is simply loaded
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading preprocessed facial expressions\n")
+    if (!recompute & file.exists(flfft)) {
+      df.face = arrow::read_feather(flfft)
     } else {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Preprocessing facial expressions\n")
       
@@ -113,6 +117,7 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
       }
       
       # preprocessing facial expressions
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Categorising facial expressions\n")
       df.face = df |> 
         (\(.data) {
           colsEFE = purrr::imap(catEFE, ~ rowMeans(.data[.x], na.rm = TRUE))
@@ -122,6 +127,7 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
         })()
       
       # get a list of columns that don't contain any data
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Removing empty columns\n")
       ls.cols = df.face |> 
         summarise(across(where(is.numeric), sum),
                   .groups = "drop") |>
@@ -138,9 +144,12 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
       # save the preprocessed facial data
       if (!is.null(rs.path)) {
         if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the preprocessed data\n")
-        saveRDS(df.face, flrds)
+        arrow::write_feather(df.face, flfft, compression = "zstd")
       }
     }
+    
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Aggregating facial expressions\n")
+    
     # aggregate the emotional expressions
     df.out = df.face |>
       group_by(Dyad, Identifier, Time, across(any_of('Partner'))) |>
@@ -176,5 +185,7 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
   
   # return aggregated dataframe
   if (return) return(df.out)
+  
+  if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Done\n")
   
 }

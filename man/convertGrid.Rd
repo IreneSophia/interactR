@@ -35,7 +35,7 @@ Requires the filename structure: \code{"[prefix][Dyad]_[Identifier]_*"}. Default
 \item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
 }
 \value{
-If \code{return = TRUE}, returns the processed dataframe. Saves \verb{dataUhm[suffix].rds} to disk if \code{rs.path} is provided.
+If \code{return = TRUE}, returns the processed dataframe. Saves \verb{dataUhm[suffix].arrow} to disk if \code{rs.path} is provided.
 }
 \description{
 This function converts the TextGrid output produced by the uhm-o-meter into a

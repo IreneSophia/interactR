@@ -3,7 +3,7 @@
 #' Input should be data of one Identifier preprocessed using \code{\link{preproHead}}. This 
 #' data is then used to compute and plot the results from \code{\link{featHeadGestures}}. 
 #' One subplot for the nodding and one for the head shaking. These gestures are extracted
-#' by detecting Zero Crossing using \code{\link{featZCrossing}}. Gestures are classified
+#' by detecting Zero Crossing using \code{\link{extractZCrossing}}. Gestures are classified
 #' exclusively as nodding, head shaking or nothing for each Frame.
 #'
 #' @param df Dataframe. The dataset containing the variables to be processed, potentially created by \code{\link{preproHead}}. 

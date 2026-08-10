@@ -30,7 +30,7 @@ If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk. Default is
 \item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{FALSE}.}
 }
 \value{
-If \code{return = TRUE}, returns the processed dataframe. Saves \verb{dataTurn[suffix].rds} to disk if \code{rs.path} is provided.
+If \code{return = TRUE}, returns the processed dataframe. Saves \verb{dataTurn[suffix].arrow} to disk if \code{rs.path} is provided.
 }
 \description{
 This function takes a datframe containing sounding instances and detects turns -

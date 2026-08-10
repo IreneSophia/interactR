@@ -1,6 +1,6 @@
 #' Extract Head Gestures Extracted from Time Series Data
 #'
-#' Extracts nodding and head shaking by detecting Zero Crossing using \code{\link{featZCrossing}}. 
+#' Extracts nodding and head shaking by detecting Zero Crossing using \code{\link{extractZCrossing}}. 
 #' Gestures are classified exclusively as nodding, head shaking or nothing for each Frame.
 #' Input can be data preprocessed using \code{\link{preproHead}}.
 #'
@@ -28,10 +28,10 @@
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
 #' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
 #'
-#' @return If `return = TRUE`, returns the dataframe or saves RDS file to `rs.path` if provided.
+#' @return If `return = TRUE`, returns the dataframe or saves file to `rs.path` if provided.
 #' 
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
-#' @seealso \code{\link{featZCrossing}} \code{\link{preproHead}}
+#' @seealso \code{\link{extractZCrossing}} \code{\link{preproHead}}
 #' @import dplyr
 #' @export
 #' 
@@ -41,13 +41,15 @@ featHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
                             winCentre = NULL, winSmooth = 0, 
                             verbose = T, recompute = F, return = T) {
   
+  if (verbose) cat("--------------------- Extracting head gestures ---------------------\n")
+  
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
     flnm = ''
   } else {
     # create filename
-    flnm  = file.path(rs.path, sprintf("dataHeadGestures%s.rds", suffix))
+    flnm  = file.path(rs.path, sprintf("dataHeadGestures%s.arrow", suffix))
   }
   
   # adjust winCentre if necessary
@@ -57,7 +59,7 @@ featHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
   if (!recompute & file.exists(flnm)) {
     if (return) {
       if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Loading Head Gesture features\n")
-      df = readRDS(flnm)
+      df = arrow::read_feather(flnm)
     }
   } else {
     
@@ -66,9 +68,9 @@ featHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
     checkDF(df, c("Dyad", "Identifier", "Frame", "Time", colNodding, colShaking))
     
     # process the dataframe to extract Zero Crossings
-    df = featZCrossing(df, c(), c(colNodding, colShaking), fps, minDegree,
-                       win = win, minFreq = minFreq, maxFreq = maxFreq, 
-                       winCentre = winCentre, winSmooth = winSmooth, verbose = F)
+    df = extractZCrossing(df, c(), c(colNodding, colShaking), fps, minDegree,
+                          win = win, minFreq = minFreq, maxFreq = maxFreq, 
+                          winCentre = winCentre, winSmooth = winSmooth, verbose = F)
     
     # if centring was used, adjust the colnames
     if (winCentre > 0) {
@@ -77,6 +79,7 @@ featHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
     }
     
     # preprocess the extracted z crossings
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Preprocess extracted Z-crossings\n")
     df = df |>
       # rename the columns to nodding and shaking
       rename_with(~ gsub(colNodding, "nodding", .x), .cols = matches(colNodding)) |>
@@ -98,12 +101,13 @@ featHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
     # save the data for plotting
     if (!is.null(rs.path)) {
       if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the data\n")
-      saveRDS(df, file = flnm)
+      arrow::write_feather(df, flnm, compression = "zstd")
     }
     
   }
   
   if (return) return(df)
+  if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Done\n")
   
 }
 
@@ -184,7 +188,7 @@ rotDiff = function(x, y) {
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
 #' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `FALSE`.
 #'
-#' @return If `return = TRUE`, returns an adjusted movement dataframe. Saves `dataHead[suffix].rds` to `rs.path` if provided.
+#' @return If `return = TRUE`, returns an adjusted movement dataframe. Saves `dataHead[suffix].arrow` to `rs.path` if provided.
 #' 
 #' @references Hale et al. (2020). Journal of Nonverbal Behavior.
 #' @import dplyr
@@ -196,23 +200,26 @@ preproHead = function(df, rotnames, tranames, rs.path = c(), suffix = '',
                       performFixCirc = T, cornames = c(),
                       verbose = T, recompute = F, return = F) {
   
+  if (verbose) cat("---- Preprocessing translational and rotational head movements  ----\n")
+  
   checkDF(df, c("Dyad", "Identifier", "Frame", "Time", "Timestamp", 
                 rotnames, tranames, cornames))
   
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
-    flnm = flrds = ''
+    flnm = ''
   } else {
     # create filenames
-    flnm = file.path(rs.path, sprintf("dataHead%s.rds", suffix))
+    flnm = file.path(rs.path, sprintf("dataHead%s.arrow", suffix))
   }
   
   # give some info
-  if (verbose) cat("----------- Preprocess head motion data -----------\n")
   if (file.exists(flnm) & !recompute) {
-    df = readRDS(flnm)
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Reading in head movement data\n")
+    df = arrow::read_feather(flnm)
   } else {
+    if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Preprocessing head movement data\n")
     # focus on relevant columns
     df = df |> 
       select(Dyad, Identifier, Frame, Timestamp, Time,
@@ -246,12 +253,13 @@ preproHead = function(df, rotnames, tranames, rs.path = c(), suffix = '',
       ungroup() |> arrange(Dyad, Identifier, Frame)
     
     if (!is.null(rs.path)) {
-      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Save data\n")
-      saveRDS(df, file = flnm)
+      if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Saving data\n")
+      arrow::write_feather(df, flnm, compression = "zstd")
       }
     
   }
   
   if (return) return(df)
+  if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Done\n")
 
 }
