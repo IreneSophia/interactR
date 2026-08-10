@@ -62,12 +62,10 @@ featWTC = function(df, Limits, Funs, Bins = 8,
     if (verbose) cat(format(Sys.time(), "%X"), ": Extracting WTC features\n")
   
     # if two Limits but only one Fun, then use the same Fun twice
-    if ((length(Limits) == 2) & (length(Funs) == 1)) {
-      Funs = c(Funs, Funs)
-    }
+    if ((length(Limits) == 2) & (length(Funs) == 1)) Funs = c(Funs, Funs)
     
     # if only one limits, use the same for both
-    if (length(Limits) == 1) Limits = list(Limits[[1]], Limits[[2]])
+    if (length(Limits) == 1) Limits = c(Limits, Limits)
     
     # ensure only within COI
     df = df |> filter(WithinCOI)
