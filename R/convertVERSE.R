@@ -19,7 +19,7 @@
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
 #' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
 #'
-#' @return If `return = TRUE`, returns the imported VERSE dataframe. Saves `dataVERSE[suffix].rds` to `rs.path` if provided.
+#' @return If `return = TRUE`, returns the imported VERSE dataframe. Saves `dataVERSE[suffix].arrow` to `rs.path` if provided.
 #' 
 #' @seealso [readCSVs()]
 #' @import dplyr
@@ -41,6 +41,7 @@ extractDataVERSE = function(df.info, timezone = "UTC",
   }
   
   flnm = file.path(rs.path, sprintf("dataVERSE%s.arrow", suffix))
+  cat(format(Sys.time(), "%X %Z"), flnm)
   
   # if no recompute and the file exists, it is simply loaded
   if (!recompute & file.exists(flnm)) {

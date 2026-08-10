@@ -41,7 +41,7 @@ reset to 0 for anonymisation. Default is \code{FALSE}.}
 \item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
 }
 \value{
-If \code{return = TRUE}, returns the imported VERSE dataframe. Saves \verb{dataVERSE[suffix].rds} to \code{rs.path} if provided.
+If \code{return = TRUE}, returns the imported VERSE dataframe. Saves \verb{dataVERSE[suffix].arrow} to \code{rs.path} if provided.
 }
 \description{
 Utility function to read in VERSE data streams from TrackingLog.csv file(s).
