@@ -164,7 +164,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
     # aggregate and merge all the information
     if (verbose) cat(format(Sys.time(), "%X"), ": Aggregating features\n")
     df.out = df.turns |> 
-      group_by(Dyad, Identifier, across(any_of('Time'))) |> 
+      group_by(Dyad, Identifier) |> 
       summarise(SPCH_TurnGapsMedian = median(TTG, na.rm = T),
                 SPCH_TurnGapsSD     = sd(TTG, na.rm = T),
                 .groups = "drop") |>
