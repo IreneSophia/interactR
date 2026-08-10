@@ -163,7 +163,6 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
       df.out = merge(
         df.out, 
         df.face |>
-          filter(Communication != "None") |>
           group_by(Dyad, Identifier, Time, across(any_of('Partner')), Communication) |>
           summarise(
             across(.cols = starts_with("EFE_"), mean),
