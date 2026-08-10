@@ -119,7 +119,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
     # summarise the articulation rate (number of syllables / phonation duration)  
     # and the silence-to-turn ratio (level of the dyad)
     df = df.speak |>
-      group_by(Dyad, Identifier) |>
+      group_by(Dyad, Identifier, across(any_of('Time'))) |>
       summarise(
         nSyll = sum(nSyll),
         PhonationDuration = sum(Duration),
@@ -132,13 +132,13 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
         # compute silence-to-turn ratio: higher means more silence
         DyadSPCH_SilenceToTurn = (mean(Duration) - sum(PhonationDuration))/sum(PhonationDuration)
       ) |> 
-      select(Dyad, Identifier, any_of(c('PitchSD', 'IntensitySD')), ArticulationRate, PhonationDuration, DyadSPCH_SilenceToTurn) |>
+      select(Dyad, Identifier, any_of(c('PitchSD', 'IntensitySD', 'Time')), ArticulationRate, PhonationDuration, DyadSPCH_SilenceToTurn) |>
       rename_with(~ paste0("SPCH_", .x), .cols = any_of(c('PitchSD', 'IntensitySD', 'ArticulationRate', 'PhonationDuration')))
     
     # extract the PhonationBalance for each participant
     df = df |>
       full_join(
-        df |> select(Dyad, Identifier, SPCH_PhonationDuration) |>
+        df |> select(Dyad, Identifier, SPCH_PhonationDuration, any_of('Time')) |>
           mutate(
             actor = if_else(gsub("(.+)-.*", "\\1", Dyad) == Identifier, "left", "right")
           ) |> select(-Identifier) |>
@@ -164,7 +164,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
     # aggregate and merge all the information
     if (verbose) cat(format(Sys.time(), "%X"), ": Aggregating features\n")
     df.out = df.turns |> 
-      group_by(Dyad, Identifier) |> 
+      group_by(Dyad, Identifier, across(any_of('Time'))) |> 
       summarise(SPCH_TurnGapsMedian = median(TTG, na.rm = T),
                 SPCH_TurnGapsSD     = sd(TTG, na.rm = T),
                 .groups = "drop") |>
