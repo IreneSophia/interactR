@@ -202,9 +202,6 @@ preproHead = function(df, rotnames, tranames, rs.path = c(), suffix = '',
   
   if (verbose) cat("---- Preprocessing translational and rotational head movements  ----\n")
   
-  checkDF(df, c("Dyad", "Identifier", "Frame", "Time", "Timestamp", 
-                rotnames, tranames, cornames))
-  
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
@@ -220,6 +217,10 @@ preproHead = function(df, rotnames, tranames, rs.path = c(), suffix = '',
     df = arrow::read_feather(flnm)
   } else {
     if (verbose) cat(format(Sys.time(), "%X"), ": Preprocessing head movement data\n")
+    
+    checkDF(df, c("Dyad", "Identifier", "Frame", "Time", "Timestamp", 
+                  rotnames, tranames, cornames))
+    
     # focus on relevant columns
     df = df |> 
       select(Dyad, Identifier, Frame, Timestamp, Time,
