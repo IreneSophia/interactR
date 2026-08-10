@@ -69,7 +69,7 @@ featWLCC = function(df, FUN, absolute = F, r2z = F, rs.path = c(), suffix = "",
       ) |> tidyr::drop_na() |>
       # first, aggregate using FUN for each window
       group_by(Dyad, Time, Method, Identifier, Feature, Window) |>
-      filter(!is.na(WLCC)),
+      filter(!is.na(WLCC)) |>
       summarise(
         WLCC = FUN(WLCC),
         .groups = "drop"
