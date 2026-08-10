@@ -10,8 +10,10 @@
 #' permutation test by setting `perm = TRUE`. When frequentist t-tests are computed, 
 #' multiple comparison correction is applied based on Benjamini & Hochberg's (1995) FDR. 
 #'
-#' @param df.observed Dataframe. Dataframe created by [extractIPS()] extracting observed values.
-#' @param df.pseudo Dataframe. Dataframe created by [extractIPS()] extracting pseudo values. 
+#' @param df Dataframe. Dataframe created by [extractIPS()] extracting pseudo and observed values. 
+#'   Must contain the columns `Dyad`, `Method`, `Feature` and either `Lag` and `WLCC`
+#'   or `Frequency` and `Rsq`. If permutation is to be performed, must also contain the 
+#'   column `iteration`.
 #' @param Bayesian Logical. Switch to perform Bayesian or frequentist testing. Default is `TRUE`.
 #' @param perm Logical. Switch to use permutation testing instead of comparison across Dyads.
 #'   If the dataset is smaller, then one can create a larger set of pseudo values 
@@ -66,12 +68,12 @@ compareIPS = function(df, Bayesian = T, perm = F,
         # if WTC, then filter out the frequencies outside of the limits
         filter(Frequency >= freqLimits[1] & Frequency <= freqLimits[2]) |>
         rename(value = Rsq) |>
-        select(value, Frame, Frequency, Dyad, Method, Feature, iteration)
+        select(value, Frequency, Dyad, Method, Feature, any_of('iteration'))
       colnm = "Frequency"
     } else {
       df = df |>
         rename(value = WLCC) |>
-        select(value, Lag, Dyad, Method, Feature, iteration)
+        select(value, Lag, Dyad, Method, Feature, any_of('iteration'))
       colnm = "Lag"
     }
     

@@ -19,6 +19,11 @@ compareIPS(
 )
 }
 \arguments{
+\item{df}{Dataframe. Dataframe created by \code{\link[=extractIPS]{extractIPS()}} extracting pseudo and observed values.
+Must contain the columns \code{Dyad}, \code{Method}, \code{Feature} and either \code{Lag} and \code{WLCC}
+or \code{Frequency} and \code{Rsq}. If permutation is to be performed, must also contain the
+column \code{iteration}.}
+
 \item{Bayesian}{Logical. Switch to perform Bayesian or frequentist testing. Default is \code{TRUE}.}
 
 \item{perm}{Logical. Switch to use permutation testing instead of comparison across Dyads.
@@ -39,10 +44,6 @@ If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is \code{c()
 \item{recompute}{Logical. Whether existing data on disk should be recomputed and overwritten. Default is \code{FALSE}.}
 
 \item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
-
-\item{df.observed}{Dataframe. Dataframe created by \code{\link[=extractIPS]{extractIPS()}} extracting observed values.}
-
-\item{df.pseudo}{Dataframe. Dataframe created by \code{\link[=extractIPS]{extractIPS()}} extracting pseudo values.}
 }
 \value{
 If \code{return = TRUE}, returns dataframe. If provided, the dataframe is saved as rds to \code{rs.path}.
