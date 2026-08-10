@@ -96,6 +96,7 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
       # rescale some of the facial expressions from VERSE if they are composites
       # of multiple shapes
       if (rescaleVERSE) {
+        if (verbose) cat(format(Sys.time(), "%x %X %Z"), ": Rescaling VERSE facial expressions\n")
         df = df |>
           mutate(
             Facial_BrowInnerUp      = Facial_BrowInnerUp / 2, # combines InnerBrowRaiserR and InnerBrowRaiserL
@@ -119,59 +120,47 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
           # 3. Bind the prefixed new columns to the dataframe
           bind_cols(.data, as_tibble(colsEFE))
         })()
+      
       # get a list of columns that don't contain any data
       ls.cols = df.face |> 
         summarise(across(where(is.numeric), sum),
                   .groups = "drop") |>
         tidyr::pivot_longer(cols = everything()) |> 
         filter(value == 0) |> pull(name)
+      
       # remove them from the dataframe
       df.face = df.face |>
         select(-all_of(ls.cols)) |>
         mutate(
           EFE_All = rowMeans(across(starts_with("EFE_")))
         )
+      
       # save the preprocessed facial data
       if (!is.null(rs.path)) {
         if (verbose) cat(format(Sys.time(), "%X %Z"), ": Saving the preprocessed data\n")
         saveRDS(df.face, flrds)
       }
     }
-    # convert to long
-    df.face = df.face |> select(-starts_with("Facial_")) |> 
-      tidyr::pivot_longer(cols = starts_with("EFE_"), 
-                          names_to = "Emotion")
     # aggregate the emotional expressions
-    df.out = merge(
-      # individually for the emotions
-      df.face |> 
-        group_by(Dyad, Identifier, Time, across(any_of('Partner')), Emotion) |> 
-        summarise(value = mean(value),
-                  .groups = "drop") |> 
-        tidyr::pivot_wider(names_from = Emotion, 
-                           names_glue = "{Emotion}_Total"),
-      # over all emotions
-      df.face |> 
-        group_by(Dyad, Identifier, Time, across(any_of('Partner'))) |> 
-        summarise(EFE_Total = mean(value),
-                  .groups = "drop"))
+    df.out = df.face |>
+      group_by(Dyad, Identifier, Time, across(any_of('Partner'))) |>
+      summarise(
+        across(.cols = starts_with("EFE_"), mean, .names = "{.col}_Total"),
+        .groups = "drop"
+      )
+    
     # potentially adding values depending on Communication
     if ("Communication" %in% colnames(df.face)) {
       df.out = merge(
         df.out, 
-        df.face |> 
-          group_by(Dyad, Identifier, Time, across(any_of('Partner')), Communication, Emotion) |> 
-          summarise(value = mean(value),
-                    .groups = "drop") |> 
-          tidyr::pivot_wider(names_from = c(Emotion, Communication), 
-                             names_glue = "{Emotion}_{Communication}")) |>
-        merge(
-          df.face |> 
-            group_by(Dyad, Identifier, Time, across(any_of('Partner')), Communication) |> 
-            summarise(value = mean(value),
-                      .groups = "drop") |> 
-            tidyr::pivot_wider(names_from = Communication, 
-                               names_glue = "EFE_{Communication}")
+        df.face |>
+          filter(Communication != "None") |>
+          group_by(Dyad, Identifier, Time, across(any_of('Partner')), Communication) |>
+          summarise(
+            across(.cols = starts_with("EFE_"), mean),
+            .groups = "drop"
+          ) |> 
+          tidyr::pivot_wider(names_from = "Communication", values_from = starts_with("EFE_"))
         )
     }
     # replace any NAs with 0 - for example, if one person is not speaking at all
