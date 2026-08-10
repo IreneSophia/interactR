@@ -41,6 +41,15 @@ compareIPS = function(df, Bayesian = T, perm = F,
   
   if (verbose) cat("---------------- Comparing pseudo and observed IPS  ----------------\n")
   
+  # extract whether WTC or WLCC
+  if ("Rsq" %in% colnames(df)) {
+    type = "WTC"
+  } else if ("WLCC" %in% colnames(df)) {
+    type = "WLCC"
+  } else {
+    stop("df must contain either WLCC or Rsq")
+  }
+  
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
@@ -48,7 +57,7 @@ compareIPS = function(df, Bayesian = T, perm = F,
   } else {
     # create filename 
     flnm  = file.path(rs.path, 
-                      sprintf("featIPS_pseudo-comp%s.csv", suffix))
+                      sprintf("feat%s_pseudo-comp%s.csv", type, suffix))
   }
   
   # if no recompute and the file exists, it is simply loaded
@@ -63,7 +72,7 @@ compareIPS = function(df, Bayesian = T, perm = F,
     if ((length(unique(df$Method)) != 2) | !("observed" %in% unique(df$Method))) stop("Function performs comparison of observed with one pseudo method.")
     
     # rename the main column depending on whether WTC or WLCC
-    if ("Rsq" %in% colnames(df)) {
+    if (type == "WTC") {
       df = df |>
         # if WTC, then filter out the frequencies outside of the limits
         filter(Frequency >= freqLimits[1] & Frequency <= freqLimits[2]) |>
