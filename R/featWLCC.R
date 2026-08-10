@@ -40,7 +40,7 @@ featWLCC = function(df, FUN, absolute = F, r2z = F, rs.path = c(), suffix = "",
   if (!recompute & file.exists(flnm)) {
     if (return) {
       if (verbose) cat(format(Sys.time(), "%X"), ": Loading WLCC feature dataframe\n")
-      df.out = read_csv(flnm)
+      df.out = readr::read_csv(flnm)
     }
   } else {
     
@@ -107,7 +107,7 @@ featWLCC = function(df, FUN, absolute = F, r2z = F, rs.path = c(), suffix = "",
     # save the data
     if (!is.null(rs.path)) {
       if (verbose) cat(format(Sys.time(), "%X"), ": Saving the data\n")
-      saveRDS(df.out, file = flnm)
+      readr::write_csv(df.out, file = flnm)
     }
     
   }
