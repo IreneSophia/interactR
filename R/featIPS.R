@@ -379,7 +379,7 @@ computeWLCC = function(df, winSample, incSample, lagSample) {
         e = .x + winSample - 1  # end index
         l = .y                  # lag
         # compute the cross correlation or NA if no variance
-        if (sd(left[s:e], na.rm = T) == 0 || sd(right[(s+l):(e+l)], na.rm = T)) {
+        if (sd(left[s:e], na.rm = T) == 0 || sd(right[(s+l):(e+l)], na.rm = T) == 0) {
           NA
         } else {
           cor(left[s:e], right[(s+l):(e+l)], use = "na.or.complete")
