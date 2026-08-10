@@ -71,14 +71,14 @@ featWTC = function(df, Limits, Bins = 8,
         join_by(lower <= Frequency, upper > Frequency), 
         relationship = "many-to-many"
       ) |>
-      group_by(lower, upper, Dyad, Method) |>
+      group_by(lower, upper, Dyad, Method, Time) |>
       summarise(
         value = mean(Rsq, na.rm = TRUE), 
         .groups = "drop"
       ) |>
       mutate(
         name = sprintf("Rsq_%.2f-%.2fHz", lower, upper)
-      ) |> select(Dyad, Method, name, value) |>
+      ) |> select(Dyad, Time, Method, name, value) |>
       tidyr::pivot_wider()
     
     # aggregate for Phase
@@ -88,7 +88,7 @@ featWTC = function(df, Limits, Bins = 8,
         join_by(lower <= Frequency, upper > Frequency), 
         relationship = "many-to-many"
       ) |>
-      group_by(lower, upper, Dyad, Method) |>
+      group_by(lower, upper, Dyad, Method, Time) |>
       summarise(
         data = list({
           tibble(Phase = Phase) %>%
@@ -109,7 +109,7 @@ featWTC = function(df, Limits, Bins = 8,
       mutate(
         name = sprintf("%.2f-%.2fHz", lower, upper)
       ) |> tidyr::unnest(data) |> 
-      select(Dyad, Method, name, Phase, count, Bin) |>
+      select(Dyad, Time, Method, name, Phase, count, Bin) |>
       tidyr::pivot_wider(values_from = count, names_from = Bin, names_prefix = "PhaseBin") |>
       tidyr::pivot_wider(values_from = starts_with("Phase"))
     
