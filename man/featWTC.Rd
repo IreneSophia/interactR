@@ -7,7 +7,6 @@
 featWTC(
   df,
   Limits,
-  Funs,
   Bins = 8,
   rs.path = c(),
   suffix = "",
@@ -23,10 +22,6 @@ featWTC(
 First entry is used for the Coherence Bins, optionally a second for Phase Bins. If only
 one dataframe with columns \code{upper} and \code{lower} as limits is provided, it is used for both.
 Lower limits are included in the Bins but upper limits are not.}
-
-\item{Funs}{List. List of function to be used for the aggregation. First is used for Coherence.
-Optionally, a second is used for Phase. If Funs contains only one function,
-then this function is used for both Phase and Coherence.}
 
 \item{Bins}{Numeric. Number of Angle Bins for Phases. Default is \code{8}.}
 

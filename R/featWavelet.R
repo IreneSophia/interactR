@@ -15,9 +15,6 @@
 #'   First entry is used for the Coherence Bins, optionally a second for Phase Bins. If only
 #'   one dataframe with columns `upper` and `lower` as limits is provided, it is used for both.
 #'   Lower limits are included in the Bins but upper limits are not. 
-#' @param Funs List. List of function to be used for the aggregation. First is used for Coherence. 
-#'   Optionally, a second is used for Phase. If Funs contains only one function,
-#'   then this function is used for both Phase and Coherence. 
 #' @param Bins Numeric. Number of Angle Bins for Phases. Default is `8`.
 #' @param rs.path Character. Path to destination directory for saved files. 
 #'   If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is `c()`.
@@ -33,15 +30,15 @@
 #' @export
 #' 
 
-featWTC = function(df, Limits, Funs, Bins = 8, 
+featWTC = function(df, Limits, Bins = 8, 
                    rs.path = c(), suffix = "", 
                    verbose = T, recompute = F, return = T) {
   
   if (verbose) cat("--------------- Extracting IPS features based on WTC ---------------\n")
   
   # check if the variables are correct
-  if ((class(Limits) != "list")  | (class(Funs) != "list")) stop("Both Limits and Funs need to be lists.")
-  if (!(length(Limits) %in% 1:2) | !(length(Limits) %in% 1:2)) stop("Both Limits and Funs need to be of length 1 or 2 - first for coherence and, potentially, second for phase.")
+  if ((class(Limits) != "list")) stop("Limits needs to be a list.")
+  if (!(length(Limits) %in% 1:2)) stop("Limits needs to be of length 1 or 2 - first for coherence and, potentially, second for phase.")
   
   # check rs.path
   if (is.null(rs.path)) {
@@ -60,9 +57,6 @@ featWTC = function(df, Limits, Funs, Bins = 8,
   } else {
     # no recompute and the file exists, it is simply loaded
     if (verbose) cat(format(Sys.time(), "%X"), ": Extracting WTC features\n")
-  
-    # if two Limits but only one Fun, then use the same Fun twice
-    if ((length(Limits) == 2) & (length(Funs) == 1)) Funs = c(Funs, Funs)
     
     # if only one limits, use the same for both
     if (length(Limits) == 1) Limits = c(Limits, Limits)
@@ -79,7 +73,7 @@ featWTC = function(df, Limits, Funs, Bins = 8,
       ) |>
       group_by(lower, upper, Dyad, Method) |>
       summarise(
-        value = Funs[[1]](Rsq, na.rm = TRUE), 
+        value = mean(Rsq, na.rm = TRUE), 
         .groups = "drop"
       ) |>
       mutate(
@@ -109,7 +103,7 @@ featWTC = function(df, Limits, Funs, Bins = 8,
             mutate(Bin = as.numeric(as.factor(Bin)),
                    count = (count / sum(count)))
           }),
-        Phase = Funs[[2]](Phase, na.rm = TRUE), 
+        Phase = mean(Phase, na.rm = TRUE), 
         .groups = "drop"
       ) |>
       mutate(
