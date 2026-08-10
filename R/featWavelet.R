@@ -83,7 +83,7 @@ featWTC = function(df, Limits, Funs, Bins = 8,
         .groups = "drop"
       ) |>
       mutate(
-        name = sprintf("Rsq_%.2fd-%.2fHz", lower, upper)
+        name = sprintf("Rsq_%.2f-%.2fHz", lower, upper)
       ) |> select(Dyad, Method, name, value) |>
       tidyr::pivot_wider()
     
