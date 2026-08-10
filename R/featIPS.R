@@ -69,7 +69,8 @@ compareIPS = function(df, Bayesian = T, perm = F,
   } else {
     
     # check that df only contains one type of pseudo WLCC and must contain observed values
-    if ((length(unique(df$Method)) != 2) | !("observed" %in% unique(df$Method))) stop("Function performs comparison of observed with one pseudo method.")
+    mth = df |> select(Method) |> distinct() |> pull(Method)
+    if ((length(mth) != 2) | !("observed" %in% mth)) stop("Function performs comparison of observed with one pseudo method.")
     
     # rename the main column depending on whether WTC or WLCC
     if (type == "WTC") {
@@ -86,7 +87,8 @@ compareIPS = function(df, Bayesian = T, perm = F,
       colnm = "Lag"
     }
     
-    if (verbose) cat(format(Sys.time(), "%X"), ": Comparing pseudo and observed IPS from", unique(df$Feature), "\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Comparing pseudo and observed IPS from", 
+                     df |> select(Feature) |> distinct() |> pull(Feature), "\n")
     
     # aggregate the values across the windows
     df.tmp = df |>
@@ -281,7 +283,8 @@ computeWTC = function(df, fps, featname,
     checkDF(df, c("Dyad", "Frame", "left", "right"))
     
     # check that this data only contains one Dyad with the same Frames
-    if (length(unique(df$Dyad)) != 1) stop("computeWTC() should have data of one Dyad as input")
+    dyad = df |> select(Dyad) |> distinct() |> pull(Dyad)
+    if (length(dyad) != 1) stop("computeWTC() should have data of one Dyad as input")
     
     # check for NAs
     if (any(is.na(df))) stop("Input to computeWTC() cannot contain NAs")
@@ -367,7 +370,8 @@ computeWLCC = function(df, winSample, incSample, lagSample) {
   checkDF(df, c("Dyad", "Frame", "left", "right"))
   
   # check that it contains the data of one Dyad
-  if (length(unique(df$Dyad)) != 1) stop("Dataframe must contain data of one Dyad in columns left and right.")
+  dyad = df |> select(Dyad) |> distinct() |> pull(Dyad)
+  if (length(dyad) != 1) stop("Dataframe must contain data of one Dyad in columns left and right.")
   
   # ensure it is properly sorted
   df = df |> arrange(Frame)
