@@ -83,7 +83,7 @@ featWTC = function(df, Limits, Funs, Bins = 8,
         .groups = "drop"
       ) |>
       mutate(
-        name = sprintf("Rsq_%d-%dHz", lower, upper)
+        name = sprintf("Rsq_%.2fd-%.2fHz", lower, upper)
       ) |> select(Dyad, Method, name, value) |>
       tidyr::pivot_wider()
     
@@ -113,7 +113,7 @@ featWTC = function(df, Limits, Funs, Bins = 8,
         .groups = "drop"
       ) |>
       mutate(
-        name = sprintf("%d-%dHz", lower, upper)
+        name = sprintf("%.2f-%.2fHz", lower, upper)
       ) |> tidyr::unnest(data) |> 
       select(Dyad, Method, name, Phase, count, Bin) |>
       tidyr::pivot_wider(values_from = count, names_from = Bin, names_prefix = "PhaseBin") |>
