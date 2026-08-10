@@ -216,7 +216,7 @@ preproHead = function(df, rotnames, tranames, rs.path = c(), suffix = '',
   
   # give some info
   if (file.exists(flnm) & !recompute) {
-    if (verbose) cat(format(Sys.time(), "%X"), ": Reading in head movement data\n")
+    if (verbose) cat(format(Sys.time(), "%X"), ": Loading preprocessed head movement data\n")
     df = arrow::read_feather(flnm)
   } else {
     if (verbose) cat(format(Sys.time(), "%X"), ": Preprocessing head movement data\n")
