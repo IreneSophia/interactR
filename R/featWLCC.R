@@ -85,8 +85,8 @@ featWLCC = function(df, absolute = F, r2z = F, rs.path = c(), suffix = "",
       # then, aggregate for over all windows
       group_by(Dyad, Time, Method, Identifier, Feature) |>
       summarise(
-        DyadWLCC = mean(indi, na.rm = T),
-        WLCC = mean(dyad, na.rm = T),
+        DyadWLCC = mean(dyad, na.rm = T),
+        WLCC     = mean(indi, na.rm = T),
         .groups = "drop"
       ) |>
       tidyr::pivot_wider(values_from = ends_with("WLCC"), 
