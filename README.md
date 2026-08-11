@@ -12,7 +12,7 @@ Whether you are interested in dwell times to areas of interest, emotional facial
 
 This R package is currently under active development and is being maintained by <b>Irene Sophia Plank</b>, with new features and improvements being added on an ongoing basis.
 
-## Input data
+## Input Data
 
 Data can either be collected in the virtual reality environment VERSE or extracted from video and audio recordings. [OpenFace](https://github.com/TadasBaltrusaitis/OpenFace) and [OpenPose](https://github.com/cmu-perceptual-computing-lab/openpose) can extract similar information from video recordings as is tracked automatically in VERSE. 
 
