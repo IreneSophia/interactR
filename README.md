@@ -2,13 +2,20 @@
 
 **An easy-to-use R package for extracting behavioural features from social interactions**
 
-<img src="https://github.com/IreneSophia/interactR/blob/main/logo/InteractRLogo_2026-08-01.svg" width="200" alt="logo">
 
-`interactR` provides an accessible workflow for researchers interested in studying social interactions. The package extracts a range of behavioural features from data derived from video and audio recordings or collected in the virtual reality environment `VERSE`.  The pipeline produces analysis-ready measures with minimal coding.
+<table>
+  <tr>
+    <td align="left" style="vertical-align: middle; border: none;">
+      <p><code>interactR</code> provides an accessible workflow for researchers interested in studying social interactions. The package extracts a range of behavioural features from data derived from video and audio recordings or collected in the virtual reality environment VERSE.  The pipeline produces analysis-ready measures with minimal coding. </p>
 
-Whether you are interested in dwell times to areas of interest, emotional facial expressions, kinematic analysis or interpersonal synchrony, `interactR` provides a unified pipeline that streamlines preprocessing and feature extraction.
-
-This R package is currently under active development and is being maintained by **Irene Sophia Plank**, with new features and improvements being added on an ongoing basis.
+<p>Whether you are interested in dwell times to areas of interest, emotional facial expressions, kinematic analysis or interpersonal synchrony, <code>interactR</code> provides a unified pipeline that streamlines preprocessing and feature extraction.</p>
+<p> This R package is currently under active development and is being maintained by <b>Irene Sophia Plank</b>, with new features and improvements being added on an ongoing basis. </p>
+    </td>
+    <td align="right" style="vertical-align: middle; border: none;">
+      <img src="https://github.com/IreneSophia/interactR/blob/main/logo/InteractRLogo_2026-08-01.svg" width="400" alt="logo">
+    </td>
+  </tr>
+</table>
 
 ## Features
 
@@ -43,11 +50,11 @@ Outputs include:
 
 ### Speech Patterns and Turn Taking
 
-If the interactions was also captured with audio recordings, then speech and turn-taking features can be extracted as well. This data can either be captured within the virtual reality environment `VERSE` or as audio recordings which are processed with the attached `praat` script: `praatScript/featSpeech.praat`. `praat` is a free, open-source computer software package widely used for speech analysis and synthesis in phonetics.
+If the interactions was also captured with audio recordings, then speech and turn-taking features can be extracted as well. This data can either be captured within the virtual reality environment VERSE or as audio recordings which are processed with the attached `praat` script: `praatScript/featSpeech.praat`. `praat` is a free, open-source computer software package widely used for speech analysis and synthesis in phonetics.
 
 The `praat` script uses the [`uhm-o-meter`](https://sites.google.com/view/uhm-o-meter/home) created by [De Jong, N.H., Pacilly, J., & Heeren, W. (2021)](https://www.google.com/url?q=https%3A%2F%2Fdoi.org%2F10.1080%2F0969594X.2021.1951162&sa=D&sntz=1&usg=AOvVaw0lcSmN4aCMwjZ4iRQRR6Ab). This algorithm detects syllables, speaking and sounding instances. The `praat` script was extended to also extract pitch and intensity from the audio recordings.
 
-Regardless of whether you use data collected in `VERSE` or recordings processed with `praat`, `interactR` offers functions to further process this data and extract relevant speech and turn-taking features. This pipeline was described in [Plank et al. (2023)](https://doi.org/10.3389/fpsyt.2023.1257569).
+Regardless of whether you use data collected in VERSE or recordings processed with `praat`, `interactR` offers functions to further process this data and extract relevant speech and turn-taking features. This pipeline was described in [Plank et al. (2023)](https://doi.org/10.3389/fpsyt.2023.1257569).
 
 Outputs include: 
 
@@ -124,6 +131,10 @@ Solo data also has a `Dyad` column, but only consisting of the `Identifier` of t
 ### Created Files
 
 Throughout the preprocessing, large data is saved as `arrow` files while aggregated data (one row per interaction partner) is saved as `csv` files. Columns in the `csv` file start with the feature group name, except for dyadic variables which are the same for both interaction partners of the same dyad and have the additional prefix `Dyad`. 
+
+### VERSE Environment
+
+VERSE (Virtual Environment for Research on Social Experiences) is an open-source Social Virtual Reality (SVR) platform for studying social interactions in immersive virtual environments ([Rehmer et al., 2026)](https://aisel.aisnet.org/ecis2026/cog_hbis/cog_hbis/36/). Researchers can create and manage virtual sessions, monitor participants through a facilitator interface, and collect behavioural data such as gaze, movement, and interaction events for analysis. By providing a reusable research infrastructure, VERSE makes it easier to design, run, and evaluate virtual social studies. Source code and documentation are available at [spatialytix.org/verse](https://spatialytix.org/verse).
 
 
 ## Installation
