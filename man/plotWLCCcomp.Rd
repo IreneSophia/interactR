@@ -7,7 +7,8 @@
 plotWLCCcomp(
   df,
   ncol = 2,
-  col.plot = c(observed = "#08519c", pseudo = "#4B9C79")
+  col.plot = c(observed = "#08519c", pseudo = "#4B9C79", `observed exceeding pseudo` =
+    "lightblue")
 )
 }
 \arguments{
@@ -15,7 +16,9 @@ plotWLCCcomp(
 
 \item{ncol}{Numeric. Number of columns to use in the \code{ggplot2::facet_wrap()} layout. Default is \code{2}.}
 
-\item{col.plot}{Vector of characters. Two characters containing Hex colour codes. Default is blue and green.}
+\item{col.plot}{Vector of characters. Three named characters containing Hex colour codes:
+one for observed values, one for pseudo and one for the highlights which is named
+"observed exceeding pseudo". Default is \code{blue}, \code{green} and \code{lightblue}.}
 }
 \value{
 A \code{ggplot} object representing the comparison line plots.
