@@ -17,15 +17,15 @@
 #' @export
 
 plotWLCCcomp = function(df, ncol = 2, 
-                        col.plot = c(observed = "#08519c", pseudo = "#4B9C79")) {
+                        col.plot = c(observed = "#08519c", pseudo = "#4B9C79",
+                                     "observed exceeding pseudo" = "lightblue")) {
   
   checkDF(df, c("Method", "Feature", "Lag", "Evaluation", "AVG", "STD"))
   
   # convert method to be uniform
   df = df |>
     mutate(
-      Method = if_else(Method == "observed", "observed", "pseudo"),
-      Evaluation = if_else(is.na(Evaluation), "comparable", "different")
+      Method = if_else(Method == "observed", "observed", "pseudo")
     )
   
   # get the peak lags
@@ -34,21 +34,40 @@ plotWLCCcomp = function(df, ncol = 2,
     filter(AVG == max(AVG) & Method == "observed") |>
     mutate(
       label = sprintf("Peak: %.2fs", Lag),
-      ypos  = AVG + STD
+      ypos  = AVG + STD*2/3
     )
+  
+  # get where to use shaded region for the lags that are different
+  df.back = df |> 
+    filter(Method == "observed") |>
+    arrange(Feature, Lag) |>
+    mutate(
+      rel = !is.na(Evaluation) & Evaluation == "*",
+      bid = cumsum(!rel & lag(rel, default = TRUE))
+    ) |>
+    group_by(Feature, bid) |>
+    summarise(
+      xmin = first(Lag[rel]),
+      xmax = last(Lag[rel])
+    ) |>
+    select(-bid)
     
   p = df |>
-     ggplot() +  
+     ggplot() +
+     geom_rect(data = df.back, 
+               aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = Inf,
+                   fill = "observed exceeding pseudo"),
+               alpha = 0.3) +
      geom_ribbon(aes(x = Lag, y = AVG, group = Method, fill = Method, 
                      ymin = AVG - STD, ymax = AVG + STD), 
                  alpha = 0.4) +
-     geom_line(aes(x = Lag, y = AVG, group = Method, colour = Method, linetype = Evaluation), linewidth = 1, alpha = 0.8) +
+     geom_line(aes(x = Lag, y = AVG, group = Method, colour = Method), linewidth = 1, alpha = 0.8) +
      geom_vline(data = df.lag, aes(xintercept = Lag), colour = "black") + 
      geom_label(data = df.lag, aes(x = Lag, y = ypos, label = label),  size = 2.5) + 
      facet_wrap(. ~ Feature, scale = "free_y", ncol = ncol) +  
-     scale_fill_manual(values = col.plot) +
+     scale_fill_manual(values = col.plot,
+                       breaks = c("observed exceeding pseudo")) +
      scale_colour_manual(values = col.plot) +
-     scale_linetype_manual(values = c(different = "solid", comparable = "dotted")) +
      theme_bw() + 
      theme(legend.position = "bottom", legend.title = element_blank(),
            axis.title.y = element_blank())
