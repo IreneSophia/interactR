@@ -2,7 +2,7 @@
 
 **An easy-to-use R package for extracting behavioural features from social interactions**
 
-![logo](https://github.com/IreneSophia/interactR/blob/main/logo/InteractRLogo_2026-08-01.svg)
+<img src="https://github.com/IreneSophia/interactR/blob/main/logo/InteractRLogo_2026-08-01.svg" width="200" alt="logo">
 
 `interactR` provides an accessible workflow for researchers interested in studying social interactions. The package extracts a range of behavioural features from data derived from video and audio recordings or collected in the virtual reality environment `VERSE`.  The pipeline produces analysis-ready measures with minimal coding.
 
