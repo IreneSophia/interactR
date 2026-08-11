@@ -1,7 +1,7 @@
 Type: Package
 Package: interactR
 Title: Package for Feature Extraction from Social Interactions
-Version: 0.0.1.0
+Version: 0.1.0.0
 Author: Irene Sophia Plank
 Maintainer: Irene Sophia Plank <10planki@gmail.com>
 Description: This package contains functions to extract multimodal and
