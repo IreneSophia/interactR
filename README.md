@@ -12,6 +12,12 @@ Whether you are interested in dwell times to areas of interest, emotional facial
 
 This R package is currently under active development and is being maintained by <b>Irene Sophia Plank</b>, with new features and improvements being added on an ongoing basis.
 
+## Input data
+
+Data can either be collected in the virtual reality environment VERSE or extracted from video and audio recordings. [OpenFace](https://github.com/TadasBaltrusaitis/OpenFace) and [OpenPose](https://github.com/cmu-perceptual-computing-lab/openpose) can extract similar information from video recordings as is tracked automatically in VERSE. 
+
+Functions taking in the output of OpenPose and OpenFace and converting it into a format which can be used for the Feature Extraction are currently developed. 
+
 ## Features
 
 ### Gaze Patterns and Joint Attention
