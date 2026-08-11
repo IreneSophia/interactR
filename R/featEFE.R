@@ -122,7 +122,7 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
         (\(.data) {
           colsEFE = purrr::imap(catEFE, ~ rowMeans(.data[.x], na.rm = TRUE))
           names(colsEFE) = paste0("EFE_", names(colsEFE))
-          # 3. Bind the prefixed new columns to the dataframe
+          # bind the prefixed new columns to the dataframe
           bind_cols(.data, as_tibble(colsEFE))
         })()
       
@@ -138,7 +138,8 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
       df.face = df.face |>
         select(-all_of(ls.cols)) |>
         mutate(
-          EFE_All = rowMeans(across(starts_with("EFE_")))
+          # get overall facial expressiveness
+          EFE_FEX = rowMeans(across(starts_with("EFE_"))) 
         )
       
       # save the preprocessed facial data
