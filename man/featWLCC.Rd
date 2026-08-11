@@ -2,11 +2,10 @@
 % Please edit documentation in R/featWLCC.R
 \name{featWLCC}
 \alias{featWLCC}
-\title{Aggregate a dataframe containing the results of WLCC to extract relevant features}
+\title{Aggregate Dataframe of WLCC Results}
 \usage{
 featWLCC(
   df,
-  FUN,
   absolute = F,
   r2z = F,
   rs.path = c(),
@@ -18,8 +17,6 @@ featWLCC(
 }
 \arguments{
 \item{df}{Dataframe. Dataframe created by \code{\link[=extractIPS]{extractIPS()}} with method WLCC.}
-
-\item{FUN}{Function. Function used for the aggregation across Lags for each window.}
 
 \item{absolute}{Logical. Switch whether to convert all the values to their
 absolute before aggregation. Default is \code{FALSE}.}
@@ -36,11 +33,12 @@ If empty (is.null(rs.path) == TRUE), then nothing is saved. Default is \code{c()
 \item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
 }
 \value{
-If \code{return = TRUE}, returns dataframe. If provided, the dataframe is saved as rds to \code{rs.path}.
+If \code{return = TRUE}, returns dataframe. If provided, the dataframe is saved to \code{rs.path}.
 }
 \description{
-Takes the dataframe created by \code{\link[=extractIPS]{extractIPS()}} with the method WLCC and aggregates the results.
-Identifier values contain leading by this Identifier, while Dyad values contain the overall
+Aggregates values extracted by \code{\link[=extractIPS]{extractIPS()}} with the method WLCC using the
+standard deviation, mean, median and mean of window peaks. Identifier values
+contain leading by this Identifier, while Dyad values contain the overall
 WLCC across all Lags.
 }
 \author{
