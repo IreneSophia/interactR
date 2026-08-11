@@ -53,7 +53,7 @@ plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
   if (max(df |> count(Frame) |> pull(n)) > 1) stop("This function is for plotting one dataset of one person")
   
   # process the dataframe to extract head gestures
-  df = featHeadGestures(df, c(), colNodding, colShaking, fps, minDegree, 
+  df = featHeadGestures(df, colNodding, colShaking, fps, minDegree, 
                         win = win, minFreq = minFreq, maxFreq = maxFreq, 
                         winCentre = winCentre, winSmooth = winSmooth, verbose = F)
   
