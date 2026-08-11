@@ -3,7 +3,7 @@
 **An easy-to-use R package for extracting behavioural features from social interactions**
 
 
-<table>
+<table border="0" style="border: none; border-collapse: collapse;">
   <tr>
     <td align="left" style="vertical-align: middle; border: none;">
       <p><code>interactR</code> provides an accessible workflow for researchers interested in studying social interactions. The package extracts a range of behavioural features from data derived from video and audio recordings or collected in the virtual reality environment VERSE.  The pipeline produces analysis-ready measures with minimal coding. </p>
@@ -12,7 +12,7 @@
 <p> This R package is currently under active development and is being maintained by <b>Irene Sophia Plank</b>, with new features and improvements being added on an ongoing basis. </p>
     </td>
     <td align="right" style="vertical-align: middle; border: none;">
-      <img src="https://github.com/IreneSophia/interactR/blob/main/logo/InteractRLogo_2026-08-01.svg" width="400" alt="logo">
+      <img src="https://github.com/IreneSophia/interactR/blob/main/logo/InteractRLogo_2026-08-01.svg" width="300" style="width: 300px; min-width: 200px; height: auto;" alt="logo">
     </td>
   </tr>
 </table>
