@@ -52,6 +52,9 @@ plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
   # ensure that only one dataset
   if (max(df |> count(Frame) |> pull(n)) > 1) stop("This function is for plotting one dataset of one person")
   
+  settings = sprintf("Settings: min %.2f degree, %.0f to %.0fHz, %.0fs centering, %.0fs smoothing",
+                     minDegree, minFreq, maxFreq, winCentre, winSmooth)
+  
   # process the dataframe to extract head gestures
   df = featHeadGestures(df, colNodding, colShaking, fps, minDegree, 
                         win = win, minFreq = minFreq, maxFreq = maxFreq, 
@@ -64,9 +67,22 @@ plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
     # focus on the relevant columns
     select(Dyad, Identifier, Frame, Timestamp, 
            any_of(c("Speaking", "Listening", "Communication")),
-           starts_with(c("nodding", "shaking"))) |>
+           starts_with(c("Nodding", "Shaking")))
+  
+  # if smoothing, then take the smoothing column
+  if (winSmooth > 0) {
+    df = df |>
+      select(!ends_with("rel")) |>
+      rename(
+        "Shaking_rel" = "Shaking_rel_smooth",
+        "Nodding_rel" = "Nodding_rel_smooth"
+      )
+  }
+  
+  # finish preprocessing
+  df = df |>
     # wrangle to long format
-    pivot_longer(cols = starts_with(c("nodding", "shaking"))) |>
+    pivot_longer(cols = starts_with(c("Nodding", "Shaking"))) |>
     mutate(
       name = if_else(!grepl("_", name), paste0(name, "_signal"), name)
     ) |>
@@ -112,7 +128,8 @@ plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
     ) +
     xlab(sprintf("Seconds (window size %d s)", win)) + 
     facet_wrap(. ~ Gesture, nrow = 2) + 
-    theme_bw() + labs(title = sprintf("Head gestures: %s", df$Identifier[1])) + 
+    theme_bw() + labs(title = sprintf("Head gestures: %s", df$Identifier[1]),
+                      subtitle = settings) + 
     theme(legend.position = "bottom", 
           legend.direction = "vertical")
   
