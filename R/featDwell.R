@@ -7,9 +7,9 @@
 #' @param df Dataframe containing tracking data streams. Must explicitly feature columns `Dyad`, 
 #'   `Identifier`, `Frame`, `Time`, either `AOI.left` and `AOI.right` or `AOI`.
 #' @param ls.AOI List of character vectors. When specified, values isolate targets for AOI classification, 
-#'   automatically re-coding undeclared targets to `"None"`. All but alphabet characters will be removed, 
-#'   both in the AOI columns and in this list. The order of the AOIs matters: if more than one were to fit, 
-#'   then the first AOI is chosen. E.g., if ls.AOI = c("Self", "Laptop"), then "Self Laptop" is classified as "Self".
+#'   ignoring undeclared targets. All but alphabet characters will be removed, both in the AOI columns 
+#'   and in this list. The order of the AOIs matters: if more than one were to fit, then the first
+#'   AOI is chosen. E.g., if ls.AOI = c("Self", "Laptop"), then "Self Laptop" is classified as "Self".
 #'   If empty (`is.null(ls.AOI) == TRUE`), existing classification is used.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
 #'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk. Default is `c()`.
@@ -68,13 +68,13 @@ featDwell = function(df, ls.AOI, rs.path = c(), suffix = "",
       if ("AOI" %in% colnames(df)) {
         df = df |> 
           mutate(
-            AOI = coalesce(stringr::str_extract(gsub("[^a-zA-Z]", "", AOI), pattern), "None")
+            AOI = coalesce(stringr::str_extract(gsub("[^a-zA-Z]", "", AOI), pattern), "noAOI")
           )
       } else {
         df = df |> 
           mutate(
-            AOI.left = coalesce(stringr::str_extract(gsub("[^a-zA-Z]", "", AOI.left), pattern), "None"),
-            AOI.right = coalesce(stringr::str_extract(gsub("[^a-zA-Z]", "", AOI.right), pattern), "None")
+            AOI.left = coalesce(stringr::str_extract(gsub("[^a-zA-Z]", "", AOI.left), pattern), "noAOI"),
+            AOI.right = coalesce(stringr::str_extract(gsub("[^a-zA-Z]", "", AOI.right), pattern), "noAOI")
           )
       }
     }
@@ -87,8 +87,8 @@ featDwell = function(df, ls.AOI, rs.path = c(), suffix = "",
         mutate(
           AOI = case_when(
             AOI.left == AOI.right ~ AOI.left, 
-            grepl("None", AOI.left) ~ AOI.right,
-            grepl("None", AOI.right) ~ AOI.left,
+            grepl("noAOI", AOI.left) ~ AOI.right,
+            grepl("noAOI", AOI.right) ~ AOI.left,
             T ~ AOI.left
           )
         )
@@ -99,7 +99,9 @@ featDwell = function(df, ls.AOI, rs.path = c(), suffix = "",
       group_by(Dyad, Identifier, Time) |>
       mutate(
         Frames.total = n()
-      ) |> ungroup()
+      ) |> ungroup() |>
+      # remove any where there was no fixation on an AOI
+      filter(AOI != "noAOI")
     
     # aggregate the dwell times
     df.dwell.agg = df.dwell |>
@@ -133,7 +135,7 @@ featDwell = function(df, ls.AOI, rs.path = c(), suffix = "",
     
     # joint attention 
     df.dwell.joint = df.dwell |>
-      select(Dyad, Time, Actor, Frame, AOI, Frames.total) |> filter(AOI != "None") |>
+      select(Dyad, Time, Actor, Frame, AOI, Frames.total) |> filter(AOI != "noAOI") |>
       tidyr::pivot_wider(names_from = Actor, values_from = AOI) |>
       filter(actor0 == actor1) |>
       rename(AOI = actor0) |>
