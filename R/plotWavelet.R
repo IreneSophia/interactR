@@ -87,10 +87,16 @@ plotPhaseRose = function(df, Bins, col.plot = "#4B9C79"){
     rl = sprintf("%s\nLeading", gsub(".*-", "", df$Dyad[1]))
   }
   
+  # create the breaks and adjust the outer limits slightly 
+  # just in case there are slightly different due to floating-point precision
+  brk = seq(-pi, pi, length.out = Bins + 1)
+  brk[1] = brk[1] - pi/Bins
+  brk[Bins+1] = brk[Bins+1] + pi/Bins
+  
   p = df |> 
     filter(WithinCOI) |> 
     mutate(
-      phaseBin = cut(Phase, breaks = seq(-pi, pi, length.out = Bins + 1), include.lowest = TRUE)
+      phaseBin = cut(Phase, breaks = brk, include.lowest = TRUE)
     ) |> 
     count(phaseBin, .drop = F) |> 
     mutate(

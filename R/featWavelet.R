@@ -81,6 +81,11 @@ featWTC = function(df, Limits, Bins = 8,
       ) |> select(Dyad, Time, Method, name, value) |>
       tidyr::pivot_wider()
     
+    # create phase bin breaks 
+    brk = seq(-pi, pi, length.out = Bins + 1)
+    brk[1] = brk[1] - pi/Bins
+    brk[Bins+1] = brk[Bins+1] + pi/Bins
+    
     # aggregate for Phase
     df.phase = Limits[[2]] |>
       left_join(
@@ -94,9 +99,7 @@ featWTC = function(df, Limits, Bins = 8,
           tibble(Phase = Phase) %>%
             mutate(
               Bin = cut(
-                Phase, 
-                breaks = seq(-pi, pi, length.out = Bins + 1), 
-                include.lowest = TRUE
+                Phase, breaks = brk, include.lowest = TRUE
               )
             ) %>%
             count(Bin, name = "count", .drop = FALSE) |>
