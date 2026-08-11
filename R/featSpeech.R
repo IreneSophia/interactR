@@ -501,7 +501,8 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
           Listening ~ "Listening",
           T ~ "Silence"
         )
-      ) |> select(-row_id)
+      ) |> select(-row_id) |>
+      relocate(Dyad, Time, Identifier)
     
     # save to disk
     if (!is.null(rs.path)) {
