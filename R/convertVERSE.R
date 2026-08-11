@@ -89,10 +89,9 @@ extractDataVERSE = function(df.info, timezone = "UTC",
         mutate(
           # merge speaking and listening columns
           Communication = case_when(
-            Speaking & Listening ~ "Both",
             Speaking ~ "Speaking",
             Listening ~ "Listening",
-            T ~ "None"
+            T ~ "Silence"
           ), 
           # force the correct timezone
           Timestamp = lubridate::force_tz(Timestamp, tzone = timezone)

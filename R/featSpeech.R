@@ -497,10 +497,9 @@ addCommunication = function(df, df.speak, rs.path = c(), suffix = '',
       # merge speaking and listening columns
       mutate(
         Communication = case_when(
-          Speaking & Listening ~ "Both",
           Speaking ~ "Speaking",
           Listening ~ "Listening",
-          T ~ "None"
+          T ~ "Silence"
         )
       ) |> select(-row_id)
     
