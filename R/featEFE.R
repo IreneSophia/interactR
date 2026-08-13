@@ -99,7 +99,7 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
       
       # focus on the relevant columns
       df = df |>
-        select(Dyad, Time, Identifier, Partner, Frame, Timestamp, any_of('Conversation'),
+        select(Dyad, Time, Identifier, Partner, Frame, Timestamp, any_of('Communication'),
                starts_with("Facial_"))
       
       # rescale some of the facial expressions from VERSE if they are composites
