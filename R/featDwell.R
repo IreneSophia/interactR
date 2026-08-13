@@ -18,7 +18,7 @@
 #' @param recompute Logical. Whether existing data on disk should be recomputed and overwritten. Default is `FALSE`.
 #' @param return Logical. Whether the processed dataframe should be returned by the function. Default is `TRUE`.
 #'
-#' @return If `return = TRUE`, returns the dataframe or saves consolidated summary CSV to `rs.path` if provided.
+#' @return If `return = TRUE`, returns the dataframe or saves periods of fixations and a consolidated summary to file in `rs.path` if provided.
 #' 
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @import dplyr
@@ -33,16 +33,17 @@ featDwell = function(df, ls.AOI, rs.path = c(), suffix = "",
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
-    flnm = ''
+    flcsv = ''
   } else {
     # create filename
-    flnm = file.path(rs.path, sprintf("featDwell%s.csv", suffix))
+    flcsv = file.path(rs.path, sprintf("featDwell%s.csv", suffix))
+    fldat = file.path(rs.path, sprintf("dataDwell%s.arrow", suffix))
   }
   
   # if no recompute and the file exists, it is simply loaded
-  if (!recompute & file.exists(flnm)) {
+  if (!recompute & file.exists(flcsv)) {
     if (verbose) cat(format(Sys.time(), "%X"), ": Loading dwell times\n")
-    df.out = readr::read_csv(flnm, show_col_types = F)
+    df.out = readr::read_csv(flcsv, show_col_types = F)
   } else {
     if (verbose) cat(format(Sys.time(), "%X"), ": Preprocessing dwell times\n")
     
@@ -94,6 +95,27 @@ featDwell = function(df, ls.AOI, rs.path = c(), suffix = "",
         )
     }
     
+    # extract periods of fixation
+    df.blocks = df.dwell |>
+      select(Dyad, Time, Identifier, Frame, Timestamp, AOI) |>
+      mutate(block = consecutive_id(AOI)) |>
+      group_by(Dyad, Time, Identifier, block) |>
+      filter(n() > 1) |> # get rid of everything that is just one sample
+      ungroup() |>
+      mutate(block = consecutive_id(AOI)) |>
+      group_by(Dyad, Time, Identifier, block, AOI) |>
+      summarise(
+        minFrame = min(Frame),
+        maxFrame = max(Frame),
+        minTime  = min(Timestamp),
+        maxTime  = max(Timestamp),
+        .groups = 'drop'
+      ) |>
+      select(-block) |>
+      filter(AOI != "noAOI")
+    
+    arrow::write_feather(df.blocks, fldat, compression = "zstd")
+    
     # add total number of frames
     df.dwell = df.dwell |>
       group_by(Dyad, Identifier, Time) |>
@@ -114,7 +136,7 @@ featDwell = function(df, ls.AOI, rs.path = c(), suffix = "",
         Dwell = AOI.frames * 100 / Frames.total
       ) |> select(-AOI.frames, -Frames.total) |>
       tidyr::pivot_wider(names_from = AOI, values_from = Dwell,
-                  names_glue = "{.value}_{AOI}_Total")
+                         names_glue = "{.value}_{AOI}_Total")
     # potentially add the values depending on Communication
     if ("Communication" %in% colnames(df)) {
       df.dwell.agg = merge(
@@ -129,7 +151,7 @@ featDwell = function(df, ls.AOI, rs.path = c(), suffix = "",
             Dwell = AOI.frames * 100 / Frames.total
           ) |> select(-AOI.frames, -Frames.total) |>
           tidyr::pivot_wider(names_from = c(AOI, Communication), values_from = Dwell,
-                      names_glue = "{.value}_{AOI}_{Communication}")
+                             names_glue = "{.value}_{AOI}_{Communication}")
       )
     }
     
@@ -154,8 +176,8 @@ featDwell = function(df, ls.AOI, rs.path = c(), suffix = "",
     # save speech dwell dataframe
     if (!is.null(rs.path)) {
       if (verbose) cat(format(Sys.time(), "%X"), ": Saving the Dwell feature csv\n")
-      readr::write_csv(df.out, flnm)
-      }
+      readr::write_csv(df.out, flcsv)
+    }
     
   }
   
@@ -163,5 +185,5 @@ featDwell = function(df, ls.AOI, rs.path = c(), suffix = "",
   
   # return feature dwell dataframe
   if (return) return(df.out)
-
+  
 }

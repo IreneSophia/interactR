@@ -36,7 +36,7 @@ If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk. Default is
 \item{return}{Logical. Whether the processed dataframe should be returned by the function. Default is \code{TRUE}.}
 }
 \value{
-If \code{return = TRUE}, returns the dataframe or saves consolidated summary CSV to \code{rs.path} if provided.
+If \code{return = TRUE}, returns the dataframe or saves periods of fixations and a consolidated summary to file in \code{rs.path} if provided.
 }
 \description{
 Extracts descriptive dwell times and indexes joint-attention allocations from spatial gaze data.
