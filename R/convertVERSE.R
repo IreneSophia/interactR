@@ -345,8 +345,7 @@ extractEventsVERSE = function(fl.ls, timezone = "UTC", type = "df") {
           Event = gsub(".*?: (.+)", "\\1", Event),
           # add additional information from the Event file
           Version = gsub(".*: (.+)", "\\1", txt[1]),
-          Environment = gsub(".*\": \"(.+)\",", "\\1", 
-                             txt[grep("\"Environment\":", txt)]),
+          Environment = sub(".*Rooms/(.*?)\\.unity.*", "\\1", txt[grep("\"Environment\":", txt)]),
           Time = as.POSIXct(gsub(".*/(.+)/EventLog.txt", "\\1", fl.ls[i]), 
                             format = "%Y-%m-%d_%H-%M-%S", tz = timezone),
           Filename = gsub("EventLog.txt", "TrackingDataLog.csv", fl.ls[i])
@@ -356,7 +355,7 @@ extractEventsVERSE = function(fl.ls, timezone = "UTC", type = "df") {
         df.txt = df.txt |> 
           mutate(
             actor0  = gsub(".*\"(.+)\"", "\\1", txt[grep("\"Participants\":", txt)+1]),
-            avatar0 = gsub(".*\": \"(.+)\",", "\\1", txt[grep("\"DefaultAvatar\":", txt)[1]]), 
+            avatar0 = sub(".*/([^/]+)\\.prefab$", "\\1", txt[grep("\"DefaultAvatar\":", txt)[1]]),
             actor1  = "",
             avatar1 = ""
           )
@@ -365,8 +364,8 @@ extractEventsVERSE = function(fl.ls, timezone = "UTC", type = "df") {
           mutate(
             actor0  = gsub(".*\"(.+)\",", "\\1", txt[grep("\"Participants\":", txt)+1]),
             actor1  = gsub(".*\"(.+)\"", "\\1", txt[grep("\"Participants\":", txt)+2]),
-            avatar0 = gsub(".*\": \"(.+)\",", "\\1", txt[grep("\"DefaultAvatar\":", txt)[1]]),
-            avatar1 = gsub(".*\": \"(.+)\",", "\\1", txt[grep("\"DefaultAvatar\":", txt)[2]])
+            avatar0 = sub(".*/([^/]+)\\.prefab.*", "\\1", txt[grep("\"DefaultAvatar\":", txt)[1]]),
+            avatar1 = sub(".*/([^/]+)\\.prefab.*", "\\1", txt[grep("\"DefaultAvatar\":", txt)[2]]),
           )
       }
       df.info = rbind(df.info, df.txt)
