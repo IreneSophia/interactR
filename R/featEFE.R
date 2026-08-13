@@ -97,6 +97,11 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
       if (length(setdiff(unlist(catEFE), names(df))) > 0) stop("The following columns do not exist in `df`: ", 
                                                                paste(setdiff(unlist(catEFE), names(df)), collapse = ", "))
       
+      # focus on the relevant columns
+      df = df |>
+        select(Dyad, Time, Identifier, Partner, Frame, Timestamp, any_of('Conversation'),
+               starts_with("Facial_"))
+      
       # rescale some of the facial expressions from VERSE if they are composites
       # of multiple shapes
       if (rescaleVERSE) {
