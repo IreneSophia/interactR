@@ -113,7 +113,7 @@ compareIPS = function(df, Bayesian = T, perm = F,
         
         if (verbose) cat(format(Sys.time(), "%X"), ": Computing frequentist stats\n")
 
-                # use t-tests to assess differences
+        # use t-tests to assess differences
         df.stat = df.tmp |> 
           # z-transform to achieve normal distribution
           mutate(zvalue = atanh(pmin(pmax(value, -0.9999), 0.9999))) |>
