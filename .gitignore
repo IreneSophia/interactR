@@ -4,3 +4,6 @@
 .Ruserdata
 .positai
 ignore/*
+.DS_Store
+*/.DS_Store
+*/*/.DS_Store
