@@ -39,7 +39,7 @@ plotWLCCcomp = function(df, ncol = 2, term = "significant",
   # get a good y position for the label 
   ypos = df |> filter(Method == "pseudo") |> 
     summarise(mean = mean(AVG), sd = max(STD)) |> 
-    mutate(ypos = mean + 2*sd) |> pull(ypos)
+    mutate(ypos = mean + 1/2*sd) |> pull(ypos)
   
   # get the peak lags
   df.lag = df |>
