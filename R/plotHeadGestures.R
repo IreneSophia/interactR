@@ -110,12 +110,10 @@ plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
     geom_col(data = df |> filter(V_rel == 1), na.rm = T,
              aes(y = V_sum, alpha = "Within Frequency Band"), width = 1/fps, 
              position = "identity") + 
-    geom_line(aes(y = V/scaleFactor, colour = Gesture, linetype = "Centered"), 
-              linewidth = 1) + 
-    geom_line(aes(y = V/scaleFactor, colour = Gesture, linetype = "Input"), 
+    geom_line(aes(y = V/scaleFactor, colour = Gesture, linetype = "Centered Input"), 
               linewidth = 1) + 
     geom_vline(data = df |> filter(V_zcT == 1), 
-               aes(xintercept = Timecourse, linetype = "Zero Crossing"), alpha = 0.3) + 
+               aes(xintercept = Timecourse, linetype = "Zero-Crossing"), alpha = 0.3) + 
     scale_x_continuous(
       breaks = scales::breaks_width(win),
       expand = c(0.02, 0.02)
@@ -128,7 +126,7 @@ plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
     ) +
     scale_linetype_manual(
       name   = "Signal",
-      values = c("Centered" = "solid", "Input" = "dotted", "Zero Crossing" = "dashed")
+      values = c("Centered Input" = "solid", "Zero-Crossing" = "dashed")
     ) + 
     scale_y_continuous(
       name = "Hz", limits = c(-maxFreq*1.2, maxFreq*1.2), 
