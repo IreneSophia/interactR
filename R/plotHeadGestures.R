@@ -104,14 +104,16 @@ plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
   p = df |> 
     ggplot(aes(x = Timecourse, fill = Gesture)) + 
     geom_hline(yintercept = 0, linewidth = 0.5) + 
-    geom_col(aes(y = V_sum, alpha = "All"), na.rm = T, width = 1) + 
+    geom_col(aes(y = V_sum, alpha = "All"), na.rm = T, width = 1/fps, 
+             position = "identity") + 
     geom_col(data = df |> filter(V_rel == 1), na.rm = T,
-             aes(y = V_sum, alpha = "Within Frequency Band"), width = 1) + 
+             aes(y = V_sum, alpha = "Within Frequency Band"), width = 1/fps, 
+             position = "identity") + 
     geom_line(aes(y = V/scaleFactor, colour = Gesture, linetype = "Centered"), 
               linewidth = 1) + 
     geom_line(aes(y = V/scaleFactor, colour = Gesture, linetype = "Input"), 
               linewidth = 1) + 
-    geom_vline(data = df |> filter(V_zc == 1), 
+    geom_vline(data = df |> filter(V_zcT == 1), 
                aes(xintercept = Timecourse, linetype = "Zero Crossing"), alpha = 0.3) + 
     scale_x_continuous(
       breaks = scales::breaks_width(win),
