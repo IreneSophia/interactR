@@ -65,9 +65,16 @@ plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
     # extract the frames
     filter(Frame >= minFrame & Frame <= maxFrame) |>
     # focus on the relevant columns
-    select(Dyad, Identifier, Frame, Timestamp, 
-           any_of(c("Speaking", "Listening", "Communication")),
+    select(Dyad, Identifier, Frame, Timestamp,
            starts_with(c("Nodding", "Shaking")))
+  
+  # check if there is a Timecourse in the data, if not create it
+  if (!("Timecourse" %in% colnames(df))) {
+    df = df |>
+      mutate(
+        Timecourse = as.numeric(difftime(Timestamp, min(Timestamp), units = "secs"))
+      )
+  }
   
   # if smoothing, then take the smoothing column
   if (winSmooth > 0) {
@@ -95,7 +102,7 @@ plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
   scaleFactor = ceiling(max(df$V)/(maxFreq*1.2))
   
   p = df |> 
-    ggplot(aes(x = Frame, fill = Gesture)) + 
+    ggplot(aes(x = Timecourse, fill = Gesture)) + 
     geom_hline(yintercept = 0, linewidth = 0.5) + 
     geom_col(aes(y = V_sum, alpha = "All"), na.rm = T, width = 1) + 
     geom_col(data = df |> filter(V_rel == 1), na.rm = T,
@@ -105,11 +112,9 @@ plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
     geom_line(aes(y = V/scaleFactor, colour = Gesture, linetype = "Input"), 
               linewidth = 1) + 
     geom_vline(data = df |> filter(V_zc == 1), 
-               aes(xintercept = Frame, linetype = "Zero Crossing"), alpha = 0.3) + 
+               aes(xintercept = Timecourse, linetype = "Zero Crossing"), alpha = 0.3) + 
     scale_x_continuous(
-      breaks = seq(minFrame, maxFrame, by = win*fps),
-      labels = round(seq(minFrame / fps, maxFrame / fps, by = win)),
-      limits = c(minFrame, maxFrame),
+      breaks = scales::breaks_width(win),
       expand = c(0.02, 0.02)
     ) + 
     scale_fill_manual(values = ID.cols) + 
