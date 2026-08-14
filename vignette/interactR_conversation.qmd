@@ -202,7 +202,7 @@ df.face |>
 
 ```
 
-We can see that there is bursts of Joy expression, for instance around the 2 minute 40 second mark. This small period is also observable in the screen captures. 
+We can see that there is bursts of Joy expression, for instance around the 2 minute 40 second mark. This small period is also observable in the screen capture `expressionJoy.mov`. 
 
 # Interpersonal synchrony of joy
 
@@ -278,7 +278,7 @@ The dataframe contains leading of each interaction partner, prefix = `WLCC`, as 
 
 We might be interested in whether the correlations are just artefacts or meaningful adaptation by our interaction partners. To assess this, we can compute pseudo IPS by shuffling either the dyads or the timecourse data of one interaction partner in segments. Since we only have one dyad in our example dataset, we will use segment shuffling and then compare the lag values using permutation testing. 
 
-To create pseudo IPS, we can use the same function as before but not set the number of segment shuffling to 200. Depending on your computer, this may take a few minutes. On a MacBook Air with an M4, shuffling 400 times took about 6min.
+To create pseudo IPS, we can use the same function as before but not set the number of segment shuffling to 400. Depending on your computer, this may take a few minutes. On a MacBook Air with an M4, shuffling 400 times took about 6min.
 
 ```{r}
 
@@ -288,7 +288,7 @@ df.pwlcc = extractIPS(df.face,
                      fps,                  # frame rate of the data
                      seed = 4480,          # setting a seed for reproducibility
                      rs.path = rs.path,    # results folder
-                     nSegment = 400,       # shuffle the segments 200 times per dyad
+                     nSegment = 400,       # shuffle the segments 400 times per dyad
                      winSample = fps * 7,  # size of the window in samples - 7 seconds
                      incSample = fps / 2,  # size of the increment for sliding in samples
                      lagSample = fps * 2,  # size of the lag, i.e., shifting one partner's data in samples
@@ -372,7 +372,7 @@ We can now plot the head gestures across time to see where some nodding or head 
 ```{r}
 #| fig-height: 10
 
-minFrame = 1
+minFrame = 1 
 
 p1 = plotHeadGestures(df.head |> filter(Identifier == "P1") |>
                 mutate(# adding the timecourse to ease comparison with the screen capture
@@ -414,7 +414,7 @@ ggarrange(p1, p2, nrow = 2, heights = c(0.44, 0.56))
 
 ```
 
-Z-crossings with framewise head movement above the threshold are shown with vertical dashed lines. The solid lines show the preprocessed signal. The columns are the sums of the Z-crossings above the framewise movement threshold, with darker colours for sums within the frequency range. For each interaction partner, nodding and head shaking is plotted separately. We can see that at the almost 2min mark, both interaction partners are using head gestures, with P1 nodding and P2 shaking their head. Again, we can see this nicely in the screen capture. 
+Z-crossings with framewise head movement above the threshold are shown with vertical dashed lines. The solid lines show the preprocessed signal. The columns are the sums of the Z-crossings above the framewise movement threshold, with darker colours for sums within the frequency range. For each interaction partner, nodding and head shaking is plotted separately. We can see that at the almost 2min mark, both interaction partners are using head gestures, with P1 nodding and P2 shaking their head. Again, we can see this nicely in the screen capture `headGestures.mov`. 
 
 # Interpersonal synchrony of nodding
 
@@ -509,8 +509,8 @@ We see that gaps between turns were sometimes negative, indicating that P1 and P
 
 We can now also do the same, but based on the information extracted with the `praat` script. Here, we will only process a small part of the conversation which we will share similarly to the screen capture. Running the `praat` script created four files:
 
-* `Recording_Participant_P1-cut.TextGrid` : containing syllables and speaking versus silent
-* `Recording_Participant_P1-cut.TextGrid` : same for other interaction partner
+* `Recording_Participant_P1.TextGrid` : containing syllables and speaking versus silent
+* `Recording_Participant_P2.TextGrid` : same for other interaction partner
 * `intR_pitchIntensity.csv` : pitch and intensity values for all interaction partners
 * `intR_syllableNuclei.csv` : aggregated syllable values for all interaction partners
 
@@ -592,11 +592,12 @@ The dataframe `df` now contains all the data from the Event onwards until the en
 ```{r, echo = F}
 
 kable(head(df |> 
-  select(Frame, starts_with("AOI") | contains("Target"))))
+  select(Frame, starts_with("AOI") | contains("Target")), 
+  n = 2))
 
 ```
 
-VERSE automatically tracks when interaction partners' eyes (`LeftEye_Targets` and `RightEye_Targets`) or their head orientation (`Gaze_Targets` in VERSE) hit prespecified targets, for instance the Desk. These columns capture all targets that are hit, even those that are behind another target. The targets are ordered in closeness to the eyes or head. The targets are reported with their respective hit coordinates. Reading in the data with `extractDataVERSE` already extracted the closest target and replaced the interaction partner's Identifier with "Self" versus "Other". These extracted values are captured in `AOI.gaze` for the head orientation and `AOI.left` as well as `AOI.right` for the eye fixations. 
+VERSE automatically tracks when interaction partners' eyes (`LeftEye_Targets` and `RightEye_Targets`) or their head orientation (`Gaze_Targets` in VERSE) hit prespecified targets, for instance the Desk. These columns capture all targets that are hit, even those that are behind another target. The targets are ordered in closeness to the eyes or head. The targets are reported with their respective hit coordinates. Reading in the data with `extractDataVERSE` already extracted the closest target and replaced the interaction partner's Identifier with "Self" versus "Other". These extracted values are captured in `AOI.gaze` for the head orientation and `AOI.left` as well as `AOI.right` for the eye fixations. AOI is the abbreviation for Area of Interest. 
 
 We can use the function `featDwell` to create a data file with periods of fixations as well as an aggregated feature file (CSV) capturing how long each interaction partner spent looking at a specific AOI. The function takes a list of AOIs as input, and all other targets are disregarded. 
 
@@ -630,35 +631,22 @@ kable(head(df.period))
 
 ```
 
-We want to compare this to our screen recording with visualised eye tracking to assess how well it worked. To do this, we look at 3-second increments to see where each of the interaction partners were looking.
+We want to compare this to our screen recording with visualised eye tracking to assess how well it worked. To do this, we visualise the periods of the screen capture using the function `plotETperiods`. 
 
 ```{r, echo = F}
 
-#### [!ADD A VISUALISATION]
+# add the timecourse for easier comparison with screen capture
+df.period = df.period |>
+  mutate(
+    minTimecourse = as.numeric(difftime(minTime, startExp, units = "secs")),
+    maxTimecourse = as.numeric(difftime(maxTime, startExp, units = "secs")),
+  )
 
-x = 3
-
-kable(df.period |>
-  mutate(minTime = as.numeric(minTime - startExp, units = "secs"), 
-         maxTime = as.numeric(maxTime - startExp, units = "secs")) |> 
-  rowwise() |>
-  # Generate a sequence of start times for each increment
-  mutate(winStart = list(seq(406, 427 - x, by = x))) |>
-  tidyr::unnest(winStart) |>
-  filter((minTime >= winStart & minTime <= (winStart + 5)) | 
-           ((maxTime >= winStart) &  maxTime <= (winStart + 5))) |>
-  ungroup() |>
-  group_by(Identifier, winStart) |> 
-  summarise(value = paste(unique(AOI), collapse = "; "),
-            .groups = "drop") |>
-  tidyr::pivot_wider(names_from = Identifier) |>
-  mutate(Increment = sprintf("%.0fmin %.0fsec to %.0fmin %.0fsec",
-                             floor(winStart/60), winStart%%60,
-                             floor((winStart+x)/60), (winStart+x)%%60)) |>
-    select(Increment, P1, P2))
+# plot it using the function
+plotETperiods(df.period, fps)
 
 ```
 
-This shows us that P1 and P2 both start to look at each other, although P2 also fixates on their laptop in that time. Then after a few seconds, they both look at the laptops, before moving on to also look at the shared screen. This pattern corresponds to the screen capture `eyeTracking.mov`. 
+This shows us that P1 starts with looking at P2, who also looks back around the 409 ~ 6min 49s mark. Then after almost 20 seconds, they both look at the laptops, before moving on to also look at the shared screen. This pattern corresponds to the screen capture `eyeTracking.mov`. 
 
 # References

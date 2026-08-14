@@ -5,8 +5,6 @@
 #' @param df Dataframe. The dataset containing the variables to be processed, created by \code{\link{featDwell}}. 
 #' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
 #' @param noSecs Numeric. How many seconds to plot in one facet row. Default is `10`.
-#' @param minFrame Numeric or NULL. First Frame to be plotted. If `NULL` minimum available Frame is used. Default is `NULL`.
-#' @param maxFrame Numeric or NULL. Last Frame to be plotted. If `NULL` maximum available Frame is used. Default is `NULL`.
 #'
 #' @return ggplot element
 #' 
@@ -16,12 +14,7 @@
 #' @import ggplot2
 #' @export
 #' 
-plotETperiods = function(df, fps, noSecs = 10,
-                         minFrame = NULL, maxFrame = NULL) {
-  
-  # if none is provided, get the Frame range
-  if (is.null(maxFrame)) maxFrame = max(df$Frame)
-  if (is.null(minFrame)) minFrame = min(df$Frame)
+plotETperiods = function(df, fps, noSecs = 10) {
   
   # ensure that only one dataset
   if (df |> select(Identifier) |> unique() |> count() |> pull(n) != 2) stop("This function is for plotting the dataset of one dyad")
