@@ -8,6 +8,7 @@ compareIPS(
   df,
   Bayesian = T,
   perm = F,
+  absolute = F,
   minBF = log(3),
   alpha = 0.05,
   freqLimits = c(0.2, 8),
@@ -29,6 +30,8 @@ column \code{iteration}.}
 \item{perm}{Logical. Switch to use permutation testing instead of comparison across Dyads.
 If the dataset is smaller, then one can create a larger set of pseudo values
 against which the mean observed value per Lag can be compared. Default is \code{FALSE}.}
+
+\item{absolute}{Logical. Switch whether to ignore the sign of the IPS values. Default is \code{FALSE}.}
 
 \item{minBF}{Numeric. Threshold above which log Bayes Factor is considered credible evidence. Default is \code{log(3)}.}
 

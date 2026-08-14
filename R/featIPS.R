@@ -18,6 +18,7 @@
 #' @param perm Logical. Switch to use permutation testing instead of comparison across Dyads.
 #'   If the dataset is smaller, then one can create a larger set of pseudo values 
 #'   against which the mean observed value per Lag can be compared. Default is `FALSE`.
+#' @param absolute Logical. Switch whether to ignore the sign of the IPS values. Default is `FALSE`.
 #' @param minBF Numeric. Threshold above which log Bayes Factor is considered credible evidence. Default is `log(3)`.
 #' @param alpha Numeric. Threshold above which permutation and Frequentist is considered significant. Default is `0.05`.
 #' @param rs.path Character. Path to destination directory for saved files. 
@@ -34,7 +35,7 @@
 #' @export
 #' 
 
-compareIPS = function(df, Bayesian = T, perm = F, 
+compareIPS = function(df, Bayesian = T, perm = F, absolute = F,
                       minBF = log(3), alpha = 0.05, freqLimits = c(0.2, 8),
                       rs.path = c(), suffix = "", 
                       verbose = T, recompute = F, return = T) {
@@ -89,6 +90,11 @@ compareIPS = function(df, Bayesian = T, perm = F,
     
     if (verbose) cat(format(Sys.time(), "%X"), ": Comparing pseudo and observed IPS from", 
                      df |> select(Feature) |> distinct() |> pull(Feature), "\n")
+    
+    # take absolute if necessary
+    if (absolute) {
+      df = df |> mutate(value = abs(value))
+    }
     
     # aggregate the values across the windows
     df.tmp = df |>
