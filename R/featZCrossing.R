@@ -109,7 +109,7 @@ extractZCrossing = function(df, colnames, fps, minDegree, rs.path = c(), suffix 
             # find zero crossings with difference above minDegree
             zcT    = ~ findZCrossing(.x) & (abs(.x - lag(.x, default = .x[1])) >= minDegree),
             # get the difference in rotation with 0 for first entry
-            diff   = ~ abs(.x - lag(.x, default = .x[1]))
+            diff   = ~ abs(.x - lag(.x, default = .x[1])),
             # sum up the above threshold ZCrossings across the window and divide by window for frequency
             sum    = ~ aggSlide(findZCrossing(.x) & (abs(.x - lag(.x, default = .x[1])) >= minDegree), 
                                 sum, fps * win) / win,
