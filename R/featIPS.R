@@ -94,6 +94,9 @@ compareIPS = function(df, Bayesian = T, perm = F, absolute = F,
     # take absolute if necessary
     if (absolute) {
       df = df |> mutate(value = abs(value))
+    } else if (perm) {
+      # adjust alpha for two-sided testing if perm is used
+      alpha = alpha / 2
     }
     
     # aggregate the values across the windows
