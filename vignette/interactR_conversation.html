@@ -455,8 +455,8 @@ div.csl-indent {
 <span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>                      <span class="at">recompute =</span> redo)  <span class="co"># whether to recompute if it already exists</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>-------------- Extracting data from VERSE experiments --------------
-14:32:42 : Loading VERSE experiments
-14:32:43 : Done</code></pre>
+16:15:38 : Loading VERSE experiments
+16:15:38 : Done</code></pre>
 </div>
 </div>
 <p>The resulting dataframe is quite large: 21120 rows and 203 columns! Let’s first have a look at the columns.</p>
@@ -646,8 +646,8 @@ div.csl-indent {
 <span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>                 <span class="at">recompute =</span> redo)  <span class="co"># whether to recompute if it already exists</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>--------- Extracting emotional facial expressions features ---------
-14:32:43 : Loading aggregated facial expressions
-14:32:43 : Done</code></pre>
+16:15:38 : Loading aggregated facial expressions
+16:15:38 : Done</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(df.efe)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
@@ -811,7 +811,7 @@ div.csl-indent {
 </div>
 </div>
 </div>
-<p>We can see that there is bursts of Joy expression, for instance around the 2 minute 40 second mark. This small period is also observable in the screen captures.</p>
+<p>We can see that there is bursts of Joy expression, for instance around the 2 minute 40 second mark. This small period is also observable in the screen capture <code>expressionJoy.mov</code>.</p>
 </section>
 <section id="interpersonal-synchrony-of-joy" class="level1" data-number="7">
 <h1 data-number="7"><span class="header-section-number">7</span> Interpersonal synchrony of joy</h1>
@@ -830,8 +830,8 @@ div.csl-indent {
 <span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>                     <span class="at">recompute =</span> redo)     <span class="co"># whether to recompute if it already exists</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>---------------------- Extract IPS using WLCC ----------------------
-14:32:43 : Loading  WLCC  features
-14:32:43 : Done</code></pre>
+16:15:39 : Loading  WLCC  features
+16:15:39 : Done</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(df.wlcc))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
@@ -975,10 +975,10 @@ div.csl-indent {
 <span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                       <span class="at">recompute =</span> redo)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>-------------- Extracting IPS features based on WLCC  --------------
-14:32:44 : Loading WLCC feature dataframe</code></pre>
+16:15:39 : Loading WLCC feature dataframe</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>14:32:44 : Done</code></pre>
+<pre><code>16:15:39 : Done</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(df.wlcc.agg)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
@@ -1050,7 +1050,7 @@ div.csl-indent {
 <section id="comparison-with-pseudo-ips" class="level2" data-number="7.1">
 <h2 data-number="7.1" class="anchored" data-anchor-id="comparison-with-pseudo-ips"><span class="header-section-number">7.1</span> Comparison with pseudo IPS</h2>
 <p>We might be interested in whether the correlations are just artefacts or meaningful adaptation by our interaction partners. To assess this, we can compute pseudo IPS by shuffling either the dyads or the timecourse data of one interaction partner in segments. Since we only have one dyad in our example dataset, we will use segment shuffling and then compare the lag values using permutation testing.</p>
-<p>To create pseudo IPS, we can use the same function as before but not set the number of segment shuffling to 200. Depending on your computer, this may take a few minutes. On a MacBook Air with an M4, shuffling 400 times took about 6min.</p>
+<p>To create pseudo IPS, we can use the same function as before but not set the number of segment shuffling to 400. Depending on your computer, this may take a few minutes. On a MacBook Air with an M4, shuffling 400 times took about 6min.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>df.pwlcc <span class="ot">=</span> <span class="fu">extractIPS</span>(df.face,</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"EFE_Joy"</span>,            <span class="co"># column for which IPS is extracted</span></span>
@@ -1058,15 +1058,15 @@ div.csl-indent {
 <span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>                     fps,                  <span class="co"># frame rate of the data</span></span>
 <span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>                     <span class="at">seed =</span> <span class="dv">4480</span>,          <span class="co"># setting a seed for reproducibility</span></span>
 <span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>                     <span class="at">rs.path =</span> rs.path,    <span class="co"># results folder</span></span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">nSegment =</span> <span class="dv">400</span>,       <span class="co"># shuffle the segments 200 times per dyad</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">nSegment =</span> <span class="dv">400</span>,       <span class="co"># shuffle the segments 400 times per dyad</span></span>
 <span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>                     <span class="at">winSample =</span> fps <span class="sc">*</span> <span class="dv">7</span>,  <span class="co"># size of the window in samples - 7 seconds</span></span>
 <span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">incSample =</span> fps <span class="sc">/</span> <span class="dv">2</span>,  <span class="co"># size of the increment for sliding in samples</span></span>
 <span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>                     <span class="at">lagSample =</span> fps <span class="sc">*</span> <span class="dv">2</span>,  <span class="co"># size of the lag, i.e., shifting one partner's data in samples</span></span>
 <span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>                     <span class="at">recompute =</span> redo)     <span class="co"># whether to recompute if it already exists</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>---------------------- Extract IPS using WLCC ----------------------
-14:32:44 : Loading  WLCC  features
-14:32:45 : Done</code></pre>
+16:15:39 : Loading  WLCC  features
+16:15:40 : Done</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(df.pwlcc))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
@@ -1199,8 +1199,8 @@ div.csl-indent {
 <span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>                     <span class="at">recompute =</span> redo)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>---------------- Comparing pseudo and observed IPS  ----------------
-14:32:58 : Loading IPS comparison
-14:32:58 : Done</code></pre>
+16:15:52 : Loading IPS comparison
+16:15:52 : Done</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(df.comp))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
@@ -1319,8 +1319,8 @@ div.csl-indent {
 <span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>                     <span class="at">recompute =</span> redo)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>---- Preprocessing translational and rotational head movements  ----
-14:32:58 : Loading preprocessed head movement data
-14:32:58 : Done</code></pre>
+16:15:53 : Loading preprocessed head movement data
+16:15:53 : Done</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(df.head))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
@@ -1493,8 +1493,8 @@ div.csl-indent {
 <span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>                              <span class="at">recompute =</span> redo)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>--------------------- Extracting head gestures ---------------------
-14:32:58 : Loading Head Gesture features
-14:32:58 : Done</code></pre>
+16:15:53 : Loading Head Gesture features
+16:15:53 : Done</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(df.gesture <span class="sc">|&gt;</span> <span class="fu">select</span>(Identifier, Frame, <span class="sc">!</span><span class="fu">any_of</span>(<span class="fu">colnames</span>(df.head)))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
@@ -1637,7 +1637,7 @@ div.csl-indent {
 <p>This table focuses on the newly created column. <code>Nodding</code> and <code>Shaking</code> contain the preprocessed signal and <code>diff</code> columns the framewise change in degree, while columns ending in <code>zc</code> track the Zero-crossings. All Zero-crossings above the minimum framewise degree of movement are summed up with a sliding 2-second window, which is captured in the columns ending in <code>sum</code>. These sums are only considered relevant head gestures, as captured in the columns ending in <code>rel</code>, when they are within the defined frequency range. If head shaking and nodding is detected at the same time, only the gesture that is associated with the larger movement is considered relevant.</p>
 <p>We can now plot the head gestures across time to see where some nodding or head shaking was detected. For this, we can use the plotting function <code>plotHeadGestures</code> which plots one Identifier at a time.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>minFrame <span class="ot">=</span> <span class="dv">1</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>minFrame <span class="ot">=</span> <span class="dv">1</span> </span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">=</span> <span class="fu">plotHeadGestures</span>(df.head <span class="sc">|&gt;</span> <span class="fu">filter</span>(Identifier <span class="sc">==</span> <span class="st">"P1"</span>) <span class="sc">|&gt;</span></span>
 <span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>                <span class="fu">mutate</span>(<span class="co"># adding the timecourse to ease comparison with the screen capture</span></span>
@@ -1684,7 +1684,7 @@ div.csl-indent {
 </div>
 </div>
 </div>
-<p>Z-crossings with framewise head movement above the threshold are shown with vertical dashed lines. The solid lines show the preprocessed signal. The columns are the sums of the Z-crossings above the framewise movement threshold, with darker colours for sums within the frequency range. For each interaction partner, nodding and head shaking is plotted separately. We can see that at the almost 2min mark, both interaction partners are using head gestures, with P1 nodding and P2 shaking their head. Again, we can see this nicely in the screen capture.</p>
+<p>Z-crossings with framewise head movement above the threshold are shown with vertical dashed lines. The solid lines show the preprocessed signal. The columns are the sums of the Z-crossings above the framewise movement threshold, with darker colours for sums within the frequency range. For each interaction partner, nodding and head shaking is plotted separately. We can see that at the almost 2min mark, both interaction partners are using head gestures, with P1 nodding and P2 shaking their head. Again, we can see this nicely in the screen capture <code>headGestures.mov</code>.</p>
 </section>
 <section id="interpersonal-synchrony-of-nodding" class="level1" data-number="9">
 <h1 data-number="9"><span class="header-section-number">9</span> Interpersonal synchrony of nodding</h1>
@@ -1700,8 +1700,8 @@ div.csl-indent {
 <span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>                    <span class="at">recompute =</span> redo)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>---------------------- Extract IPS using WTC  ----------------------
-14:33:00 : Loading  WTC  features
-14:33:00 : Done</code></pre>
+16:15:55 : Loading  WTC  features
+16:15:55 : Done</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(df.wtc))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
@@ -1891,8 +1891,8 @@ div.csl-indent {
 <span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">recompute =</span> redo) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>-------------------- Extracting speech features --------------------
-14:33:07 : Loading speech features
-14:33:07 : Done</code></pre>
+16:16:01 : Loading speech features
+16:16:01 : Done</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(df.speechV))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
@@ -1977,8 +1977,8 @@ div.csl-indent {
 <h2 data-number="10.2" class="anchored" data-anchor-id="praat-output"><span class="header-section-number">10.2</span> <code>praat</code> output</h2>
 <p>We can now also do the same, but based on the information extracted with the <code>praat</code> script. Here, we will only process a small part of the conversation which we will share similarly to the screen capture. Running the <code>praat</code> script created four files:</p>
 <ul>
-<li><code>Recording_Participant_P1-cut.TextGrid</code> : containing syllables and speaking versus silent</li>
-<li><code>Recording_Participant_P1-cut.TextGrid</code> : same for other interaction partner</li>
+<li><code>Recording_Participant_P1.TextGrid</code> : containing syllables and speaking versus silent</li>
+<li><code>Recording_Participant_P2.TextGrid</code> : same for other interaction partner</li>
 <li><code>intR_pitchIntensity.csv</code> : pitch and intensity values for all interaction partners</li>
 <li><code>intR_syllableNuclei.csv</code> : aggregated syllable values for all interaction partners</li>
 </ul>
@@ -1996,8 +1996,8 @@ div.csl-indent {
 <span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>                     <span class="at">recompute =</span> redo)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>----------------- Converting praat TextGrid files  -----------------
-14:33:07 : Loading sounding instances
-14:33:07 : Done</code></pre>
+16:16:01 : Loading sounding instances
+16:16:01 : Done</code></pre>
 </div>
 </div>
 <p>This dataframe does not contain the Dyad and the Identifier information because <code>praat</code> only has the sound files as input. However, we can extract the Identifier from the file name and then add the Dyad and Time information from our main VERSE dataframe. We need this for further processing.</p>
@@ -2112,8 +2112,8 @@ div.csl-indent {
 <span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>                        <span class="at">recompute =</span> redo) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>-------------------- Extracting speech features --------------------
-14:33:07 : Loading speech features
-14:33:07 : Done</code></pre>
+16:16:02 : Loading speech features
+16:16:02 : Done</code></pre>
 </div>
 </div>
 <p>Let’s have a look at the two dataframes, but keep in mind that the one produced based on VERSE includes the full conversation while the one based on <code>praat</code> only considers part of the conversation (otherwise the wav files would have been to large for GitHub).</p>
@@ -2223,8 +2223,8 @@ div.csl-indent {
 <span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>                      <span class="at">recompute =</span> redo)  <span class="co"># whether to recompute if it already exists</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>-------------- Extracting data from VERSE experiments --------------
-14:33:07 : Loading VERSE experiments
-14:33:07 : Done</code></pre>
+16:16:02 : Loading VERSE experiments
+16:16:02 : Done</code></pre>
 </div>
 </div>
 <p>The dataframe <code>df</code> now contains all the data from the Event onwards until the end of the VERSE experiment. We now want to focus on the columns relevant for the gaze patterns. Let’s have a look at the first few rows.</p>
@@ -2236,9 +2236,9 @@ div.csl-indent {
 <col style="width: 1%">
 <col style="width: 0%">
 <col style="width: 0%">
-<col style="width: 36%">
-<col style="width: 36%">
-<col style="width: 24%">
+<col style="width: 41%">
+<col style="width: 27%">
+<col style="width: 27%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -2270,47 +2270,11 @@ div.csl-indent {
 <td style="text-align: left;">Name: Desk Distance: 0.740 HitPositionX: -0.282 HitPositionY: 0.773 HitPositionZ: -0.026 HitRotationX: 2.255 HitRotationY: 309.934 HitRotationZ: 271.887 -&gt; Name: P2’s Left Lower Leg Distance: 1.693 HitPositionX: 0.448 HitPositionY: 0.162 HitPositionZ: -0.063 HitRotationX: 308.745 HitRotationY: 3.983 HitRotationZ: 358.976</td>
 <td style="text-align: left;">Name: P2’s Upper Body Distance: 1.572 HitPositionX: 0.724 HitPositionY: 1.023 HitPositionZ: 0.131 HitRotationX: 334.986 HitRotationY: 353.373 HitRotationZ: 1.951 -&gt; Name: P2’s Right Upper Arm Distance: 1.668 HitPositionX: 0.820 HitPositionY: 1.009 HitPositionZ: 0.136 HitRotationX: 354.760 HitRotationY: 5.985 HitRotationZ: 0.307</td>
 </tr>
-<tr class="odd">
-<td style="text-align: right;">3</td>
-<td style="text-align: left;">Other Upper Body</td>
-<td style="text-align: left;">Desk</td>
-<td style="text-align: left;">Desk</td>
-<td style="text-align: left;">Name: Desk Distance: 0.735 HitPositionX: -0.299 HitPositionY: 0.773 HitPositionZ: -0.007 HitRotationX: 5.994 HitRotationY: 310.094 HitRotationZ: 275.025 -&gt; Name: P2’s Left Lower Leg Distance: 1.722 HitPositionX: 0.453 HitPositionY: 0.140 HitPositionZ: -0.110 HitRotationX: 308.933 HitRotationY: 9.945 HitRotationZ: 357.458 -&gt; Name: P2’s Left Foot Distance: 1.760 HitPositionX: 0.481 HitPositionY: 0.116 HitPositionZ: -0.114 HitRotationX: 46.194 HitRotationY: 2.316 HitRotationZ: 3.009</td>
-<td style="text-align: left;">Name: Desk Distance: 0.734 HitPositionX: -0.295 HitPositionY: 0.773 HitPositionZ: -0.036 HitRotationX: 2.915 HitRotationY: 310.367 HitRotationZ: 272.476 -&gt; Name: P2’s Left Lower Leg Distance: 1.717 HitPositionX: 0.453 HitPositionY: 0.137 HitPositionZ: -0.086 HitRotationX: 308.357 HitRotationY: 5.081 HitRotationZ: 358.688 -&gt; Name: P2’s Left Foot Distance: 1.750 HitPositionX: 0.478 HitPositionY: 0.116 HitPositionZ: -0.087 HitRotationX: 45.728 HitRotationY: 357.920 HitRotationZ: 357.278</td>
-<td style="text-align: left;">Name: P2’s Upper Body Distance: 1.578 HitPositionX: 0.726 HitPositionY: 1.018 HitPositionZ: 0.122 HitRotationX: 334.887 HitRotationY: 353.651 HitRotationZ: 1.866 -&gt; Name: P2’s Right Upper Arm Distance: 1.674 HitPositionX: 0.821 HitPositionY: 1.004 HitPositionZ: 0.128 HitRotationX: 354.551 HitRotationY: 6.286 HitRotationZ: 0.313</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">4</td>
-<td style="text-align: left;">Other Upper Body</td>
-<td style="text-align: left;">Desk</td>
-<td style="text-align: left;">Desk</td>
-<td style="text-align: left;">Name: Desk Distance: 0.736 HitPositionX: -0.300 HitPositionY: 0.773 HitPositionZ: -0.008 HitRotationX: 5.950 HitRotationY: 310.031 HitRotationZ: 274.977 -&gt; Name: P2’s Left Lower Leg Distance: 1.724 HitPositionX: 0.453 HitPositionY: 0.141 HitPositionZ: -0.110 HitRotationX: 308.999 HitRotationY: 9.860 HitRotationZ: 357.484 -&gt; Name: P2’s Left Foot Distance: 1.762 HitPositionX: 0.482 HitPositionY: 0.116 HitPositionZ: -0.114 HitRotationX: 46.255 HitRotationY: 2.249 HitRotationZ: 2.920</td>
-<td style="text-align: left;">Name: Desk Distance: 0.735 HitPositionX: -0.296 HitPositionY: 0.773 HitPositionZ: -0.036 HitRotationX: 2.870 HitRotationY: 310.299 HitRotationZ: 272.431 -&gt; Name: P2’s Left Lower Leg Distance: 1.719 HitPositionX: 0.453 HitPositionY: 0.138 HitPositionZ: -0.085 HitRotationX: 308.431 HitRotationY: 4.999 HitRotationZ: 358.711 -&gt; Name: P2’s Left Foot Distance: 1.752 HitPositionX: 0.478 HitPositionY: 0.116 HitPositionZ: -0.087 HitRotationX: 45.791 HitRotationY: 357.846 HitRotationZ: 357.185</td>
-<td style="text-align: left;">Name: P2’s Upper Body Distance: 1.579 HitPositionX: 0.725 HitPositionY: 1.022 HitPositionZ: 0.117 HitRotationX: 335.107 HitRotationY: 353.833 HitRotationZ: 1.802</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">5</td>
-<td style="text-align: left;">Other Upper Body</td>
-<td style="text-align: left;">Desk</td>
-<td style="text-align: left;">Desk</td>
-<td style="text-align: left;">Name: Desk Distance: 0.738 HitPositionX: -0.300 HitPositionY: 0.773 HitPositionZ: -0.007 HitRotationX: 5.819 HitRotationY: 309.908 HitRotationZ: 274.847 -&gt; Name: P2’s Left Lower Leg Distance: 1.723 HitPositionX: 0.452 HitPositionY: 0.144 HitPositionZ: -0.107 HitRotationX: 309.108 HitRotationY: 9.627 HitRotationZ: 357.547 -&gt; Name: P2’s Left Foot Distance: 1.767 HitPositionX: 0.485 HitPositionY: 0.117 HitPositionZ: -0.112 HitRotationX: 46.373 HitRotationY: 2.053 HitRotationZ: 2.661</td>
-<td style="text-align: left;">Name: Desk Distance: 0.738 HitPositionX: -0.296 HitPositionY: 0.773 HitPositionZ: -0.036 HitRotationX: 2.737 HitRotationY: 310.169 HitRotationZ: 272.309 -&gt; Name: P2’s Left Lower Leg Distance: 1.719 HitPositionX: 0.452 HitPositionY: 0.141 HitPositionZ: -0.083 HitRotationX: 308.558 HitRotationY: 4.772 HitRotationZ: 358.772 -&gt; Name: P2’s Left Foot Distance: 1.757 HitPositionX: 0.482 HitPositionY: 0.116 HitPositionZ: -0.084 HitRotationX: 45.909 HitRotationY: 357.639 HitRotationZ: 356.920</td>
-<td style="text-align: left;">Name: P2’s Upper Body Distance: 1.580 HitPositionX: 0.724 HitPositionY: 1.026 HitPositionZ: 0.112 HitRotationX: 335.322 HitRotationY: 354.009 HitRotationZ: 1.743</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">6</td>
-<td style="text-align: left;">Other Upper Body</td>
-<td style="text-align: left;">Desk</td>
-<td style="text-align: left;">Desk</td>
-<td style="text-align: left;">Name: Desk Distance: 0.745 HitPositionX: -0.294 HitPositionY: 0.773 HitPositionZ: -0.005 HitRotationX: 5.477 HitRotationY: 309.483 HitRotationZ: 274.496 -&gt; Name: P2’s Left Lower Leg Distance: 1.710 HitPositionX: 0.448 HitPositionY: 0.162 HitPositionZ: -0.097 HitRotationX: 309.497 HitRotationY: 9.004 HitRotationZ: 357.720 -&gt; Name: P2’s Left Foot Distance: 1.780 HitPositionX: 0.502 HitPositionY: 0.118 HitPositionZ: -0.103 HitRotationX: 46.781 HitRotationY: 1.530 HitRotationZ: 1.971</td>
-<td style="text-align: left;">Name: Desk Distance: 0.744 HitPositionX: -0.290 HitPositionY: 0.773 HitPositionZ: -0.033 HitRotationX: 2.393 HitRotationY: 309.742 HitRotationZ: 271.988 -&gt; Name: P2’s Left Lower Leg Distance: 1.706 HitPositionX: 0.449 HitPositionY: 0.159 HitPositionZ: -0.073 HitRotationX: 308.975 HitRotationY: 4.180 HitRotationZ: 358.932 -&gt; Name: P2’s Left Foot Distance: 1.771 HitPositionX: 0.498 HitPositionY: 0.117 HitPositionZ: -0.076 HitRotationX: 46.300 HitRotationY: 357.085 HitRotationZ: 356.219</td>
-<td style="text-align: left;">Name: P2’s Upper Body Distance: 1.578 HitPositionX: 0.721 HitPositionY: 1.038 HitPositionZ: 0.108 HitRotationX: 335.880 HitRotationY: 354.137 HitRotationZ: 1.690</td>
-</tr>
 </tbody>
 </table>
 </div>
 </div>
-<p>VERSE automatically tracks when interaction partners’ eyes (<code>LeftEye_Targets</code> and <code>RightEye_Targets</code>) or their head orientation (<code>Gaze_Targets</code> in VERSE) hit prespecified targets, for instance the Desk. These columns capture all targets that are hit, even those that are behind another target. The targets are ordered in closeness to the eyes or head. The targets are reported with their respective hit coordinates. Reading in the data with <code>extractDataVERSE</code> already extracted the closest target and replaced the interaction partner’s Identifier with “Self” versus “Other”. These extracted values are captured in <code>AOI.gaze</code> for the head orientation and <code>AOI.left</code> as well as <code>AOI.right</code> for the eye fixations.</p>
+<p>VERSE automatically tracks when interaction partners’ eyes (<code>LeftEye_Targets</code> and <code>RightEye_Targets</code>) or their head orientation (<code>Gaze_Targets</code> in VERSE) hit prespecified targets, for instance the Desk. These columns capture all targets that are hit, even those that are behind another target. The targets are ordered in closeness to the eyes or head. The targets are reported with their respective hit coordinates. Reading in the data with <code>extractDataVERSE</code> already extracted the closest target and replaced the interaction partner’s Identifier with “Self” versus “Other”. These extracted values are captured in <code>AOI.gaze</code> for the head orientation and <code>AOI.left</code> as well as <code>AOI.right</code> for the eye fixations. AOI is the abbreviation for Area of Interest.</p>
 <p>We can use the function <code>featDwell</code> to create a data file with periods of fixations as well as an aggregated feature file (CSV) capturing how long each interaction partner spent looking at a specific AOI. The function takes a list of AOIs as input, and all other targets are disregarded.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co"># list of all the AOIs we want to extract</span></span>
@@ -2324,8 +2288,8 @@ div.csl-indent {
 <span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">recompute =</span> redo)  <span class="co"># whether to recompute if it already exists</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>------------------ Extracting dwell time features ------------------
-14:33:07 : Loading dwell times
-14:33:07 : Done</code></pre>
+16:16:02 : Loading dwell times
+16:16:02 : Done</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(df.dwell)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
@@ -2541,63 +2505,17 @@ div.csl-indent {
 </table>
 </div>
 </div>
-<p>We want to compare this to our screen recording with visualised eye tracking to assess how well it worked. To do this, we look at 3-second increments to see where each of the interaction partners were looking.</p>
+<p>We want to compare this to our screen recording with visualised eye tracking to assess how well it worked. To do this, we visualise the periods of the screen capture using the function <code>plotETperiods</code>.</p>
 <div class="cell">
 <div class="cell-output-display">
-<table class="caption-top table table-sm table-striped small">
-<colgroup>
-<col style="width: 26%">
-<col style="width: 33%">
-<col style="width: 40%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: left;">Increment</th>
-<th style="text-align: left;">P1</th>
-<th style="text-align: left;">P2</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">6min 46sec to 6min 49sec</td>
-<td style="text-align: left;">Other</td>
-<td style="text-align: left;">SelfLaptop; Other</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">6min 49sec to 6min 52sec</td>
-<td style="text-align: left;">Other</td>
-<td style="text-align: left;">SelfLaptop; Other</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">6min 52sec to 6min 55sec</td>
-<td style="text-align: left;">Other; OtherLaptop; SelfLaptop</td>
-<td style="text-align: left;">Other; OtherLaptop; SelfLaptop</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">6min 55sec to 6min 58sec</td>
-<td style="text-align: left;">Other; OtherLaptop; SelfLaptop</td>
-<td style="text-align: left;">Other; OtherLaptop; SelfLaptop; Self</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">6min 58sec to 7min 1sec</td>
-<td style="text-align: left;">SelfLaptop; Other</td>
-<td style="text-align: left;">Self; SelfLaptop</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">7min 1sec to 7min 4sec</td>
-<td style="text-align: left;">SelfLaptop; Other; SharedScreen</td>
-<td style="text-align: left;">Self; SelfLaptop; Other; SharedScreen</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">7min 4sec to 7min 7sec</td>
-<td style="text-align: left;">SelfLaptop; Other; SharedScreen</td>
-<td style="text-align: left;">SelfLaptop; Other; SharedScreen</td>
-</tr>
-</tbody>
-</table>
+<div>
+<figure class="figure">
+<p><img src="interactR_conversation_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
 </div>
 </div>
-<p>This shows us that P1 and P2 both start to look at each other, although P2 also fixates on their laptop in that time. Then after a few seconds, they both look at the laptops, before moving on to also look at the shared screen. This pattern corresponds to the screen capture <code>eyeTracking.mov</code>.</p>
+</div>
+<p>This shows us that P1 starts with looking at P2, who also looks back around the 409 ~ 6min 49s mark. Then after almost 20 seconds, they both look at the laptops, before moving on to also look at the shared screen. This pattern corresponds to the screen capture <code>eyeTracking.mov</code>.</p>
 </section>
 <section id="references" class="level1 unnumbered" data-number="12">
 

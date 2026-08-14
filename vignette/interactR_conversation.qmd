@@ -640,7 +640,9 @@ df.period = df.period |>
   mutate(
     minTimecourse = as.numeric(difftime(minTime, startExp, units = "secs")),
     maxTimecourse = as.numeric(difftime(maxTime, startExp, units = "secs")),
-  )
+  ) |> 
+  # focus on the part shown in the screen capture
+  filter(maxTimecourse <= 425)
 
 # plot it using the function
 plotETperiods(df.period, fps)
