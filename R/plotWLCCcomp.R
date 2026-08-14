@@ -36,13 +36,18 @@ plotWLCCcomp = function(df, ncol = 2, term = "significant",
   # add the names to the colour vector
   names(col.plot) = c("observed", "pseudo", term)
   
+  # get a good y position for the label 
+  ypos = df |> filter(Method == "pseudo") |> 
+    summarise(mean = mean(AVG), sd = max(STD)) |> 
+    mutate(ypos = mean + 2*sd) |> pull(ypos)
+  
   # get the peak lags
   df.lag = df |>
     group_by(Feature, Method) |>
     filter(AVG == max(AVG) & Method == "observed") |>
     mutate(
       label = sprintf("Peak: %.2fs", Lag),
-      ypos  = if_else(STD > 0, AVG + STD*2/3, -0.02)
+      ypos  = ypos
     )
   
   # get where to use shaded region for the lags that are different
