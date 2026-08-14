@@ -92,7 +92,7 @@ compareIPS = function(df, Bayesian = T, perm = F,
     
     # aggregate the values across the windows
     df.tmp = df |>
-      group_by(across(all_of(colnm)), Dyad, Method, Feature) |>
+      group_by(across(all_of(colnm)), Dyad, Method, Feature, iteration) |>
       summarise(
         value = mean(value, na.rm = T),
         .groups = "drop"
@@ -114,7 +114,12 @@ compareIPS = function(df, Bayesian = T, perm = F,
         if (verbose) cat(format(Sys.time(), "%X"), ": Computing frequentist stats\n")
 
         # use t-tests to assess differences
-        df.stat = df.tmp |> 
+        df.stat = df.tmp |>
+          group_by(across(all_of(colnm)), Dyad, Method, Feature) |>
+          summarise(
+            value = mean(value, na.rm = T),
+            .groups = "drop"
+          ) |>
           # z-transform to achieve normal distribution
           mutate(zvalue = atanh(pmin(pmax(value, -0.9999), 0.9999))) |>
           group_by(Feature, across(all_of(colnm))) |> 
@@ -135,6 +140,11 @@ compareIPS = function(df, Bayesian = T, perm = F,
         
         # compute the Bayesian t-tests
         df.stat = df.tmp |>
+          group_by(across(all_of(colnm)), Dyad, Method, Feature) |>
+          summarise(
+            value = mean(value, na.rm = T),
+            .groups = "drop"
+          ) |>
           # z-transform to achieve normal distribution
           mutate(zvalue = atanh(pmin(pmax(value, -0.9999), 0.9999))) |>
           group_by(Feature, across(all_of(colnm))) |>

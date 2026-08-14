@@ -28,6 +28,7 @@ Imports:
     purrr,
     readr,
     rstatix,
+    scales,
     slider,
     stringr,
     tidyr
