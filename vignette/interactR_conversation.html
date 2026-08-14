@@ -1,0 +1,3036 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Irene Sophia Plank">
+<meta name="dcterms.date" content="2026-08-14">
+
+<title>interactR Vignette</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="interactR_conversation_files/libs/clipboard/clipboard.min.js"></script>
+<script src="interactR_conversation_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="interactR_conversation_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="interactR_conversation_files/libs/quarto-html/popper.min.js"></script>
+<script src="interactR_conversation_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="interactR_conversation_files/libs/quarto-html/anchor.min.js"></script>
+<link href="interactR_conversation_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="interactR_conversation_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="interactR_conversation_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="interactR_conversation_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="interactR_conversation_files/libs/bootstrap/bootstrap-808dbeeb746481854e54e9f2ae9b5910.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> Introduction</a></li>
+  <li><a href="#setup-installation" id="toc-setup-installation" class="nav-link" data-scroll-target="#setup-installation"><span class="header-section-number">2</span> Setup / installation</a></li>
+  <li><a href="#extract-events" id="toc-extract-events" class="nav-link" data-scroll-target="#extract-events"><span class="header-section-number">3</span> Extract events</a></li>
+  <li><a href="#summary-of-preprocessing-pipeline" id="toc-summary-of-preprocessing-pipeline" class="nav-link" data-scroll-target="#summary-of-preprocessing-pipeline"><span class="header-section-number">4</span> Summary of preprocessing pipeline</a></li>
+  <li><a href="#general-data-structure" id="toc-general-data-structure" class="nav-link" data-scroll-target="#general-data-structure"><span class="header-section-number">5</span> General data structure</a></li>
+  <li><a href="#emotional-facial-expressions" id="toc-emotional-facial-expressions" class="nav-link" data-scroll-target="#emotional-facial-expressions"><span class="header-section-number">6</span> Emotional facial expressions</a></li>
+  <li><a href="#interpersonal-synchrony-of-joy" id="toc-interpersonal-synchrony-of-joy" class="nav-link" data-scroll-target="#interpersonal-synchrony-of-joy"><span class="header-section-number">7</span> Interpersonal synchrony of joy</a>
+  <ul class="collapse">
+  <li><a href="#comparison-with-pseudo-ips" id="toc-comparison-with-pseudo-ips" class="nav-link" data-scroll-target="#comparison-with-pseudo-ips"><span class="header-section-number">7.1</span> Comparison with pseudo IPS</a></li>
+  </ul></li>
+  <li><a href="#head-shaking-and-nodding" id="toc-head-shaking-and-nodding" class="nav-link" data-scroll-target="#head-shaking-and-nodding"><span class="header-section-number">8</span> Head shaking and nodding</a></li>
+  <li><a href="#interpersonal-synchrony-of-nodding" id="toc-interpersonal-synchrony-of-nodding" class="nav-link" data-scroll-target="#interpersonal-synchrony-of-nodding"><span class="header-section-number">9</span> Interpersonal synchrony of nodding</a></li>
+  <li><a href="#speech-and-turn-taking-features" id="toc-speech-and-turn-taking-features" class="nav-link" data-scroll-target="#speech-and-turn-taking-features"><span class="header-section-number">10</span> Speech and turn-taking features</a>
+  <ul class="collapse">
+  <li><a href="#verse-tracked-data" id="toc-verse-tracked-data" class="nav-link" data-scroll-target="#verse-tracked-data"><span class="header-section-number">10.1</span> VERSE tracked data</a></li>
+  <li><a href="#praat-output" id="toc-praat-output" class="nav-link" data-scroll-target="#praat-output"><span class="header-section-number">10.2</span> <code>praat</code> output</a></li>
+  </ul></li>
+  <li><a href="#gaze-patterns-and-joint-attention" id="toc-gaze-patterns-and-joint-attention" class="nav-link" data-scroll-target="#gaze-patterns-and-joint-attention"><span class="header-section-number">11</span> Gaze patterns and joint attention</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">12</span> References</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">interactR Vignette</h1>
+<p class="subtitle lead">Conversation Behaviour - Feature Extraction</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Irene Sophia Plank </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">August 14, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
+<p>We used <code>R version 4.5.2 (2025-10-31)</code> and the following packages in the creation of this document: <code>knitr version 1.51; dplyr version 1.2.1; ggpubr version 1.0.0; pak version 0.11.1;</code></p>
+<p>All data was collected in the virtual reality environment VERSE <span class="citation" data-cites="verse2026">(<a href="#ref-verse2026" role="doc-biblioref">Rehmer et al. 2026</a>)</span>.</p>
+<p>The sampling rate of the data is 32. All created datafiles will be saved in <code>_preprocessed</code>.</p>
+</section>
+<section id="setup-installation" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Setup / installation</h1>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># for installation, uncomment the following: </span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># pak("IreneSophia/interactR")</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># load interactR, which contains the preprocessing pipeline, from GitHub</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(interactR)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="extract-events" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Extract events</h1>
+<p>We create a dataframe recording meta-data about this example interaction, including the timepoint of events of interest and VERSE settings. This part needs to be customised to the experiment. In this case, participants were having a conversation based on two slides of questions which were cast to the in-VR screens. After they finished the conversation, we created an eye-tracking visualisation. Screencasts triggered different phases of the event which are logged in the Event file:</p>
+<ul>
+<li><code>Screen: All set to slide S1.PNG</code> : start of the first round of questions</li>
+<li><code>Screen: All set to slide S2.PNG</code> : start of the second round of questions</li>
+<li><code>Screen: All set to slide End.PNG</code> : end of conversation</li>
+<li><code>Screen: All set to slide ET.PNG</code> : start of the eye tracking visualisation</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get all of the events and info from the Event file</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>df.info <span class="ot">=</span> <span class="fu">extractEventsVERSE</span>(<span class="fu">file.path</span>(dt.path, <span class="st">"EventLog.txt"</span>))</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># show the events</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(df.info)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 24%">
+<col style="width: 9%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 9%">
+<col style="width: 19%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Event</th>
+<th style="text-align: left;">Timestamp</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">Environment</th>
+<th style="text-align: left;">Time</th>
+<th style="text-align: left;">Filename</th>
+<th style="text-align: left;">actor0</th>
+<th style="text-align: left;">actor1</th>
+<th style="text-align: left;">avatar0</th>
+<th style="text-align: left;">avatar1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">P1 was recentered.</td>
+<td style="text-align: left;">2026-08-13 13:50:33</td>
+<td style="text-align: left;">VERSE Version 2.0.0 TG</td>
+<td style="text-align: left;">General/Manager Office</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">2026-08-13_13-50-25/TrackingDataLog.csv</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">001</td>
+<td style="text-align: left;">004</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P2 was recentered.</td>
+<td style="text-align: left;">2026-08-13 13:50:35</td>
+<td style="text-align: left;">VERSE Version 2.0.0 TG</td>
+<td style="text-align: left;">General/Manager Office</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">2026-08-13_13-50-25/TrackingDataLog.csv</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">001</td>
+<td style="text-align: left;">004</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P1 is now visible.</td>
+<td style="text-align: left;">2026-08-13 13:50:38</td>
+<td style="text-align: left;">VERSE Version 2.0.0 TG</td>
+<td style="text-align: left;">General/Manager Office</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">2026-08-13_13-50-25/TrackingDataLog.csv</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">001</td>
+<td style="text-align: left;">004</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P2 is now visible.</td>
+<td style="text-align: left;">2026-08-13 13:50:39</td>
+<td style="text-align: left;">VERSE Version 2.0.0 TG</td>
+<td style="text-align: left;">General/Manager Office</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">2026-08-13_13-50-25/TrackingDataLog.csv</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">001</td>
+<td style="text-align: left;">004</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P1 is now visible.</td>
+<td style="text-align: left;">2026-08-13 13:51:40</td>
+<td style="text-align: left;">VERSE Version 2.0.0 TG</td>
+<td style="text-align: left;">General/Manager Office</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">2026-08-13_13-50-25/TrackingDataLog.csv</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">001</td>
+<td style="text-align: left;">004</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P1 is now unmuted.</td>
+<td style="text-align: left;">2026-08-13 13:51:40</td>
+<td style="text-align: left;">VERSE Version 2.0.0 TG</td>
+<td style="text-align: left;">General/Manager Office</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">2026-08-13_13-50-25/TrackingDataLog.csv</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">001</td>
+<td style="text-align: left;">004</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P2 is now visible.</td>
+<td style="text-align: left;">2026-08-13 13:51:40</td>
+<td style="text-align: left;">VERSE Version 2.0.0 TG</td>
+<td style="text-align: left;">General/Manager Office</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">2026-08-13_13-50-25/TrackingDataLog.csv</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">001</td>
+<td style="text-align: left;">004</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P2 is now unmuted.</td>
+<td style="text-align: left;">2026-08-13 13:51:40</td>
+<td style="text-align: left;">VERSE Version 2.0.0 TG</td>
+<td style="text-align: left;">General/Manager Office</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">2026-08-13_13-50-25/TrackingDataLog.csv</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">001</td>
+<td style="text-align: left;">004</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Experiment started</td>
+<td style="text-align: left;">2026-08-13 13:51:40</td>
+<td style="text-align: left;">VERSE Version 2.0.0 TG</td>
+<td style="text-align: left;">General/Manager Office</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">2026-08-13_13-50-25/TrackingDataLog.csv</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">001</td>
+<td style="text-align: left;">004</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Screen: All set to slide S1.PNG</td>
+<td style="text-align: left;">2026-08-13 13:52:55</td>
+<td style="text-align: left;">VERSE Version 2.0.0 TG</td>
+<td style="text-align: left;">General/Manager Office</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">2026-08-13_13-50-25/TrackingDataLog.csv</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">001</td>
+<td style="text-align: left;">004</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Screen: All set to slide S2.PNG</td>
+<td style="text-align: left;">2026-08-13 13:55:27</td>
+<td style="text-align: left;">VERSE Version 2.0.0 TG</td>
+<td style="text-align: left;">General/Manager Office</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">2026-08-13_13-50-25/TrackingDataLog.csv</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">001</td>
+<td style="text-align: left;">004</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Screen: All set to slide End.PNG</td>
+<td style="text-align: left;">2026-08-13 13:58:13</td>
+<td style="text-align: left;">VERSE Version 2.0.0 TG</td>
+<td style="text-align: left;">General/Manager Office</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">2026-08-13_13-50-25/TrackingDataLog.csv</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">001</td>
+<td style="text-align: left;">004</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Eye tracking visualization enabled.</td>
+<td style="text-align: left;">2026-08-13 13:58:14</td>
+<td style="text-align: left;">VERSE Version 2.0.0 TG</td>
+<td style="text-align: left;">General/Manager Office</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">2026-08-13_13-50-25/TrackingDataLog.csv</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">001</td>
+<td style="text-align: left;">004</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Eye tracking visualization enabled.</td>
+<td style="text-align: left;">2026-08-13 13:58:25</td>
+<td style="text-align: left;">VERSE Version 2.0.0 TG</td>
+<td style="text-align: left;">General/Manager Office</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">2026-08-13_13-50-25/TrackingDataLog.csv</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">001</td>
+<td style="text-align: left;">004</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Screen: All set to slide ET.PNG</td>
+<td style="text-align: left;">2026-08-13 13:58:25</td>
+<td style="text-align: left;">VERSE Version 2.0.0 TG</td>
+<td style="text-align: left;">General/Manager Office</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">2026-08-13_13-50-25/TrackingDataLog.csv</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">001</td>
+<td style="text-align: left;">004</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Experiment stopped, length of experiment: 00:07:16</td>
+<td style="text-align: left;">2026-08-13 13:58:56</td>
+<td style="text-align: left;">VERSE Version 2.0.0 TG</td>
+<td style="text-align: left;">General/Manager Office</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">2026-08-13_13-50-25/TrackingDataLog.csv</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">001</td>
+<td style="text-align: left;">004</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>We will save the starting point of the experiment to be able to calculate onset of any Timestamp from the beginning of the experiment. This will allow us to compare the extracted features to a screen recording of the same experiment that we collected.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>startExp <span class="ot">=</span> df.info <span class="sc">|&gt;</span> <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">"started"</span>, Event)) <span class="sc">|&gt;</span> <span class="fu">pull</span>(Timestamp)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="summary-of-preprocessing-pipeline" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Summary of preprocessing pipeline</h1>
+<p>In this preprocessing pipeline, the following features are extracted from dyadic interactions captured in VERSE:</p>
+<ul>
+<li>Emotional facial expressions with the emotion categorisation based on <span class="citation" data-cites="aldenhoven2026real">Aldenhoven et al. (<a href="#ref-aldenhoven2026real" role="doc-biblioref">2026</a>)</span></li>
+<li>Synchrony of joy calculated using windowed-lagged cross-correlations (WLCC), based on <span class="citation" data-cites="koehler_machine_2024">Koehler et al. (<a href="#ref-koehler_machine_2024" role="doc-biblioref">2024</a>)</span></li>
+<li>Head movements, specifically nodding and head shaking detected with zero crossings</li>
+<li>Synchrony of nodding calculated using wavelet coherence</li>
+<li>Speech and turn-taking features <span class="citation" data-cites="plank2023automated">(<a href="#ref-plank2023automated" role="doc-biblioref">Plank et al. 2023</a>)</span>, once from VERSE data and once using <code>praat</code> <span class="citation" data-cites="praat">(<a href="#ref-praat" role="doc-biblioref">Boersma and Weenink 2022</a>)</span> and the uhm-o-meter <span class="citation" data-cites="de_jong_praat_2021">(<a href="#ref-de_jong_praat_2021" role="doc-biblioref">De Jong et al. 2021</a>)</span></li>
+<li>Gaze patterns and joint attention</li>
+</ul>
+<p>All observed synchrony values are compared to pseudosynchrony values. The assessment of head gestures was inspired by <span class="citation" data-cites="hale2020you">Hale et al. (<a href="#ref-hale2020you" role="doc-biblioref">2020</a>)</span>.</p>
+<p>Throughout the preprocessing, large data is saved as <code>arrow</code> files while aggregated data (one row per interaction partner) is saved as <code>csv</code> files. Columns in the <code>csv</code> file start with the feature group name, except for dyadic variables which are the same for both interaction partners of the same dyad and have the additional prefix <code>Dyad</code>.</p>
+</section>
+<section id="general-data-structure" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> General data structure</h1>
+<p>We are going to start by reading in the data from the beginning of the conversation onwards, starting with the presentation of slide <code>S1.PNG</code> and ending with the presentation of <code>ET.PNG</code> (which we will load separately later).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>df.info.sel <span class="ot">=</span> df.info <span class="sc">|&gt;</span> </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">"S1.PNG|ET.PNG"</span>, Event)) <span class="sc">|&gt;</span>  <span class="co"># focus on the Events of interest</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># let's rename our events to the column names we need to cut out the middle</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Event =</span> <span class="fu">if_else</span>(<span class="fu">grepl</span>(<span class="st">"S1.PNG"</span>, Event), <span class="st">"start.use"</span>, <span class="st">"end.use"</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># restructure to have one row with the Event as columns</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Event, <span class="at">values_from =</span> Timestamp)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">extractDataVERSE</span>(df.info.sel,     <span class="co"># use this events Timestamp as the starting point</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>                      <span class="at">rs.path =</span> rs.path, <span class="co"># we want the data to be saved in our results folder</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>                      <span class="at">return =</span> T,        <span class="co"># we also want to dataframe to be returned</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>                      <span class="at">recompute =</span> redo)  <span class="co"># whether to recompute if it already exists</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>-------------- Extracting data from VERSE experiments --------------
+14:32:42 : Loading VERSE experiments
+14:32:43 : Done</code></pre>
+</div>
+</div>
+<p>The resulting dataframe is quite large: 21120 rows and 203 columns! Let’s first have a look at the columns.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  [1] "Dyad"                       "Time"                      
+  [3] "Identifier"                 "Avatar"                    
+  [5] "Frame"                      "Timestamp"                 
+  [7] "Duration"                   "Speaking"                  
+  [9] "AudioLevel"                 "LeftEye_Pos_X"             
+ [11] "LeftEye_Pos_Y"              "LeftEye_Pos_Z"             
+ [13] "LeftEye_Rot_X"              "LeftEye_Rot_Y"             
+ [15] "LeftEye_Rot_Z"              "LeftEye_Forward_X"         
+ [17] "LeftEye_Forward_Y"          "LeftEye_Forward_Z"         
+ [19] "LeftEye_Targets"            "RightEye_Pos_X"            
+ [21] "RightEye_Pos_Y"             "RightEye_Pos_Z"            
+ [23] "RightEye_Rot_X"             "RightEye_Rot_Y"            
+ [25] "RightEye_Rot_Z"             "RightEye_Forward_X"        
+ [27] "RightEye_Forward_Y"         "RightEye_Forward_Z"        
+ [29] "RightEye_Targets"           "Gaze_Pos_X"                
+ [31] "Gaze_Pos_Y"                 "Gaze_Pos_Z"                
+ [33] "Gaze_Rot_X"                 "Gaze_Rot_Y"                
+ [35] "Gaze_Rot_Z"                 "GazeOffset_LeftEye_Rot_X"  
+ [37] "GazeOffset_LeftEye_Rot_Y"   "GazeOffset_LeftEye_Rot_Z"  
+ [39] "GazeOffset_RightEye_Rot_X"  "GazeOffset_RightEye_Rot_Y" 
+ [41] "GazeOffset_RightEye_Rot_Z"  "Gaze_Targets"              
+ [43] "Facial_LeftEye_Squint"      "Facial_RightEye_Squint"    
+ [45] "Facial_LeftEye_Wide"        "Facial_RightEye_Wide"      
+ [47] "Facial_LeftEye_Blink"       "Facial_RightEye_Blink"     
+ [49] "Facial_LeftEye_LookDown"    "Facial_RightEye_LookDown"  
+ [51] "Facial_LeftEye_LookUp"      "Facial_RightEye_LookUp"    
+ [53] "Facial_LeftEye_LookIn"      "Facial_RightEye_LookIn"    
+ [55] "Facial_LeftEye_LookOut"     "Facial_RightEye_LookOut"   
+ [57] "Facial_BrowDownLeft"        "Facial_BrowDownRight"      
+ [59] "Facial_BrowInnerUp"         "Facial_BrowOuterUpLeft"    
+ [61] "Facial_BrowOuterUpRight"    "Facial_JawOpen"            
+ [63] "Facial_JawForward"          "Facial_JawLeft"            
+ [65] "Facial_JawRight"            "Facial_CheekPuff"          
+ [67] "Facial_CheekSquintLeft"     "Facial_CheekSquintRight"   
+ [69] "Facial_NoseSneerLeft"       "Facial_NoseSneerRight"     
+ [71] "Facial_MouthOpen"           "Facial_MouthClose"         
+ [73] "Facial_MouthLeft"           "Facial_MouthRight"         
+ [75] "Facial_MouthSmileLeft"      "Facial_MouthSmileRight"    
+ [77] "Facial_MouthFrownLeft"      "Facial_MouthFrownRight"    
+ [79] "Facial_MouthPressLeft"      "Facial_MouthPressRight"    
+ [81] "Facial_MouthDimpleLeft"     "Facial_MouthDimpleRight"   
+ [83] "Facial_MouthStretchLeft"    "Facial_MouthStretchRight"  
+ [85] "Facial_MouthLowerDownLeft"  "Facial_MouthLowerDownRight"
+ [87] "Facial_MouthUpperUpLeft"    "Facial_MouthUpperUpRight"  
+ [89] "Facial_MouthShrugLower"     "Facial_MouthShrugUpper"    
+ [91] "Facial_MouthRollLower"      "Facial_MouthRollUpper"     
+ [93] "Facial_MouthFunnel"         "Facial_MouthPucker"        
+ [95] "Facial_TongueOut"           "BodyX"                     
+ [97] "BodyY"                      "BodyZ"                     
+ [99] "BodyRotX"                   "BodyRotY"                  
+[101] "BodyRotZ"                   "HipsX"                     
+[103] "HipsY"                      "HipsZ"                     
+[105] "HipsRotX"                   "HipsRotY"                  
+[107] "HipsRotZ"                   "SpineX"                    
+[109] "SpineY"                     "SpineZ"                    
+[111] "SpineRotX"                  "SpineRotY"                 
+[113] "SpineRotZ"                  "Spine1X"                   
+[115] "Spine1Y"                    "Spine1Z"                   
+[117] "Spine1RotX"                 "Spine1RotY"                
+[119] "Spine1RotZ"                 "Spine2X"                   
+[121] "Spine2Y"                    "Spine2Z"                   
+[123] "Spine2RotX"                 "Spine2RotY"                
+[125] "Spine2RotZ"                 "NeckX"                     
+[127] "NeckY"                      "NeckZ"                     
+[129] "NeckRotX"                   "NeckRotY"                  
+[131] "NeckRotZ"                   "HeadX"                     
+[133] "HeadY"                      "HeadZ"                     
+[135] "HeadRotX"                   "HeadRotY"                  
+[137] "HeadRotZ"                   "HeadCenterX"               
+[139] "HeadCenterY"                "HeadCenterZ"               
+[141] "HeadCenterRotX"             "HeadCenterRotY"            
+[143] "HeadCenterRotZ"             "LeftShoulderX"             
+[145] "LeftShoulderY"              "LeftShoulderZ"             
+[147] "LeftShoulderRotX"           "LeftShoulderRotY"          
+[149] "LeftShoulderRotZ"           "LeftArmX"                  
+[151] "LeftArmY"                   "LeftArmZ"                  
+[153] "LeftArmRotX"                "LeftArmRotY"               
+[155] "LeftArmRotZ"                "LeftForeArmX"              
+[157] "LeftForeArmY"               "LeftForeArmZ"              
+[159] "LeftForeArmRotX"            "LeftForeArmRotY"           
+[161] "LeftForeArmRotZ"            "LeftHandX"                 
+[163] "LeftHandY"                  "LeftHandZ"                 
+[165] "LeftHandRotX"               "LeftHandRotY"              
+[167] "LeftHandRotZ"               "RightShoulderX"            
+[169] "RightShoulderY"             "RightShoulderZ"            
+[171] "RightShoulderRotX"          "RightShoulderRotY"         
+[173] "RightShoulderRotZ"          "RightArmX"                 
+[175] "RightArmY"                  "RightArmZ"                 
+[177] "RightArmRotX"               "RightArmRotY"              
+[179] "RightArmRotZ"               "RightForeArmX"             
+[181] "RightForeArmY"              "RightForeArmZ"             
+[183] "RightForeArmRotX"           "RightForeArmRotY"          
+[185] "RightForeArmRotZ"           "RightHandX"                
+[187] "RightHandY"                 "RightHandZ"                
+[189] "RightHandRotX"              "RightHandRotY"             
+[191] "RightHandRotZ"              "Partner"                   
+[193] "Listening"                  "Actor"                     
+[195] "Communication"              "Version"                   
+[197] "Environment"                "actor0"                    
+[199] "actor1"                     "Size"                      
+[201] "AOI.gaze"                   "AOI.left"                  
+[203] "AOI.right"                 </code></pre>
+</div>
+</div>
+<p>The columns <code>Dyad</code> and <code>Time</code> specify the unique VERSE experiment. The column <code>Identifier</code> captures the interaction partner. There are columns that capture audio (e.g., <code>Speaking</code>), gaze (e.g., <code>LeftEye_Pos_X</code>), movement (e.g., <code>HeadX</code>) and facial expressions (all columns starting with <code>Facial_</code>). The dataframe also contains all the information that was present in the <code>df.info</code> in which we captured the events.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  df <span class="sc">|&gt;</span> <span class="fu">select</span>(Dyad, Time, Identifier, Frame, Avatar) <span class="sc">|&gt;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(Frame)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Dyad</th>
+<th style="text-align: left;">Time</th>
+<th style="text-align: left;">Identifier</th>
+<th style="text-align: right;">Frame</th>
+<th style="text-align: left;">Avatar</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">004</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">004</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">004</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>When we print the first few rows of the columns describing the interaction partners and the experiment session, we can see that the data is in a mix of wide and long format - each Identifier’s data has its own rows but all the different tracked data is captured in columns.</p>
+</section>
+<section id="emotional-facial-expressions" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Emotional facial expressions</h1>
+<p>First, we are interested in the facial expressions. We want to extract both aggregated facial expressions associated with emotions and also plot the timecourse of these expressions across the conversation. We can prepare the data with the <code>featEFE</code> function. While we could provide our own categorisation of which facial expressions should be captured in which emotional expression, we will use the precoded categorisation based on <span class="citation" data-cites="aldenhoven2026real">Aldenhoven et al. (<a href="#ref-aldenhoven2026real" role="doc-biblioref">2026</a>)</span>.</p>
+<p>We are also going to use the <code>rescaleVERSE</code> switch: VERSE combines several weighted blendshapes into facial expressions, sometimes resulting in a maximum above 1. Rescaling results in each facial expression being tracked on a scale from 0 to 1.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># use the function</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>df.efe <span class="ot">=</span> <span class="fu">featEFE</span>(df,                 <span class="co"># dataframe with tracked VERSE data</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">rescaleVERSE =</span> T,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">rs.path =</span> rs.path,  <span class="co"># path to the results folder</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">return =</span> T,         <span class="co"># return the aggregated summary</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>                 <span class="at">recompute =</span> redo)  <span class="co"># whether to recompute if it already exists</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>--------- Extracting emotional facial expressions features ---------
+14:32:43 : Loading aggregated facial expressions
+14:32:43 : Done</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(df.efe)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 3%">
+<col style="width: 1%">
+<col style="width: 2%">
+<col style="width: 3%">
+<col style="width: 2%">
+<col style="width: 2%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 2%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 2%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 4%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 2%">
+<col style="width: 3%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Dyad</th>
+<th style="text-align: left;">Identifier</th>
+<th style="text-align: left;">Time</th>
+<th style="text-align: left;">Partner</th>
+<th style="text-align: right;">EFE_Anger_Total</th>
+<th style="text-align: right;">EFE_Disgust_Total</th>
+<th style="text-align: right;">EFE_Joy_Total</th>
+<th style="text-align: right;">EFE_Fear_Total</th>
+<th style="text-align: right;">EFE_Sadness_Total</th>
+<th style="text-align: right;">EFE_Surprise_Total</th>
+<th style="text-align: right;">EFE_FEX_Total</th>
+<th style="text-align: right;">EFE_Anger_Listening</th>
+<th style="text-align: right;">EFE_Anger_Silence</th>
+<th style="text-align: right;">EFE_Anger_Speaking</th>
+<th style="text-align: right;">EFE_Disgust_Listening</th>
+<th style="text-align: right;">EFE_Disgust_Silence</th>
+<th style="text-align: right;">EFE_Disgust_Speaking</th>
+<th style="text-align: right;">EFE_Joy_Listening</th>
+<th style="text-align: right;">EFE_Joy_Silence</th>
+<th style="text-align: right;">EFE_Joy_Speaking</th>
+<th style="text-align: right;">EFE_Fear_Listening</th>
+<th style="text-align: right;">EFE_Fear_Silence</th>
+<th style="text-align: right;">EFE_Fear_Speaking</th>
+<th style="text-align: right;">EFE_Sadness_Listening</th>
+<th style="text-align: right;">EFE_Sadness_Silence</th>
+<th style="text-align: right;">EFE_Sadness_Speaking</th>
+<th style="text-align: right;">EFE_Surprise_Listening</th>
+<th style="text-align: right;">EFE_Surprise_Silence</th>
+<th style="text-align: right;">EFE_Surprise_Speaking</th>
+<th style="text-align: right;">EFE_FEX_Listening</th>
+<th style="text-align: right;">EFE_FEX_Silence</th>
+<th style="text-align: right;">EFE_FEX_Speaking</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: right;">0.0203358</td>
+<td style="text-align: right;">0.0211403</td>
+<td style="text-align: right;">0.0265747</td>
+<td style="text-align: right;">0.0196029</td>
+<td style="text-align: right;">0.0124534</td>
+<td style="text-align: right;">0.0138364</td>
+<td style="text-align: right;">0.0189906</td>
+<td style="text-align: right;">0.0146949</td>
+<td style="text-align: right;">0.0238028</td>
+<td style="text-align: right;">0.0212137</td>
+<td style="text-align: right;">0.0099129</td>
+<td style="text-align: right;">0.0199476</td>
+<td style="text-align: right;">0.0307025</td>
+<td style="text-align: right;">0.0173057</td>
+<td style="text-align: right;">0.0300327</td>
+<td style="text-align: right;">0.0301792</td>
+<td style="text-align: right;">0.0117658</td>
+<td style="text-align: right;">0.0207025</td>
+<td style="text-align: right;">0.0244119</td>
+<td style="text-align: right;">0.0099494</td>
+<td style="text-align: right;">0.0141168</td>
+<td style="text-align: right;">0.0127231</td>
+<td style="text-align: right;">0.0056144</td>
+<td style="text-align: right;">0.0135800</td>
+<td style="text-align: right;">0.0202430</td>
+<td style="text-align: right;">0.0115405</td>
+<td style="text-align: right;">0.0203637</td>
+<td style="text-align: right;">0.0232455</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">0.0151645</td>
+<td style="text-align: right;">0.0108309</td>
+<td style="text-align: right;">0.0104455</td>
+<td style="text-align: right;">0.0156998</td>
+<td style="text-align: right;">0.0179696</td>
+<td style="text-align: right;">0.0134654</td>
+<td style="text-align: right;">0.0139293</td>
+<td style="text-align: right;">0.0192076</td>
+<td style="text-align: right;">0.0181098</td>
+<td style="text-align: right;">0.0102871</td>
+<td style="text-align: right;">0.0135060</td>
+<td style="text-align: right;">0.0127047</td>
+<td style="text-align: right;">0.0076690</td>
+<td style="text-align: right;">0.0077706</td>
+<td style="text-align: right;">0.0101078</td>
+<td style="text-align: right;">0.0122729</td>
+<td style="text-align: right;">0.0141399</td>
+<td style="text-align: right;">0.0165531</td>
+<td style="text-align: right;">0.0158533</td>
+<td style="text-align: right;">0.0222743</td>
+<td style="text-align: right;">0.0214590</td>
+<td style="text-align: right;">0.0124696</td>
+<td style="text-align: right;">0.0057831</td>
+<td style="text-align: right;">0.0118019</td>
+<td style="text-align: right;">0.0193165</td>
+<td style="text-align: right;">0.0137803</td>
+<td style="text-align: right;">0.0151227</td>
+<td style="text-align: right;">0.0129781</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The aggregated dataframe captures the average emotional facial expressions and the overall facial expressiveness <code>FEX</code>, in total but also separately for different <code>Communication</code> events - speaking, listening and silence. This wasn’t a very emotional conversation, so we don’t expect high values here. Let’s have a look at the timecourse data that was automatically saved in our results folder.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>df.face <span class="ot">=</span> arrow<span class="sc">::</span><span class="fu">read_feather</span>(<span class="fu">file.path</span>(rs.path, <span class="st">"dataEFE.arrow"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Timecourse =</span> <span class="fu">difftime</span>(Timestamp, startExp, <span class="at">units =</span> <span class="st">"min"</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="interactR_conversation_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can see that there is bursts of Joy expression, for instance around the 2 minute 40 second mark. This small period is also observable in the screen captures.</p>
+</section>
+<section id="interpersonal-synchrony-of-joy" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> Interpersonal synchrony of joy</h1>
+<p>In the above example, P1 was smiling before P2 started smiling. This sort of adaptation of facial expressions is something we can capture using interpersonal synchrony (IPS) calculated with windowed-lagged cross-correlation (WLCC). In this technique, we are sliding windows along our time course and shifting them for one interaction partner before correlating the values. Thus, the correlation captures the association between the timecourse data of both interaction partners in these windows, either simultaneously or with one partner “leading” the other, i.e.&nbsp;their behaviour happening first.</p>
+<p>We can calculate the WLCC of Joy using the <code>extractIPS</code> function.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>df.wlcc <span class="ot">=</span> <span class="fu">extractIPS</span>(df.face,</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"EFE_Joy"</span>,            <span class="co"># column for which IPS is extracted</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"WLCC"</span>,               <span class="co"># type of IPS</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>                     fps,                  <span class="co"># frame rate of the data</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>                     <span class="at">seed =</span> <span class="dv">4480</span>,          <span class="co"># setting a seed for reproducibility</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>                     <span class="at">rs.path =</span> rs.path,    <span class="co"># results folder</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">winSample =</span> fps <span class="sc">*</span> <span class="dv">7</span>,  <span class="co"># size of the window in samples - 7 seconds</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>                     <span class="at">incSample =</span> fps <span class="sc">/</span> <span class="dv">2</span>,  <span class="co"># size of the increment for sliding in samples</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">lagSample =</span> fps <span class="sc">*</span> <span class="dv">2</span>,  <span class="co"># size of the lag, i.e., shifting one partner's data in samples</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>                     <span class="at">recompute =</span> redo)     <span class="co"># whether to recompute if it already exists</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>---------------------- Extract IPS using WLCC ----------------------
+14:32:43 : Loading  WLCC  features
+14:32:43 : Done</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(df.wlcc))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 9%">
+<col style="width: 6%">
+<col style="width: 9%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 5%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 17%">
+<col style="width: 4%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Lag</th>
+<th style="text-align: right;">WLCC</th>
+<th style="text-align: left;">Window</th>
+<th style="text-align: right;">startFrame</th>
+<th style="text-align: right;">endFrame</th>
+<th style="text-align: left;">Leading</th>
+<th style="text-align: left;">Dyad</th>
+<th style="text-align: left;">Method</th>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">Time</th>
+<th style="text-align: right;">seed</th>
+<th style="text-align: right;">iteration</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">-2.00000</td>
+<td style="text-align: right;">-0.1391142</td>
+<td style="text-align: left;">w1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">353</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">observed</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">4480</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-1.96875</td>
+<td style="text-align: right;">-0.1578093</td>
+<td style="text-align: left;">w1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">353</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">observed</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">4480</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">-1.93750</td>
+<td style="text-align: right;">-0.1865997</td>
+<td style="text-align: left;">w1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">353</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">observed</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">4480</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-1.90625</td>
+<td style="text-align: right;">-0.2118793</td>
+<td style="text-align: left;">w1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">353</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">observed</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">4480</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">-1.87500</td>
+<td style="text-align: right;">-0.2493965</td>
+<td style="text-align: left;">w1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">353</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">observed</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">4480</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-1.84375</td>
+<td style="text-align: right;">-0.2889060</td>
+<td style="text-align: left;">w1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">353</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">observed</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">4480</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The resulting dataframe contains the WLCC values for each lag and window, while also capturing other information for instance what the lag means in the column <code>Leading</code>, the seed that was used and which iteration this data comes from. Those last two columns are not relevant when we compute real, observed IPS as also captured in column <code>Method</code>, but will become relevant later.</p>
+<p>Let’s now visualise the same part of the conversation as above but focusing on Joy. We highlight one window with a high and one window with a low average WLCC value across lags.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="interactR_conversation_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can aggregate the WLCC values using <code>featWLCC</code>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>df.wlcc.agg <span class="ot">=</span> <span class="fu">featWLCC</span>(df.wlcc, </span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>                       <span class="at">absolute =</span> F,      <span class="co"># we want to keep the signed values</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                       <span class="at">r2z =</span> F,           <span class="co"># stick with correlation coefficients</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">rs.path =</span> rs.path,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                       <span class="at">recompute =</span> redo)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>-------------- Extracting IPS features based on WLCC  --------------
+14:32:44 : Loading WLCC feature dataframe</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>14:32:44 : Done</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(df.wlcc.agg)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 3%">
+<col style="width: 10%">
+<col style="width: 5%">
+<col style="width: 4%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 11%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Dyad</th>
+<th style="text-align: left;">Time</th>
+<th style="text-align: left;">Identifier</th>
+<th style="text-align: left;">Method</th>
+<th style="text-align: right;">WLCC_EFE_Joy_AVG</th>
+<th style="text-align: right;">WLCC_EFE_Joy_MED</th>
+<th style="text-align: right;">WLCC_EFE_Joy_STD</th>
+<th style="text-align: right;">DyadWLCC_EFE_Joy_AVG</th>
+<th style="text-align: right;">DyadWLCC_EFE_Joy_MED</th>
+<th style="text-align: right;">DyadWLCC_EFE_Joy_STD</th>
+<th style="text-align: right;">DyadWLCC_EFE_Joy_PEAK</th>
+<th style="text-align: right;">WLCC_EFE_Joy_PEAK</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">observed</td>
+<td style="text-align: right;">0.0593318</td>
+<td style="text-align: right;">0.0401019</td>
+<td style="text-align: right;">0.2471295</td>
+<td style="text-align: right;">0.02121</td>
+<td style="text-align: right;">-0.0005476</td>
+<td style="text-align: right;">0.255111</td>
+<td style="text-align: right;">0.3757539</td>
+<td style="text-align: right;">0.2995934</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: left;">observed</td>
+<td style="text-align: right;">-0.0171267</td>
+<td style="text-align: right;">-0.0447488</td>
+<td style="text-align: right;">0.2566806</td>
+<td style="text-align: right;">0.02121</td>
+<td style="text-align: right;">-0.0005476</td>
+<td style="text-align: right;">0.255111</td>
+<td style="text-align: right;">0.3757539</td>
+<td style="text-align: right;">0.2568312</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The dataframe contains leading of each interaction partner, prefix = <code>WLCC</code>, as well as overall IPS values across all lags with prefix <code>DyadWLCC</code>. For each value, the data was aggregated using the grand mean, median, standard deviation as well as the mean of the peak, i.e.&nbsp;maximum value, of each window. While P1 was more likely to lead a joyful expression, the peak is more similar across both interaction partners, suggesting that if P2 was leading a joyful expression it was with a similar association as P1, but they did so less often.</p>
+<section id="comparison-with-pseudo-ips" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="comparison-with-pseudo-ips"><span class="header-section-number">7.1</span> Comparison with pseudo IPS</h2>
+<p>We might be interested in whether the correlations are just artefacts or meaningful adaptation by our interaction partners. To assess this, we can compute pseudo IPS by shuffling either the dyads or the timecourse data of one interaction partner in segments. Since we only have one dyad in our example dataset, we will use segment shuffling and then compare the lag values using permutation testing.</p>
+<p>To create pseudo IPS, we can use the same function as before but not set the number of segment shuffling to 200. Depending on your computer, this may take a few minutes. On a MacBook Air with an M4, shuffling 400 times took about 6min.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>df.pwlcc <span class="ot">=</span> <span class="fu">extractIPS</span>(df.face,</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"EFE_Joy"</span>,            <span class="co"># column for which IPS is extracted</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"WLCC"</span>,               <span class="co"># type of IPS</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>                     fps,                  <span class="co"># frame rate of the data</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>                     <span class="at">seed =</span> <span class="dv">4480</span>,          <span class="co"># setting a seed for reproducibility</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>                     <span class="at">rs.path =</span> rs.path,    <span class="co"># results folder</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">nSegment =</span> <span class="dv">400</span>,       <span class="co"># shuffle the segments 200 times per dyad</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>                     <span class="at">winSample =</span> fps <span class="sc">*</span> <span class="dv">7</span>,  <span class="co"># size of the window in samples - 7 seconds</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">incSample =</span> fps <span class="sc">/</span> <span class="dv">2</span>,  <span class="co"># size of the increment for sliding in samples</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>                     <span class="at">lagSample =</span> fps <span class="sc">*</span> <span class="dv">2</span>,  <span class="co"># size of the lag, i.e., shifting one partner's data in samples</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>                     <span class="at">recompute =</span> redo)     <span class="co"># whether to recompute if it already exists</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>---------------------- Extract IPS using WLCC ----------------------
+14:32:44 : Loading  WLCC  features
+14:32:45 : Done</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(df.pwlcc))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 8%">
+<col style="width: 5%">
+<col style="width: 9%">
+<col style="width: 7%">
+<col style="width: 6%">
+<col style="width: 5%">
+<col style="width: 11%">
+<col style="width: 6%">
+<col style="width: 17%">
+<col style="width: 4%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Lag</th>
+<th style="text-align: right;">WLCC</th>
+<th style="text-align: left;">Window</th>
+<th style="text-align: right;">startFrame</th>
+<th style="text-align: right;">endFrame</th>
+<th style="text-align: left;">Leading</th>
+<th style="text-align: left;">Dyad</th>
+<th style="text-align: left;">Method</th>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">Time</th>
+<th style="text-align: right;">seed</th>
+<th style="text-align: right;">iteration</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">-2.00000</td>
+<td style="text-align: right;">0.3522574</td>
+<td style="text-align: left;">w1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">353</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">pseudoSegment</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">4480</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-1.96875</td>
+<td style="text-align: right;">0.3393082</td>
+<td style="text-align: left;">w1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">353</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">pseudoSegment</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">4480</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">-1.93750</td>
+<td style="text-align: right;">0.3322341</td>
+<td style="text-align: left;">w1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">353</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">pseudoSegment</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">4480</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-1.90625</td>
+<td style="text-align: right;">0.3187459</td>
+<td style="text-align: left;">w1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">353</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">pseudoSegment</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">4480</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">-1.87500</td>
+<td style="text-align: right;">0.3105994</td>
+<td style="text-align: left;">w1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">353</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">pseudoSegment</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">4480</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-1.84375</td>
+<td style="text-align: right;">0.2973979</td>
+<td style="text-align: left;">w1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">353</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">pseudoSegment</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">4480</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The resulting dataframe looks exactly the same as the <code>df.wlcc</code> from before, but the Method value is <code>pseudoSegment</code>. Let’s compare whether there is a difference between observed and pseudo IPS of Joy using the function <code>compareIPS</code>. While we could do this by ignoring the sign and taking the absolute value of IPS, we want to actually be able to distinguish whether interaction partners react to each other with a similar or the opposite behaviour.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>df.comp <span class="ot">=</span> <span class="fu">compareIPS</span>(<span class="fu">rbind</span>(df.wlcc, df.pwlcc),  <span class="co"># bind the two dataframes together as input</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">perm =</span> T,                  <span class="co"># we use permutation testing instead of t-tests</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                     <span class="at">alpha =</span> <span class="fl">0.05</span>,</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">rs.path =</span> rs.path,</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>                     <span class="at">recompute =</span> redo)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>---------------- Comparing pseudo and observed IPS  ----------------
+14:32:58 : Loading IPS comparison
+14:32:58 : Done</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(df.comp))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 16%">
+<col style="width: 9%">
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 14%">
+<col style="width: 11%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Lag</th>
+<th style="text-align: left;">Method</th>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: right;">STD</th>
+<th style="text-align: right;">AVG</th>
+<th style="text-align: right;">Probability</th>
+<th style="text-align: left;">Direction</th>
+<th style="text-align: left;">Evaluation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">-2.00000</td>
+<td style="text-align: left;">observed</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">-0.0558606</td>
+<td style="text-align: right;">0.925</td>
+<td style="text-align: left;">lesser</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-2.00000</td>
+<td style="text-align: left;">pseudoSegment</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: right;">0.0335906</td>
+<td style="text-align: right;">-0.0043560</td>
+<td style="text-align: right;">0.925</td>
+<td style="text-align: left;">lesser</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">-1.96875</td>
+<td style="text-align: left;">observed</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">-0.0570278</td>
+<td style="text-align: right;">0.930</td>
+<td style="text-align: left;">lesser</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-1.96875</td>
+<td style="text-align: left;">pseudoSegment</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: right;">0.0335710</td>
+<td style="text-align: right;">-0.0049389</td>
+<td style="text-align: right;">0.930</td>
+<td style="text-align: left;">lesser</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">-1.93750</td>
+<td style="text-align: left;">observed</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">-0.0589565</td>
+<td style="text-align: right;">0.945</td>
+<td style="text-align: left;">lesser</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-1.93750</td>
+<td style="text-align: left;">pseudoSegment</td>
+<td style="text-align: left;">EFE_Joy</td>
+<td style="text-align: right;">0.0336244</td>
+<td style="text-align: right;">-0.0055922</td>
+<td style="text-align: right;">0.945</td>
+<td style="text-align: left;">lesser</td>
+<td style="text-align: left;">NA</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The resulting dataframe contains one row per lag. For each lag, we get the average and standard deviation across the windows, the probability of a difference, the <code>Direction</code> (greater or lesser) and <code>Evaluation</code> which is <code>*</code> if the probability exceeded our alpha.</p>
+<p>We can plot these results with <code>plotWLCCcomp</code>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plotWLCCcomp</span>(df.comp, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="interactR_conversation_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This plot shows that observed IPS differed significantly from pseudo IPS only for a small block of the positive lags. Specifically, observed IPS exceeds pseudo IPS when P1 was leading, suggesting that P2 reacted to P1’s joyful expressions with a more joyful expression as well. This corresponds to what we saw above when plotting the timecourse of joyful expressions as well.</p>
+</section>
+</section>
+<section id="head-shaking-and-nodding" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> Head shaking and nodding</h1>
+<p>Now, we want to use a Z-crossing algorithm inspired by <span class="citation" data-cites="hale2020you">Hale et al. (<a href="#ref-hale2020you" role="doc-biblioref">2020</a>)</span> to detect head shaking and nodding during our conversation. First, we need to preprocess our head movement data: decentring the data and removing artificial phase-wrapping jumps (e.g., flipping between -180 and +180 or 0 and 360 degrees) from rotational values</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>df.head <span class="ot">=</span> <span class="fu">preproHead</span>(df,</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">c</span>(<span class="st">"HeadCenterRotX"</span>, <span class="st">"HeadCenterRotY"</span>), <span class="co"># names of the translational columns</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">c</span>(<span class="st">"HeadCenterX"</span>, <span class="st">"HeadCenterY"</span>),       <span class="co"># names of the rotational columns</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">rs.path =</span> rs.path, </span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>                     <span class="at">return =</span> T,</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>                     <span class="at">recompute =</span> redo)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>---- Preprocessing translational and rotational head movements  ----
+14:32:58 : Loading preprocessed head movement data
+14:32:58 : Done</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(df.head))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 2%">
+<col style="width: 3%">
+<col style="width: 2%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 4%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 4%">
+<col style="width: 4%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Dyad</th>
+<th style="text-align: left;">Identifier</th>
+<th style="text-align: right;">Frame</th>
+<th style="text-align: left;">Timestamp</th>
+<th style="text-align: left;">Time</th>
+<th style="text-align: left;">Communication</th>
+<th style="text-align: right;">HeadCenterRotX</th>
+<th style="text-align: right;">HeadCenterRotY</th>
+<th style="text-align: right;">HeadCenterX</th>
+<th style="text-align: right;">HeadCenterY</th>
+<th style="text-align: right;">HeadCenterRotX_fixCirc</th>
+<th style="text-align: right;">HeadCenterRotY_fixCirc</th>
+<th style="text-align: right;">HeadCenterX_detrended</th>
+<th style="text-align: right;">HeadCenterY_detrended</th>
+<th style="text-align: right;">HeadCenterRotX_fixCirc_detrended</th>
+<th style="text-align: right;">HeadCenterRotY_fixCirc_detrended</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">2026-08-13 13:52:55</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">Speaking</td>
+<td style="text-align: right;">6.973387</td>
+<td style="text-align: right;">66.17638</td>
+<td style="text-align: right;">-0.7413241</td>
+<td style="text-align: right;">1.228718</td>
+<td style="text-align: right;">6.973387</td>
+<td style="text-align: right;">66.17638</td>
+<td style="text-align: right;">0.0184247</td>
+<td style="text-align: right;">-0.0110894</td>
+<td style="text-align: right;">6.486957</td>
+<td style="text-align: right;">-12.98640</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2026-08-13 13:52:55</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">Speaking</td>
+<td style="text-align: right;">7.123644</td>
+<td style="text-align: right;">66.32227</td>
+<td style="text-align: right;">-0.7405155</td>
+<td style="text-align: right;">1.228510</td>
+<td style="text-align: right;">7.123644</td>
+<td style="text-align: right;">66.32227</td>
+<td style="text-align: right;">0.0192333</td>
+<td style="text-align: right;">-0.0112974</td>
+<td style="text-align: right;">6.637214</td>
+<td style="text-align: right;">-12.84051</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">2026-08-13 13:52:55</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">Speaking</td>
+<td style="text-align: right;">7.268878</td>
+<td style="text-align: right;">66.48013</td>
+<td style="text-align: right;">-0.7397080</td>
+<td style="text-align: right;">1.228319</td>
+<td style="text-align: right;">7.268878</td>
+<td style="text-align: right;">66.48013</td>
+<td style="text-align: right;">0.0200408</td>
+<td style="text-align: right;">-0.0114884</td>
+<td style="text-align: right;">6.782448</td>
+<td style="text-align: right;">-12.68265</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">2026-08-13 13:52:55</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">Speaking</td>
+<td style="text-align: right;">7.431265</td>
+<td style="text-align: right;">66.64230</td>
+<td style="text-align: right;">-0.7393608</td>
+<td style="text-align: right;">1.228102</td>
+<td style="text-align: right;">7.431265</td>
+<td style="text-align: right;">66.64230</td>
+<td style="text-align: right;">0.0203880</td>
+<td style="text-align: right;">-0.0117054</td>
+<td style="text-align: right;">6.944835</td>
+<td style="text-align: right;">-12.52048</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">2026-08-13 13:52:55</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">Speaking</td>
+<td style="text-align: right;">7.605822</td>
+<td style="text-align: right;">66.81541</td>
+<td style="text-align: right;">-0.7390162</td>
+<td style="text-align: right;">1.227868</td>
+<td style="text-align: right;">7.605822</td>
+<td style="text-align: right;">66.81541</td>
+<td style="text-align: right;">0.0207326</td>
+<td style="text-align: right;">-0.0119394</td>
+<td style="text-align: right;">7.119392</td>
+<td style="text-align: right;">-12.34737</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">2026-08-13 13:52:55</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">Speaking</td>
+<td style="text-align: right;">7.674880</td>
+<td style="text-align: right;">66.93049</td>
+<td style="text-align: right;">-0.7389467</td>
+<td style="text-align: right;">1.227769</td>
+<td style="text-align: right;">7.674880</td>
+<td style="text-align: right;">66.93049</td>
+<td style="text-align: right;">0.0208021</td>
+<td style="text-align: right;">-0.0120384</td>
+<td style="text-align: right;">7.188450</td>
+<td style="text-align: right;">-12.23229</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>This function saved a new data file, containing only the relevant head movement data and some general information, i.e.&nbsp;<code>Communication</code>. We can use this dataframe to detect head gestures (nodding and shaking) using <code>featHeadGestures</code>. Here, we are using a minimum framewise degree of movement and filter anything below it. This threshold depends on your setup and your frame rate. To determine it, it can be helpful to create example data, screen capture your movements and compare the results of different thresholds. There are also quite a few additional settings that you can test, as described below in the comments.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>df.gesture <span class="ot">=</span> <span class="fu">featHeadGestures</span>(df.head, </span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>                              <span class="st">"HeadCenterRotX_fixCirc_detrended"</span>, <span class="co"># column for nodding</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>                              <span class="st">"HeadCenterRotY_fixCirc_detrended"</span>, <span class="co"># column for shaking</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>                              fps, </span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>                              <span class="fl">0.4</span>,   <span class="co"># minimum framewise degree of movement</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>                              <span class="at">win =</span> <span class="dv">2</span>, <span class="co"># consider windows of length 2 seconds</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>                              <span class="at">minFreq =</span> <span class="fl">1.5</span>, <span class="co"># focus on movements with at least 1.5Hz</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>                              <span class="at">maxFreq =</span> <span class="fl">6.5</span>, <span class="co"># and below 6.5Hz</span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>                              <span class="at">winCentre =</span> <span class="cn">NULL</span>, <span class="co"># use win for the window size of the centring</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>                              <span class="at">winSmooth =</span> <span class="dv">0</span>,    <span class="co"># do not use any smoothing</span></span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>                              <span class="at">rs.path =</span> rs.path, </span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>                              <span class="at">return =</span> T, </span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>                              <span class="at">recompute =</span> redo)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>--------------------- Extracting head gestures ---------------------
+14:32:58 : Loading Head Gesture features
+14:32:58 : Done</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(df.gesture <span class="sc">|&gt;</span> <span class="fu">select</span>(Identifier, Frame, <span class="sc">!</span><span class="fu">any_of</span>(<span class="fu">colnames</span>(df.head)))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 3%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 8%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 8%">
+<col style="width: 7%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Identifier</th>
+<th style="text-align: right;">Frame</th>
+<th style="text-align: right;">Nodding</th>
+<th style="text-align: right;">Shaking</th>
+<th style="text-align: right;">Nodding_zc</th>
+<th style="text-align: left;">Nodding_zcT</th>
+<th style="text-align: right;">Nodding_diff</th>
+<th style="text-align: right;">Nodding_sum</th>
+<th style="text-align: left;">Nodding_rel</th>
+<th style="text-align: right;">Shaking_zc</th>
+<th style="text-align: left;">Shaking_zcT</th>
+<th style="text-align: right;">Shaking_diff</th>
+<th style="text-align: right;">Shaking_sum</th>
+<th style="text-align: left;">Shaking_rel</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.6714676</td>
+<td style="text-align: right;">-3.411912</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.5</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">-0.4400393</td>
+<td style="text-align: right;">-3.468037</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0.2314283</td>
+<td style="text-align: right;">0.5</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0.0561248</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">-0.2140778</td>
+<td style="text-align: right;">-3.508229</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0.2259615</td>
+<td style="text-align: right;">0.5</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0.0401924</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.0280063</td>
+<td style="text-align: right;">-3.539563</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0.2420841</td>
+<td style="text-align: right;">0.5</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0.0313337</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.2817038</td>
+<td style="text-align: right;">-3.547681</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0.2536975</td>
+<td style="text-align: right;">0.5</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0.0081174</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">0.4294374</td>
+<td style="text-align: right;">-3.601528</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0.1477336</td>
+<td style="text-align: right;">0.5</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">0.0538473</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">FALSE</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>This table focuses on the newly created column. <code>Nodding</code> and <code>Shaking</code> contain the preprocessed signal and <code>diff</code> columns the framewise change in degree, while columns ending in <code>zc</code> track the Zero-crossings. All Zero-crossings above the minimum framewise degree of movement are summed up with a sliding 2-second window, which is captured in the columns ending in <code>sum</code>. These sums are only considered relevant head gestures, as captured in the columns ending in <code>rel</code>, when they are within the defined frequency range. If head shaking and nodding is detected at the same time, only the gesture that is associated with the larger movement is considered relevant.</p>
+<p>We can now plot the head gestures across time to see where some nodding or head shaking was detected. For this, we can use the plotting function <code>plotHeadGestures</code> which plots one Identifier at a time.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>minFrame <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">=</span> <span class="fu">plotHeadGestures</span>(df.head <span class="sc">|&gt;</span> <span class="fu">filter</span>(Identifier <span class="sc">==</span> <span class="st">"P1"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>                <span class="fu">mutate</span>(<span class="co"># adding the timecourse to ease comparison with the screen capture</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">Timecourse =</span> <span class="fu">difftime</span>(Timestamp, startExp, <span class="at">units =</span> <span class="st">"secs"</span>)</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>                ), </span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>                <span class="st">"HeadCenterRotX_fixCirc_detrended"</span>, <span class="co"># column for nodding</span></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>                <span class="st">"HeadCenterRotY_fixCirc_detrended"</span>, <span class="co"># column for shaking</span></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>                fps, </span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>                <span class="fl">0.4</span>,   <span class="co"># minimum framewise degree of movement</span></span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>                <span class="at">minFrame =</span> minFrame,          <span class="co"># where to start plotting</span></span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>                <span class="at">maxFrame =</span> minFrame <span class="sc">+</span> <span class="dv">60</span><span class="sc">*</span>fps, <span class="co"># where to end plotting</span></span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>                <span class="at">win =</span> <span class="dv">2</span>, <span class="co"># consider windows of length 2 seconds</span></span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>                <span class="at">minFreq =</span> <span class="fl">1.5</span>, <span class="co"># focus on movements with at least 1.5Hz</span></span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>                <span class="at">maxFreq =</span> <span class="fl">6.5</span>, <span class="co"># and below 6.5Hz</span></span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>                <span class="at">winCentre =</span> <span class="cn">NULL</span>, <span class="co"># use win for the window size of the centring</span></span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>                <span class="at">winSmooth =</span> <span class="dv">0</span>,    <span class="co"># do not use any smoothing</span></span>
+<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a>                <span class="at">legend =</span> F        <span class="co"># no legend</span></span>
+<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a>                )</span>
+<span id="cb33-20"><a href="#cb33-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-21"><a href="#cb33-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-22"><a href="#cb33-22" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">=</span> <span class="fu">plotHeadGestures</span>(df.head <span class="sc">|&gt;</span> <span class="fu">filter</span>(Identifier <span class="sc">==</span> <span class="st">"P2"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb33-23"><a href="#cb33-23" aria-hidden="true" tabindex="-1"></a>                <span class="fu">mutate</span>( <span class="co"># adding the timecourse to ease comparison with the screen capture</span></span>
+<span id="cb33-24"><a href="#cb33-24" aria-hidden="true" tabindex="-1"></a>                  <span class="at">Timecourse =</span> <span class="fu">difftime</span>(Timestamp, startExp, <span class="at">units =</span> <span class="st">"secs"</span>)</span>
+<span id="cb33-25"><a href="#cb33-25" aria-hidden="true" tabindex="-1"></a>                ),  </span>
+<span id="cb33-26"><a href="#cb33-26" aria-hidden="true" tabindex="-1"></a>                <span class="st">"HeadCenterRotX_fixCirc_detrended"</span>, <span class="co"># column for nodding</span></span>
+<span id="cb33-27"><a href="#cb33-27" aria-hidden="true" tabindex="-1"></a>                <span class="st">"HeadCenterRotY_fixCirc_detrended"</span>, <span class="co"># column for shaking</span></span>
+<span id="cb33-28"><a href="#cb33-28" aria-hidden="true" tabindex="-1"></a>                fps, </span>
+<span id="cb33-29"><a href="#cb33-29" aria-hidden="true" tabindex="-1"></a>                <span class="fl">0.4</span>,   <span class="co"># minimum framewise degree of movement</span></span>
+<span id="cb33-30"><a href="#cb33-30" aria-hidden="true" tabindex="-1"></a>                <span class="at">minFrame =</span> minFrame,          <span class="co"># where to start plotting</span></span>
+<span id="cb33-31"><a href="#cb33-31" aria-hidden="true" tabindex="-1"></a>                <span class="at">maxFrame =</span> minFrame <span class="sc">+</span> <span class="dv">60</span><span class="sc">*</span>fps, <span class="co"># where to end plotting</span></span>
+<span id="cb33-32"><a href="#cb33-32" aria-hidden="true" tabindex="-1"></a>                <span class="at">win =</span> <span class="dv">2</span>, <span class="co"># consider windows of length 2 seconds</span></span>
+<span id="cb33-33"><a href="#cb33-33" aria-hidden="true" tabindex="-1"></a>                <span class="at">minFreq =</span> <span class="fl">1.5</span>, <span class="co"># focus on movements with at least 1.5Hz</span></span>
+<span id="cb33-34"><a href="#cb33-34" aria-hidden="true" tabindex="-1"></a>                <span class="at">maxFreq =</span> <span class="fl">6.5</span>, <span class="co"># and below 6.5Hz</span></span>
+<span id="cb33-35"><a href="#cb33-35" aria-hidden="true" tabindex="-1"></a>                <span class="at">winCentre =</span> <span class="cn">NULL</span>, <span class="co"># use win for the window size of the centring</span></span>
+<span id="cb33-36"><a href="#cb33-36" aria-hidden="true" tabindex="-1"></a>                <span class="at">winSmooth =</span> <span class="dv">0</span>     <span class="co"># do not use any smoothing</span></span>
+<span id="cb33-37"><a href="#cb33-37" aria-hidden="true" tabindex="-1"></a>                )</span>
+<span id="cb33-38"><a href="#cb33-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-39"><a href="#cb33-39" aria-hidden="true" tabindex="-1"></a><span class="fu">ggarrange</span>(p1, p2, <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">heights =</span> <span class="fu">c</span>(<span class="fl">0.44</span>, <span class="fl">0.56</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="interactR_conversation_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Z-crossings with framewise head movement above the threshold are shown with vertical dashed lines. The solid lines show the preprocessed signal. The columns are the sums of the Z-crossings above the framewise movement threshold, with darker colours for sums within the frequency range. For each interaction partner, nodding and head shaking is plotted separately. We can see that at the almost 2min mark, both interaction partners are using head gestures, with P1 nodding and P2 shaking their head. Again, we can see this nicely in the screen capture.</p>
+</section>
+<section id="interpersonal-synchrony-of-nodding" class="level1" data-number="9">
+<h1 data-number="9"><span class="header-section-number">9</span> Interpersonal synchrony of nodding</h1>
+<p>We might also be interested in how aligned people are in their head gestures, specifically nodding. Since these are rhythmic movements, instead of using correlations, we can use wavelet coherence (WTC) which considers both the time and the frequency space. For this, we will use the <code>biwavelet</code> package inside our <code>extractIPS</code> function.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>df.wtc <span class="ot">=</span> <span class="fu">extractIPS</span>(df.head,</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"HeadCenterRotX_fixCirc_detrended"</span>, <span class="co"># we use this preprocessed column for the IPS</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"WTC"</span>, <span class="co"># instead of WLCC, we want to extract WTC now</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>                    fps, </span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">featname =</span> <span class="st">"HeadNodding"</span>, <span class="co"># since the column name is so long, we rename it</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">rs.path =</span> rs.path, </span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>                    <span class="at">seed =</span> <span class="dv">8242</span>, </span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>                    <span class="at">recompute =</span> redo)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>---------------------- Extract IPS using WTC  ----------------------
+14:33:00 : Loading  WTC  features
+14:33:00 : Done</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(df.wtc))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 6%">
+<col style="width: 3%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 3%">
+<col style="width: 7%">
+<col style="width: 5%">
+<col style="width: 7%">
+<col style="width: 13%">
+<col style="width: 3%">
+<col style="width: 6%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Period</th>
+<th style="text-align: right;">Rsq</th>
+<th style="text-align: right;">Phase</th>
+<th style="text-align: right;">Timecourse</th>
+<th style="text-align: right;">COI</th>
+<th style="text-align: right;">Frame</th>
+<th style="text-align: right;">Frequency</th>
+<th style="text-align: left;">WithinCOI</th>
+<th style="text-align: left;">Dyad</th>
+<th style="text-align: left;">pseudoDyad</th>
+<th style="text-align: left;">Method</th>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">Time</th>
+<th style="text-align: right;">seed</th>
+<th style="text-align: right;">iteration</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0.0487098</td>
+<td style="text-align: right;">0.5418934</td>
+<td style="text-align: right;">-0.2267537</td>
+<td style="text-align: right;">0.12500</td>
+<td style="text-align: right;">0.0516645</td>
+<td style="text-align: right;">1000</td>
+<td style="text-align: right;">20.52976</td>
+<td style="text-align: left;">TRUE</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: left;">observed</td>
+<td style="text-align: left;">HeadNodding</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">8242</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.0516062</td>
+<td style="text-align: right;">0.2989287</td>
+<td style="text-align: right;">-0.1374591</td>
+<td style="text-align: right;">0.12500</td>
+<td style="text-align: right;">0.0516645</td>
+<td style="text-align: right;">1000</td>
+<td style="text-align: right;">19.37752</td>
+<td style="text-align: left;">TRUE</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: left;">observed</td>
+<td style="text-align: left;">HeadNodding</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">8242</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.0487098</td>
+<td style="text-align: right;">0.4870407</td>
+<td style="text-align: right;">2.3859798</td>
+<td style="text-align: right;">0.15625</td>
+<td style="text-align: right;">0.0688860</td>
+<td style="text-align: right;">10000</td>
+<td style="text-align: right;">20.52976</td>
+<td style="text-align: left;">TRUE</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: left;">observed</td>
+<td style="text-align: left;">HeadNodding</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">8242</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.0516062</td>
+<td style="text-align: right;">0.2830789</td>
+<td style="text-align: right;">2.2653838</td>
+<td style="text-align: right;">0.15625</td>
+<td style="text-align: right;">0.0688860</td>
+<td style="text-align: right;">10000</td>
+<td style="text-align: right;">19.37752</td>
+<td style="text-align: left;">TRUE</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: left;">observed</td>
+<td style="text-align: left;">HeadNodding</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">8242</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.0546749</td>
+<td style="text-align: right;">0.1061439</td>
+<td style="text-align: right;">2.0787004</td>
+<td style="text-align: right;">0.15625</td>
+<td style="text-align: right;">0.0688860</td>
+<td style="text-align: right;">10000</td>
+<td style="text-align: right;">18.28994</td>
+<td style="text-align: left;">TRUE</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: left;">observed</td>
+<td style="text-align: left;">HeadNodding</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">8242</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.0579260</td>
+<td style="text-align: right;">0.0183793</td>
+<td style="text-align: right;">1.7697311</td>
+<td style="text-align: right;">0.15625</td>
+<td style="text-align: right;">0.0688860</td>
+<td style="text-align: right;">10000</td>
+<td style="text-align: right;">17.26340</td>
+<td style="text-align: left;">TRUE</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: left;">observed</td>
+<td style="text-align: left;">HeadNodding</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: right;">8242</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The resulting dataframe is similar to the WLCC IPS dataframe, but differs in many columns as well. The columns <code>Frequency</code> and <code>Period</code> track the frequency domain, while <code>Timecourse</code> captures the time domain. <code>COI</code> gives us the threshold for the cone of influence and <code>WithinCOI</code> tracks whether this datapoint is within this cone of influence. <code>Rsq</code> captures the coherence, which is similar to a correlation coefficient and captures the strength of the similarity. <code>Phase</code> captures whether the relationship is in-phase, anti-phase or driven by one interaction partner leading the other.</p>
+<p>Let’s start with plotting the phase distribution with the function <code>plotPhaseRose</code>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPhaseRose</span>(df.wtc)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="interactR_conversation_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The plot shows that P1 was leading more often and that in-phase coherence was more common than anti-phase coherence. We can also load the <code>biwavelet</code> object of the dyad that was automatically saved in the results folder and use the plotting function from the <code>biwavelet</code> package to investigate this further.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>wtc <span class="ot">=</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(rs.path, <span class="st">"dataWTC_HeadNodding_P1-P2_seed-8242.rds"</span>))</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>biwavelet<span class="sc">::</span><span class="fu">plot.biwavelet</span>(wtc, <span class="at">plot.phase =</span> T)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="interactR_conversation_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>For some information on how to read this plots, you can check out this tutorial: https://rpubs.com/ibn_abdullah/rwcoher</p>
+<p>For IPS based on WTC, we could again use the same functions to create and compare pseudo IPS. However, shuffling segments does not make sense when we are assessing rhythmic behaviour. Dyad shuffling would be preferable, since it preserves the rhythmic nature of the head movements. Since we only have one dyad, we will skip the comparison with pseudo IPS for this vignette.</p>
+</section>
+<section id="speech-and-turn-taking-features" class="level1" data-number="10">
+<h1 data-number="10"><span class="header-section-number">10</span> Speech and turn-taking features</h1>
+<section id="verse-tracked-data" class="level2" data-number="10.1">
+<h2 data-number="10.1" class="anchored" data-anchor-id="verse-tracked-data"><span class="header-section-number">10.1</span> VERSE tracked data</h2>
+<p>If we don’t have any audio recordings, we can extract some speech and turn-taking features based on the sound that was detected by VERSE and included in the tracked data log. We use the function <code>featSpeech</code> without setting the <code>praat.path</code>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>df.speechV <span class="ot">=</span> <span class="fu">featSpeech</span>(df, </span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">praat.path =</span> <span class="fu">c</span>(), </span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">praat.prefix =</span> <span class="fu">c</span>(), </span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">rs.path =</span> rs.path, </span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">return =</span> T, </span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">recompute =</span> redo) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>-------------------- Extracting speech features --------------------
+14:33:07 : Loading speech features
+14:33:07 : Done</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(df.speechV))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 4%">
+<col style="width: 8%">
+<col style="width: 14%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Dyad</th>
+<th style="text-align: left;">Identifier</th>
+<th style="text-align: right;">SPCH_TurnGapsMedian</th>
+<th style="text-align: right;">SPCH_TurnGapsSD</th>
+<th style="text-align: right;">DyadSPCH_nTurns</th>
+<th style="text-align: right;">SPCH_PhonationDuration</th>
+<th style="text-align: right;">DyadSPCH_SilenceToTurn</th>
+<th style="text-align: right;">SPCH_PhonationBalance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">0.3275000</td>
+<td style="text-align: right;">0.6198723</td>
+<td style="text-align: right;">66</td>
+<td style="text-align: right;">114.027</td>
+<td style="text-align: right;">0.3584659</td>
+<td style="text-align: right;">0.8848082</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: right;">0.2179999</td>
+<td style="text-align: right;">2.7139185</td>
+<td style="text-align: right;">66</td>
+<td style="text-align: right;">128.872</td>
+<td style="text-align: right;">0.3584659</td>
+<td style="text-align: right;">1.1301885</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Again, dyadic features in the resulting feature dataframe start with <code>Dyad</code>, while individual ones start with <code>SPCH</code>. Based on the VERSE data alone, we can extract the number of turns (<code>DyadSPCH_noTurns</code>), the median and standard deviation of turn-taking gaps (<code>SPCH_TurnGapsMedian</code>, <code>SPCH_TurnGapsSD</code>). We also get the time each interaction partner was speaking with <code>SPCH_PhonationDuration</code>, as well as the silence-to-turn ratio capturing how much speech versus silence the conversation had (<code>DyadSPCH_SilenceToTurn</code>) and the <code>SPCH_PhonationBalance</code> which captures who was speaking more. If both interaction partners were speaking a similar amount of the time, then the phonation balance would be 1 for both of them.</p>
+<p>The function also saved a file to the results folder that contains all turns that were detected. We can also plot their distribution.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>df.turns <span class="ot">=</span> arrow<span class="sc">::</span><span class="fu">read_feather</span>(<span class="fu">file.path</span>(rs.path, <span class="st">"dataTurn.arrow"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(TTG) <span class="sc">&amp;</span> <span class="fu">abs</span>(TTG) <span class="sc">&lt;</span> <span class="dv">6</span>)</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>df.turns <span class="sc">|&gt;</span> tidyr<span class="sc">::</span><span class="fu">drop_na</span>() <span class="sc">|&gt;</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> TTG, <span class="at">fill =</span> Identifier)) <span class="sc">+</span> </span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="at">alpha =</span> <span class="fl">0.6</span>, <span class="at">colour =</span> <span class="cn">NA</span>) <span class="sc">+</span> </span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>) <span class="sc">+</span> </span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">median</span>(df.turns<span class="sc">$</span>TTG), <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span> </span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_label</span>(<span class="at">data =</span> <span class="fu">data.frame</span>(<span class="at">xpos =</span> <span class="fu">median</span>(df.turns<span class="sc">$</span>TTG), <span class="at">ypos =</span> <span class="fl">0.1</span>), <span class="at">size =</span> <span class="fl">2.5</span>, </span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>             <span class="fu">aes</span>(<span class="at">x =</span> xpos, <span class="at">y =</span> ypos, </span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>                 <span class="at">label =</span> <span class="fu">sprintf</span>(<span class="st">"Median: %.3fs"</span>, <span class="fu">median</span>(df.turns<span class="sc">$</span>TTG))), <span class="at">fill =</span> <span class="st">"white"</span>) <span class="sc">+</span> </span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Dark2"</span>) <span class="sc">+</span> </span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>, </span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.x =</span> <span class="fu">element_blank</span>(), </span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.y =</span> <span class="fu">element_blank</span>())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="interactR_conversation_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We see that gaps between turns were sometimes negative, indicating that P1 and P2’s speech was overlapping, a similar finding to previous studies. Before plotting, we filtered any extrem (more than 6 seconds) gaps in either direction.</p>
+</section>
+<section id="praat-output" class="level2" data-number="10.2">
+<h2 data-number="10.2" class="anchored" data-anchor-id="praat-output"><span class="header-section-number">10.2</span> <code>praat</code> output</h2>
+<p>We can now also do the same, but based on the information extracted with the <code>praat</code> script. Here, we will only process a small part of the conversation which we will share similarly to the screen capture. Running the <code>praat</code> script created four files:</p>
+<ul>
+<li><code>Recording_Participant_P1-cut.TextGrid</code> : containing syllables and speaking versus silent</li>
+<li><code>Recording_Participant_P1-cut.TextGrid</code> : same for other interaction partner</li>
+<li><code>intR_pitchIntensity.csv</code> : pitch and intensity values for all interaction partners</li>
+<li><code>intR_syllableNuclei.csv</code> : aggregated syllable values for all interaction partners</li>
+</ul>
+<p>We start our processing by converting the <code>TextGrid</code> files into one file readable for R using the function <code>convertGrid</code>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get a list of all the TextGrid files</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>ls.files <span class="ot">=</span> <span class="fu">list.files</span>(<span class="at">path =</span> dt.path, </span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>                      <span class="at">pattern =</span> <span class="st">".*.TextGrid"</span>,</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>                      <span class="at">full.names =</span> T)</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>df.uhm <span class="ot">=</span> <span class="fu">convertGrid</span>(ls.files, </span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">rs.path =</span> rs.path, </span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>                     <span class="at">extract =</span> F, <span class="co"># we will extract Dyad and Identifier later</span></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">return =</span> T,</span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>                     <span class="at">recompute =</span> redo)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>----------------- Converting praat TextGrid files  -----------------
+14:33:07 : Loading sounding instances
+14:33:07 : Done</code></pre>
+</div>
+</div>
+<p>This dataframe does not contain the Dyad and the Identifier information because <code>praat</code> only has the sound files as input. However, we can extract the Identifier from the file name and then add the Dyad and Time information from our main VERSE dataframe. We need this for further processing.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># extract Identifier here and then merge with information</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>df.uhm <span class="ot">=</span> df.uhm <span class="sc">|&gt;</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Identifier =</span> <span class="fu">sub</span>(<span class="st">".*Recording_Participant_(.+).*.TextGrid"</span>, <span class="st">"</span><span class="sc">\\</span><span class="st">1"</span>, Path)</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span>Path) <span class="sc">|&gt;</span></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># adding in the additional information</span></span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(df <span class="sc">|&gt;</span> <span class="fu">select</span>(Dyad, Time, Identifier) <span class="sc">|&gt;</span> <span class="fu">unique</span>(), <span class="at">by =</span> <span class="st">"Identifier"</span>)</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(df.uhm))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 12%">
+<col style="width: 8%">
+<col style="width: 15%">
+<col style="width: 8%">
+<col style="width: 27%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Turn</th>
+<th style="text-align: right;">Start</th>
+<th style="text-align: right;">End</th>
+<th style="text-align: right;">Duration</th>
+<th style="text-align: right;">nSyll</th>
+<th style="text-align: left;">Identifier</th>
+<th style="text-align: left;">Dyad</th>
+<th style="text-align: left;">Time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">121.844</td>
+<td style="text-align: right;">121.972</td>
+<td style="text-align: right;">0.128</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">123.572</td>
+<td style="text-align: right;">123.684</td>
+<td style="text-align: right;">0.112</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">124.692</td>
+<td style="text-align: right;">124.836</td>
+<td style="text-align: right;">0.144</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">126.532</td>
+<td style="text-align: right;">126.804</td>
+<td style="text-align: right;">0.272</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">129.220</td>
+<td style="text-align: right;">129.908</td>
+<td style="text-align: right;">0.688</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">130.436</td>
+<td style="text-align: right;">130.660</td>
+<td style="text-align: right;">0.224</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The resulting dataframe contains a list of all the sounding instances of both interaction partners, with their <code>Start</code>, <code>End</code>, <code>Duration</code> and the number of syllables spoken in <code>nSyll</code>. If we wanted to, we could now update or create <code>Speaking</code>, <code>Listening</code> and <code>Communication</code> columns in the main dataframe with the tracked VERSE data using the function <code>addCommunication</code>; however, we don’t need this for this vignette. Thus, our next step is to again aggregate speech and turn-taking features, but now based on the information from <code>praat</code>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># extract speech and turn-taking features</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>df.speechP <span class="ot">=</span> <span class="fu">featSpeech</span>(df.uhm, </span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">praat.path =</span> dt.path,  <span class="co"># where can we find the praat files?</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">praat.prefix =</span> <span class="st">"intR"</span>, <span class="co"># what prefix was defined in the praat script?</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">rs.path =</span> rs.path, </span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">suffix =</span> <span class="st">"_praat"</span>,     <span class="co"># using a suffix to distinguish from the above created feature file</span></span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>                        <span class="at">return =</span> T, </span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>                        <span class="at">recompute =</span> redo) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>-------------------- Extracting speech features --------------------
+14:33:07 : Loading speech features
+14:33:07 : Done</code></pre>
+</div>
+</div>
+<p>Let’s have a look at the two dataframes, but keep in mind that the one produced based on VERSE includes the full conversation while the one based on <code>praat</code> only considers part of the conversation (otherwise the wav files would have been to large for GitHub).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">bind_rows</span>(df.speechV <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span>Dyad) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">Source =</span> <span class="st">"VERSE"</span>) <span class="sc">|&gt;</span> <span class="fu">relocate</span>(Source), </span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>                df.speechP <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span>Dyad, <span class="sc">-</span>Time) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">Source =</span> <span class="st">"praat"</span>) <span class="sc">|&gt;</span> <span class="fu">relocate</span>(Source)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 3%">
+<col style="width: 5%">
+<col style="width: 10%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 11%">
+<col style="width: 6%">
+<col style="width: 8%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Source</th>
+<th style="text-align: left;">Identifier</th>
+<th style="text-align: right;">SPCH_TurnGapsMedian</th>
+<th style="text-align: right;">SPCH_TurnGapsSD</th>
+<th style="text-align: right;">DyadSPCH_nTurns</th>
+<th style="text-align: right;">SPCH_PhonationDuration</th>
+<th style="text-align: right;">DyadSPCH_SilenceToTurn</th>
+<th style="text-align: right;">SPCH_PhonationBalance</th>
+<th style="text-align: right;">SPCH_PitchSD</th>
+<th style="text-align: right;">SPCH_IntensitySD</th>
+<th style="text-align: right;">SPCH_ArticulationRate</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">VERSE</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">0.3275000</td>
+<td style="text-align: right;">0.6198723</td>
+<td style="text-align: right;">66</td>
+<td style="text-align: right;">114.027</td>
+<td style="text-align: right;">0.3584659</td>
+<td style="text-align: right;">0.8848082</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">VERSE</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: right;">0.2179999</td>
+<td style="text-align: right;">2.7139185</td>
+<td style="text-align: right;">66</td>
+<td style="text-align: right;">128.872</td>
+<td style="text-align: right;">0.3584659</td>
+<td style="text-align: right;">1.1301885</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">praat</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">0.4240000</td>
+<td style="text-align: right;">1.0960688</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">41.264</td>
+<td style="text-align: right;">1.8300463</td>
+<td style="text-align: right;">1.0790795</td>
+<td style="text-align: right;">51.69931</td>
+<td style="text-align: right;">22.96464</td>
+<td style="text-align: right;">4.604498</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">praat</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: right;">0.3200000</td>
+<td style="text-align: right;">0.4177928</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">38.240</td>
+<td style="text-align: right;">1.8300463</td>
+<td style="text-align: right;">0.9267158</td>
+<td style="text-align: right;">36.41836</td>
+<td style="text-align: right;">21.13676</td>
+<td style="text-align: right;">3.948745</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>This dataframe has the same information as the one extracted from the VERSE tracked data, but also the following additional columns: <code>SPCH_PitchSD</code> and <code>SPCH_IntensitySD</code> capturing the variance of pitch and intensity across the conversation and <code>SPCH_ArticulationRate</code> capturing how many syllables per second each Identifier produced.</p>
+</section>
+</section>
+<section id="gaze-patterns-and-joint-attention" class="level1" data-number="11">
+<h1 data-number="11"><span class="header-section-number">11</span> Gaze patterns and joint attention</h1>
+<p>We start by reading in the data that started with the event of presenting the ET.PNG slide. From this point until the end of the experiment, the participants’ eye movements were visualised and we can assess how accurate the gaze tracking was.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">extractDataVERSE</span>(df.info <span class="sc">|&gt;</span> </span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>                        <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">"ET.PNG"</span>, Event)) <span class="sc">|&gt;</span>   <span class="co"># focus on the Event of interest</span></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>                        <span class="fu">mutate</span>(<span class="at">start.use =</span> Timestamp),     <span class="co"># use this events Timestamp as the starting point</span></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>                      <span class="at">rs.path =</span> rs.path, <span class="co"># we want the data to be saved in our results folder</span></span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>                      <span class="at">return =</span> T,        <span class="co"># we also want to dataframe to be returned</span></span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>                      <span class="at">suffix =</span> <span class="st">"_ET"</span>,    <span class="co"># add the suffix ET to the data file</span></span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>                      <span class="at">recompute =</span> redo)  <span class="co"># whether to recompute if it already exists</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>-------------- Extracting data from VERSE experiments --------------
+14:33:07 : Loading VERSE experiments
+14:33:07 : Done</code></pre>
+</div>
+</div>
+<p>The dataframe <code>df</code> now contains all the data from the Event onwards until the end of the VERSE experiment. We now want to focus on the columns relevant for the gaze patterns. Let’s have a look at the first few rows.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 36%">
+<col style="width: 36%">
+<col style="width: 24%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Frame</th>
+<th style="text-align: left;">AOI.gaze</th>
+<th style="text-align: left;">AOI.left</th>
+<th style="text-align: left;">AOI.right</th>
+<th style="text-align: left;">LeftEye_Targets</th>
+<th style="text-align: left;">RightEye_Targets</th>
+<th style="text-align: left;">Gaze_Targets</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">Other Upper Body</td>
+<td style="text-align: left;">Desk</td>
+<td style="text-align: left;">Desk</td>
+<td style="text-align: left;">Name: Desk Distance: 0.746 HitPositionX: -0.274 HitPositionY: 0.773 HitPositionZ: 0.011 HitRotationX: 4.725 HitRotationY: 309.320 HitRotationZ: 273.860 -&gt; Name: P2’s Left Lower Leg Distance: 1.677 HitPositionX: 0.443 HitPositionY: 0.185 HitPositionZ: -0.065 HitRotationX: 309.536 HitRotationY: 7.810 HitRotationZ: 358.017 -&gt; Name: P2’s Left Foot Distance: 1.785 HitPositionX: 0.527 HitPositionY: 0.117 HitPositionZ: -0.074 HitRotationX: 320.775 HitRotationY: 277.193 HitRotationZ: 0.634</td>
+<td style="text-align: left;">Name: Desk Distance: 0.745 HitPositionX: -0.271 HitPositionY: 0.773 HitPositionZ: -0.017 HitRotationX: 1.642 HitRotationY: 309.575 HitRotationZ: 271.357</td>
+<td style="text-align: left;">Name: P2’s Upper Body Distance: 1.567 HitPositionX: 0.724 HitPositionY: 1.025 HitPositionZ: 0.138 HitRotationX: 334.989 HitRotationY: 353.127 HitRotationZ: 2.031 -&gt; Name: P2’s Right Upper Arm Distance: 1.663 HitPositionX: 0.818 HitPositionY: 1.012 HitPositionZ: 0.144 HitRotationX: 354.931 HitRotationY: 5.680 HitRotationZ: 0.302</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Other Upper Body</td>
+<td style="text-align: left;">Desk</td>
+<td style="text-align: left;">Desk</td>
+<td style="text-align: left;">Name: Desk Distance: 0.741 HitPositionX: -0.286 HitPositionY: 0.773 HitPositionZ: 0.002 HitRotationX: 5.336 HitRotationY: 309.669 HitRotationZ: 274.410 -&gt; Name: P2’s Left Lower Leg Distance: 1.698 HitPositionX: 0.448 HitPositionY: 0.165 HitPositionZ: -0.087 HitRotationX: 309.266 HitRotationY: 8.827 HitRotationZ: 357.752 -&gt; Name: P2’s Left Foot Distance: 1.772 HitPositionX: 0.504 HitPositionY: 0.118 HitPositionZ: -0.094 HitRotationX: 46.589 HitRotationY: 1.337 HitRotationZ: 1.728</td>
+<td style="text-align: left;">Name: Desk Distance: 0.740 HitPositionX: -0.282 HitPositionY: 0.773 HitPositionZ: -0.026 HitRotationX: 2.255 HitRotationY: 309.934 HitRotationZ: 271.887 -&gt; Name: P2’s Left Lower Leg Distance: 1.693 HitPositionX: 0.448 HitPositionY: 0.162 HitPositionZ: -0.063 HitRotationX: 308.745 HitRotationY: 3.983 HitRotationZ: 358.976</td>
+<td style="text-align: left;">Name: P2’s Upper Body Distance: 1.572 HitPositionX: 0.724 HitPositionY: 1.023 HitPositionZ: 0.131 HitRotationX: 334.986 HitRotationY: 353.373 HitRotationZ: 1.951 -&gt; Name: P2’s Right Upper Arm Distance: 1.668 HitPositionX: 0.820 HitPositionY: 1.009 HitPositionZ: 0.136 HitRotationX: 354.760 HitRotationY: 5.985 HitRotationZ: 0.307</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">Other Upper Body</td>
+<td style="text-align: left;">Desk</td>
+<td style="text-align: left;">Desk</td>
+<td style="text-align: left;">Name: Desk Distance: 0.735 HitPositionX: -0.299 HitPositionY: 0.773 HitPositionZ: -0.007 HitRotationX: 5.994 HitRotationY: 310.094 HitRotationZ: 275.025 -&gt; Name: P2’s Left Lower Leg Distance: 1.722 HitPositionX: 0.453 HitPositionY: 0.140 HitPositionZ: -0.110 HitRotationX: 308.933 HitRotationY: 9.945 HitRotationZ: 357.458 -&gt; Name: P2’s Left Foot Distance: 1.760 HitPositionX: 0.481 HitPositionY: 0.116 HitPositionZ: -0.114 HitRotationX: 46.194 HitRotationY: 2.316 HitRotationZ: 3.009</td>
+<td style="text-align: left;">Name: Desk Distance: 0.734 HitPositionX: -0.295 HitPositionY: 0.773 HitPositionZ: -0.036 HitRotationX: 2.915 HitRotationY: 310.367 HitRotationZ: 272.476 -&gt; Name: P2’s Left Lower Leg Distance: 1.717 HitPositionX: 0.453 HitPositionY: 0.137 HitPositionZ: -0.086 HitRotationX: 308.357 HitRotationY: 5.081 HitRotationZ: 358.688 -&gt; Name: P2’s Left Foot Distance: 1.750 HitPositionX: 0.478 HitPositionY: 0.116 HitPositionZ: -0.087 HitRotationX: 45.728 HitRotationY: 357.920 HitRotationZ: 357.278</td>
+<td style="text-align: left;">Name: P2’s Upper Body Distance: 1.578 HitPositionX: 0.726 HitPositionY: 1.018 HitPositionZ: 0.122 HitRotationX: 334.887 HitRotationY: 353.651 HitRotationZ: 1.866 -&gt; Name: P2’s Right Upper Arm Distance: 1.674 HitPositionX: 0.821 HitPositionY: 1.004 HitPositionZ: 0.128 HitRotationX: 354.551 HitRotationY: 6.286 HitRotationZ: 0.313</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">Other Upper Body</td>
+<td style="text-align: left;">Desk</td>
+<td style="text-align: left;">Desk</td>
+<td style="text-align: left;">Name: Desk Distance: 0.736 HitPositionX: -0.300 HitPositionY: 0.773 HitPositionZ: -0.008 HitRotationX: 5.950 HitRotationY: 310.031 HitRotationZ: 274.977 -&gt; Name: P2’s Left Lower Leg Distance: 1.724 HitPositionX: 0.453 HitPositionY: 0.141 HitPositionZ: -0.110 HitRotationX: 308.999 HitRotationY: 9.860 HitRotationZ: 357.484 -&gt; Name: P2’s Left Foot Distance: 1.762 HitPositionX: 0.482 HitPositionY: 0.116 HitPositionZ: -0.114 HitRotationX: 46.255 HitRotationY: 2.249 HitRotationZ: 2.920</td>
+<td style="text-align: left;">Name: Desk Distance: 0.735 HitPositionX: -0.296 HitPositionY: 0.773 HitPositionZ: -0.036 HitRotationX: 2.870 HitRotationY: 310.299 HitRotationZ: 272.431 -&gt; Name: P2’s Left Lower Leg Distance: 1.719 HitPositionX: 0.453 HitPositionY: 0.138 HitPositionZ: -0.085 HitRotationX: 308.431 HitRotationY: 4.999 HitRotationZ: 358.711 -&gt; Name: P2’s Left Foot Distance: 1.752 HitPositionX: 0.478 HitPositionY: 0.116 HitPositionZ: -0.087 HitRotationX: 45.791 HitRotationY: 357.846 HitRotationZ: 357.185</td>
+<td style="text-align: left;">Name: P2’s Upper Body Distance: 1.579 HitPositionX: 0.725 HitPositionY: 1.022 HitPositionZ: 0.117 HitRotationX: 335.107 HitRotationY: 353.833 HitRotationZ: 1.802</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">Other Upper Body</td>
+<td style="text-align: left;">Desk</td>
+<td style="text-align: left;">Desk</td>
+<td style="text-align: left;">Name: Desk Distance: 0.738 HitPositionX: -0.300 HitPositionY: 0.773 HitPositionZ: -0.007 HitRotationX: 5.819 HitRotationY: 309.908 HitRotationZ: 274.847 -&gt; Name: P2’s Left Lower Leg Distance: 1.723 HitPositionX: 0.452 HitPositionY: 0.144 HitPositionZ: -0.107 HitRotationX: 309.108 HitRotationY: 9.627 HitRotationZ: 357.547 -&gt; Name: P2’s Left Foot Distance: 1.767 HitPositionX: 0.485 HitPositionY: 0.117 HitPositionZ: -0.112 HitRotationX: 46.373 HitRotationY: 2.053 HitRotationZ: 2.661</td>
+<td style="text-align: left;">Name: Desk Distance: 0.738 HitPositionX: -0.296 HitPositionY: 0.773 HitPositionZ: -0.036 HitRotationX: 2.737 HitRotationY: 310.169 HitRotationZ: 272.309 -&gt; Name: P2’s Left Lower Leg Distance: 1.719 HitPositionX: 0.452 HitPositionY: 0.141 HitPositionZ: -0.083 HitRotationX: 308.558 HitRotationY: 4.772 HitRotationZ: 358.772 -&gt; Name: P2’s Left Foot Distance: 1.757 HitPositionX: 0.482 HitPositionY: 0.116 HitPositionZ: -0.084 HitRotationX: 45.909 HitRotationY: 357.639 HitRotationZ: 356.920</td>
+<td style="text-align: left;">Name: P2’s Upper Body Distance: 1.580 HitPositionX: 0.724 HitPositionY: 1.026 HitPositionZ: 0.112 HitRotationX: 335.322 HitRotationY: 354.009 HitRotationZ: 1.743</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">Other Upper Body</td>
+<td style="text-align: left;">Desk</td>
+<td style="text-align: left;">Desk</td>
+<td style="text-align: left;">Name: Desk Distance: 0.745 HitPositionX: -0.294 HitPositionY: 0.773 HitPositionZ: -0.005 HitRotationX: 5.477 HitRotationY: 309.483 HitRotationZ: 274.496 -&gt; Name: P2’s Left Lower Leg Distance: 1.710 HitPositionX: 0.448 HitPositionY: 0.162 HitPositionZ: -0.097 HitRotationX: 309.497 HitRotationY: 9.004 HitRotationZ: 357.720 -&gt; Name: P2’s Left Foot Distance: 1.780 HitPositionX: 0.502 HitPositionY: 0.118 HitPositionZ: -0.103 HitRotationX: 46.781 HitRotationY: 1.530 HitRotationZ: 1.971</td>
+<td style="text-align: left;">Name: Desk Distance: 0.744 HitPositionX: -0.290 HitPositionY: 0.773 HitPositionZ: -0.033 HitRotationX: 2.393 HitRotationY: 309.742 HitRotationZ: 271.988 -&gt; Name: P2’s Left Lower Leg Distance: 1.706 HitPositionX: 0.449 HitPositionY: 0.159 HitPositionZ: -0.073 HitRotationX: 308.975 HitRotationY: 4.180 HitRotationZ: 358.932 -&gt; Name: P2’s Left Foot Distance: 1.771 HitPositionX: 0.498 HitPositionY: 0.117 HitPositionZ: -0.076 HitRotationX: 46.300 HitRotationY: 357.085 HitRotationZ: 356.219</td>
+<td style="text-align: left;">Name: P2’s Upper Body Distance: 1.578 HitPositionX: 0.721 HitPositionY: 1.038 HitPositionZ: 0.108 HitRotationX: 335.880 HitRotationY: 354.137 HitRotationZ: 1.690</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>VERSE automatically tracks when interaction partners’ eyes (<code>LeftEye_Targets</code> and <code>RightEye_Targets</code>) or their head orientation (<code>Gaze_Targets</code> in VERSE) hit prespecified targets, for instance the Desk. These columns capture all targets that are hit, even those that are behind another target. The targets are ordered in closeness to the eyes or head. The targets are reported with their respective hit coordinates. Reading in the data with <code>extractDataVERSE</code> already extracted the closest target and replaced the interaction partner’s Identifier with “Self” versus “Other”. These extracted values are captured in <code>AOI.gaze</code> for the head orientation and <code>AOI.left</code> as well as <code>AOI.right</code> for the eye fixations.</p>
+<p>We can use the function <code>featDwell</code> to create a data file with periods of fixations as well as an aggregated feature file (CSV) capturing how long each interaction partner spent looking at a specific AOI. The function takes a list of AOIs as input, and all other targets are disregarded.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co"># list of all the AOIs we want to extract</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>ls.AOI <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Other Laptop"</span>, <span class="st">"Self Laptop"</span>, <span class="st">"Other"</span>, <span class="st">"Self"</span>, <span class="st">"SharedScreen"</span>)</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a><span class="co"># use the function</span></span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>df.dwell <span class="ot">=</span> <span class="fu">featDwell</span>(df,                 <span class="co"># dataframe with tracked VERSE data</span></span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>                     ls.AOI,             <span class="co"># prespecified list of AOIs</span></span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">rs.path =</span> rs.path,  <span class="co"># path to the results folder</span></span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>                     <span class="at">return =</span> T,         <span class="co"># return the aggregated summary</span></span>
+<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">recompute =</span> redo)  <span class="co"># whether to recompute if it already exists</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>------------------ Extracting dwell time features ------------------
+14:33:07 : Loading dwell times
+14:33:07 : Done</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(df.dwell)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 1%">
+<col style="width: 3%">
+<col style="width: 1%">
+<col style="width: 3%">
+<col style="width: 4%">
+<col style="width: 2%">
+<col style="width: 4%">
+<col style="width: 4%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 4%">
+<col style="width: 4%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 4%">
+<col style="width: 4%">
+<col style="width: 4%">
+<col style="width: 4%">
+<col style="width: 5%">
+<col style="width: 4%">
+<col style="width: 3%">
+<col style="width: 4%">
+<col style="width: 4%">
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Dyad</th>
+<th style="text-align: left;">Time</th>
+<th style="text-align: left;">Identifier</th>
+<th style="text-align: right;">Dwell_Other_Total</th>
+<th style="text-align: right;">Dwell_OtherLaptop_Total</th>
+<th style="text-align: right;">Dwell_Self_Total</th>
+<th style="text-align: right;">Dwell_SelfLaptop_Total</th>
+<th style="text-align: right;">Dwell_SharedScreen_Total</th>
+<th style="text-align: right;">Dwell_Other_Listening</th>
+<th style="text-align: right;">Dwell_Other_Silence</th>
+<th style="text-align: right;">Dwell_Other_Speaking</th>
+<th style="text-align: right;">Dwell_OtherLaptop_Silence</th>
+<th style="text-align: right;">Dwell_OtherLaptop_Speaking</th>
+<th style="text-align: right;">Dwell_Self_Listening</th>
+<th style="text-align: right;">Dwell_Self_Silence</th>
+<th style="text-align: right;">Dwell_SelfLaptop_Silence</th>
+<th style="text-align: right;">Dwell_SelfLaptop_Speaking</th>
+<th style="text-align: right;">Dwell_SelfLaptop_Listening</th>
+<th style="text-align: right;">Dwell_SharedScreen_Silence</th>
+<th style="text-align: right;">Dwell_SharedScreen_Listening</th>
+<th style="text-align: right;">Dwell_SharedScreen_Speaking</th>
+<th style="text-align: right;">DyadDwell_Other_Total</th>
+<th style="text-align: right;">DyadDwell_OtherLaptop_Total</th>
+<th style="text-align: right;">DyadDwell_SelfLaptop_Total</th>
+<th style="text-align: right;">DyadDwell_SharedScreen_Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: right;">40.49020</td>
+<td style="text-align: right;">3.529412</td>
+<td style="text-align: right;">0.00000</td>
+<td style="text-align: right;">24.01961</td>
+<td style="text-align: right;">12.35294</td>
+<td style="text-align: right;">1.3725490</td>
+<td style="text-align: right;">36.47059</td>
+<td style="text-align: right;">2.647059</td>
+<td style="text-align: right;">3.529412</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">23.13725</td>
+<td style="text-align: right;">0.8823529</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">12.352941</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">21.47059</td>
+<td style="text-align: right;">0.0980392</td>
+<td style="text-align: right;">9.509804</td>
+<td style="text-align: right;">7.745098</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P2</td>
+<td style="text-align: right;">24.31373</td>
+<td style="text-align: right;">1.274510</td>
+<td style="text-align: right;">15.39216</td>
+<td style="text-align: right;">22.74510</td>
+<td style="text-align: right;">10.49020</td>
+<td style="text-align: right;">0.9803922</td>
+<td style="text-align: right;">23.33333</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: right;">1.176471</td>
+<td style="text-align: right;">0.0980392</td>
+<td style="text-align: right;">0.3921569</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">20.39216</td>
+<td style="text-align: right;">1.8627451</td>
+<td style="text-align: right;">0.4901961</td>
+<td style="text-align: right;">9.607843</td>
+<td style="text-align: right;">0.4901961</td>
+<td style="text-align: right;">0.3921569</td>
+<td style="text-align: right;">21.47059</td>
+<td style="text-align: right;">0.0980392</td>
+<td style="text-align: right;">9.509804</td>
+<td style="text-align: right;">7.745098</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Individual dwell times start with the prefix <code>Dwell</code> and if the dataframe contained information on <code>Communication</code>, then they are aggregated both in Total dwell times in percent but also separated for speaking, listening and silence.</p>
+<p>The features starting with <code>DyadDwell</code> capture joint attention, when both interaction partner are fixating at the same, i.e.&nbsp;the shared screen, or corresponding object, e.g.&nbsp;when they are both looking at each other’s heads. Thus, these values are the same for both interaction partners.</p>
+<p>In addition to this feature file, the function also saves the periods of fixations.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>df.period <span class="ot">=</span> arrow<span class="sc">::</span><span class="fu">read_feather</span>(<span class="fu">file.path</span>(rs.path, <span class="st">"dataDwell.arrow"</span>))</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(df.period))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 5%">
+<col style="width: 18%">
+<col style="width: 10%">
+<col style="width: 11%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 18%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Dyad</th>
+<th style="text-align: left;">Time</th>
+<th style="text-align: left;">Identifier</th>
+<th style="text-align: left;">AOI</th>
+<th style="text-align: right;">minFrame</th>
+<th style="text-align: right;">maxFrame</th>
+<th style="text-align: left;">minTime</th>
+<th style="text-align: left;">maxTime</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">146</td>
+<td style="text-align: left;">2026-08-13 13:58:25</td>
+<td style="text-align: left;">2026-08-13 13:58:29</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: right;">151</td>
+<td style="text-align: right;">276</td>
+<td style="text-align: left;">2026-08-13 13:58:29</td>
+<td style="text-align: left;">2026-08-13 13:58:33</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: right;">281</td>
+<td style="text-align: right;">374</td>
+<td style="text-align: left;">2026-08-13 13:58:33</td>
+<td style="text-align: left;">2026-08-13 13:58:36</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">OtherLaptop</td>
+<td style="text-align: right;">375</td>
+<td style="text-align: right;">381</td>
+<td style="text-align: left;">2026-08-13 13:58:36</td>
+<td style="text-align: left;">2026-08-13 13:58:36</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">SelfLaptop</td>
+<td style="text-align: right;">383</td>
+<td style="text-align: right;">428</td>
+<td style="text-align: left;">2026-08-13 13:58:36</td>
+<td style="text-align: left;">2026-08-13 13:58:38</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P1-P2</td>
+<td style="text-align: left;">2026-08-13 13:50:25</td>
+<td style="text-align: left;">P1</td>
+<td style="text-align: left;">SelfLaptop</td>
+<td style="text-align: right;">432</td>
+<td style="text-align: right;">483</td>
+<td style="text-align: left;">2026-08-13 13:58:38</td>
+<td style="text-align: left;">2026-08-13 13:58:40</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>We want to compare this to our screen recording with visualised eye tracking to assess how well it worked. To do this, we look at 3-second increments to see where each of the interaction partners were looking.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 33%">
+<col style="width: 40%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Increment</th>
+<th style="text-align: left;">P1</th>
+<th style="text-align: left;">P2</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">6min 46sec to 6min 49sec</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">SelfLaptop; Other</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">6min 49sec to 6min 52sec</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">SelfLaptop; Other</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">6min 52sec to 6min 55sec</td>
+<td style="text-align: left;">Other; OtherLaptop; SelfLaptop</td>
+<td style="text-align: left;">Other; OtherLaptop; SelfLaptop</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">6min 55sec to 6min 58sec</td>
+<td style="text-align: left;">Other; OtherLaptop; SelfLaptop</td>
+<td style="text-align: left;">Other; OtherLaptop; SelfLaptop; Self</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">6min 58sec to 7min 1sec</td>
+<td style="text-align: left;">SelfLaptop; Other</td>
+<td style="text-align: left;">Self; SelfLaptop</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">7min 1sec to 7min 4sec</td>
+<td style="text-align: left;">SelfLaptop; Other; SharedScreen</td>
+<td style="text-align: left;">Self; SelfLaptop; Other; SharedScreen</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">7min 4sec to 7min 7sec</td>
+<td style="text-align: left;">SelfLaptop; Other; SharedScreen</td>
+<td style="text-align: left;">SelfLaptop; Other; SharedScreen</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>This shows us that P1 and P2 both start to look at each other, although P2 also fixates on their laptop in that time. Then after a few seconds, they both look at the laptops, before moving on to also look at the shared screen. This pattern corresponds to the screen capture <code>eyeTracking.mov</code>.</p>
+</section>
+<section id="references" class="level1 unnumbered" data-number="12">
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">12 References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-aldenhoven2026real" class="csl-entry" role="listitem">
+Aldenhoven, Céline Madeleine, Leon Nissen, Marie Heinemann, et al. 2026. <span>“Real-Time Emotion Recognition Performance of Mobile Devices: A Detailed Analysis of Camera and TrueDepth Sensors Using Apple’s ARKit.”</span> <em>Sensors</em> 26 (3): 1060.
+</div>
+<div id="ref-praat" class="csl-entry" role="listitem">
+Boersma, Paul, and David Weenink. 2022. <em>Praat: Doing Phonetics by Computer</em>. <a href="http://www.praat.org/">http://www.praat.org/</a>.
+</div>
+<div id="ref-de_jong_praat_2021" class="csl-entry" role="listitem">
+De Jong, Nivja H., Jos Pacilly, and Willemijn Heeren. 2021. <span>“<span>PRAAT</span> Scripts to Measure Speed Fluency and Breakdown Fluency in Speech Automatically.”</span> <em>Assessment in Education: Principles, Policy and Practice</em> 28 (4): 456–76. <a href="https://doi.org/10.1080/0969594X.2021.1951162">https://doi.org/10.1080/0969594X.2021.1951162</a>.
+</div>
+<div id="ref-hale2020you" class="csl-entry" role="listitem">
+Hale, Joanna, Jamie A Ward, Francesco Buccheri, Dominic Oliver, and Antonia F de C Hamilton. 2020. <span>“Are You on My Wavelength? Interpersonal Coordination in Dyadic Conversations.”</span> <em>Journal of Nonverbal Behavior</em> 44 (1): 63–83.
+</div>
+<div id="ref-koehler_machine_2024" class="csl-entry" role="listitem">
+Koehler, Jana Christina, Mark Sen Dong, Afton M. Bierlich, et al. 2024. <span>“Machine Learning Classification of Autism Spectrum Disorder Based on Reciprocity in Naturalistic Social Interactions.”</span> <em>Transl Psychiatry</em> 14 (1): 1–9. <a href="https://doi.org/10.1038/s41398-024-02802-5">https://doi.org/10.1038/s41398-024-02802-5</a>.
+</div>
+<div id="ref-plank2023automated" class="csl-entry" role="listitem">
+Plank, Irene Sophia, Jana C Koehler, AM Nelson, Nikolaos Koutsouleris, and CM Falter-Wagner. 2023. <span>“Automated Extraction of Speech and Turn-Taking Parameters in Autism Allows for Diagnostic Classification Using a Multivariable Prediction Model.”</span> <em>Frontiers in Psychiatry</em> 14: 1257569.
+</div>
+<div id="ref-verse2026" class="csl-entry" role="listitem">
+Rehmer, Torben, Lennart Rehmer, Robert Rose, Fabian Waldvogt, Nathan Caruana, and Matthias Trier. 2026. <span>“Verse: A Virtual Environment for Research on Social Experiences - Theory, Co-Design and Evaluation of a Researcher-Centric Social Vr System.”</span> <em><span>ECIS</span> 2026 Proceedings</em> 36.
+</div>
+</div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

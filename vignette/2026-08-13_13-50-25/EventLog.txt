@@ -1,0 +1,45 @@
+2026-08-13 13:50:26.000: VERSE Version 2.0.0 TG
+2026-08-13 13:50:26.000: Experiment initialized with the following settings: 
+ {
+  "Researcher": "R1",
+  "Participants": [
+    "P1",
+    "P2"
+  ],
+  "ActorSettings": [
+    {
+      "ActorName": "Social Actor 1",
+      "AvatarURL": "",
+      "DefaultAvatar": "Assets/VERSE/Prefabs/RPM/001/001.prefab",
+      "Spawn": 0,
+      "AvatarController": 1
+    },
+    {
+      "ActorName": "Social Actor 2",
+      "AvatarURL": "",
+      "DefaultAvatar": "Assets/VERSE/Prefabs/RPM/004/004.prefab",
+      "Spawn": 1,
+      "AvatarController": 1
+    }
+  ],
+  "EnvironmentType": "Dyadic",
+  "Environment": "Assets/VERSE/Scenes/Rooms/General/Manager Office.unity",
+  "EnvironmentSettings": []
+} 
+
+2026-08-13 13:50:33.776: P1 was recentered.
+2026-08-13 13:50:35.686: P2 was recentered.
+2026-08-13 13:50:38.822: P1 is now visible.
+2026-08-13 13:50:39.614: P2 is now visible.
+2026-08-13 13:51:40.703: P1 is now visible.
+2026-08-13 13:51:40.704: P1 is now unmuted.
+2026-08-13 13:51:40.704: P2 is now visible.
+2026-08-13 13:51:40.704: P2 is now unmuted.
+2026-08-13 13:51:40.704: Experiment started
+2026-08-13 13:52:55.278: Screen: All set to slide S1.PNG
+2026-08-13 13:55:27.088: Screen: All set to slide S2.PNG
+2026-08-13 13:58:13.088: Screen: All set to slide End.PNG
+2026-08-13 13:58:14.984: Eye tracking visualization enabled.
+2026-08-13 13:58:25.611: Eye tracking visualization enabled.
+2026-08-13 13:58:25.611: Screen: All set to slide ET.PNG
+2026-08-13 13:58:56.864: Experiment stopped, length of experiment: 00:07:16
