@@ -91,14 +91,8 @@ compareIPS = function(df, Bayesian = T, perm = F, absolute = F,
     if (verbose) cat(format(Sys.time(), "%X"), ": Comparing pseudo and observed IPS from", 
                      df |> select(Feature) |> distinct() |> pull(Feature), "\n")
     
-    # take absolute if necessary
-    if (absolute) {
-      df = df |> mutate(value = abs(value))
-    } else if (perm) {
-      # adjust alpha for two-sided testing if perm is used
-      alpha = alpha / 2
-    }
-    
+    if (absolute) df = df |> mutate(value = abs(value))
+
     # aggregate the values across the windows
     df.tmp = df |>
       group_by(across(all_of(colnm)), Dyad, Method, Feature, iteration) |>
@@ -182,6 +176,9 @@ compareIPS = function(df, Bayesian = T, perm = F, absolute = F,
     } else {
       
       if (verbose) cat(format(Sys.time(), "%X"), ": Computing stats with permutation\n")
+      
+      # adjust alpha for two-sided testing if absolute is not used
+      if (!absolute) alpha = alpha / 2
       
       # aggregate the observed values to get grand average per Lag or Frequency
       df.perm = df |> filter(Method == "observed") |>
