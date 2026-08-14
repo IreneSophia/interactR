@@ -82,7 +82,7 @@ extractZCrossing = function(df, colnames, fps, minDegree, rs.path = c(), suffix 
     # focus on relevant columns 
     df = df |>
       select(Dyad, Identifier, Frame, Time, Timestamp, 
-             any_of(c("Speaking", "Listening", "Communication", colnames)))
+             any_of(c("Timecourse", "Communication", colnames)))
     
     # check whether detrending
     if (winCentre > 0) {
