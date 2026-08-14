@@ -62,9 +62,9 @@ featEFE = function(df, catEFE = "Aldenhoven2026", rescaleVERSE = T,
     if (verbose) cat(format(Sys.time(), "%X"), ": Loading aggregated facial expressions\n")
     df.out = readr::read_csv(flcsv, show_col_types = F)
   } else {
-    # no recompute and the file exists, it is simply loaded
-    if (verbose) cat(format(Sys.time(), "%X"), ": Loading preprocessed facial expressions\n")
     if (!recompute & file.exists(flfft)) {
+      # no recompute and the file exists, it is simply loaded
+      if (verbose) cat(format(Sys.time(), "%X"), ": Loading preprocessed facial expressions\n")
       df.face = arrow::read_feather(flfft)
     } else {
       if (verbose) cat(format(Sys.time(), "%X"), ": Preprocessing facial expressions\n")
