@@ -7,8 +7,6 @@
 #' @param noSecs Numeric. How many seconds to plot in one facet row. Default is `10`.
 #' @param minFrame Numeric or NULL. First Frame to be plotted. If `NULL` minimum available Frame is used. Default is `NULL`.
 #' @param maxFrame Numeric or NULL. Last Frame to be plotted. If `NULL` maximum available Frame is used. Default is `NULL`.
-#' @param ID.cols Character vector of hex colours. If there are two Identifiers, then two colours must be provided. 
-#'   Default is colourblind-friendly blue and dark green.
 #'
 #' @return ggplot element
 #' 
@@ -19,8 +17,7 @@
 #' @export
 #' 
 plotETperiods = function(df, fps, noSecs = 10,
-                         minFrame = NULL, maxFrame = NULL, 
-                         ID.cols = c("#1E88E5", "#004D40")) {
+                         minFrame = NULL, maxFrame = NULL) {
   
   # if none is provided, get the Frame range
   if (is.null(maxFrame)) maxFrame = max(df$Frame)
@@ -77,7 +74,6 @@ plotETperiods = function(df, fps, noSecs = 10,
     ) +
     labs(title = "Dwell time periods", x = "Timecourse (s)") +
     theme_bw() + 
-    scale_fill_manual(values = ID.cols) + 
     theme(legend.position = "bottom", legend.title = element_blank(),
           axis.title.y = element_blank())
   

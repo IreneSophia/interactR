@@ -4,14 +4,7 @@
 \alias{plotETperiods}
 \title{Plot Dwell Time periods}
 \usage{
-plotETperiods(
-  df,
-  fps,
-  noSecs = 10,
-  minFrame = NULL,
-  maxFrame = NULL,
-  ID.cols = c("#1E88E5", "#004D40")
-)
+plotETperiods(df, fps, noSecs = 10, minFrame = NULL, maxFrame = NULL)
 }
 \arguments{
 \item{df}{Dataframe. The dataset containing the variables to be processed, created by \code{\link{featDwell}}.}
@@ -23,9 +16,6 @@ plotETperiods(
 \item{minFrame}{Numeric or NULL. First Frame to be plotted. If \code{NULL} minimum available Frame is used. Default is \code{NULL}.}
 
 \item{maxFrame}{Numeric or NULL. Last Frame to be plotted. If \code{NULL} maximum available Frame is used. Default is \code{NULL}.}
-
-\item{ID.cols}{Character vector of hex colours. If there are two Identifiers, then two colours must be provided.
-Default is colourblind-friendly blue and dark green.}
 }
 \value{
 ggplot element
