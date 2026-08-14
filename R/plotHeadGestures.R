@@ -82,13 +82,13 @@ plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
   # finish preprocessing
   df = df |>
     # wrangle to long format
-    pivot_longer(cols = starts_with(c("Nodding", "Shaking"))) |>
+    tidyr::pivot_longer(cols = starts_with(c("Nodding", "Shaking"))) |>
     mutate(
       name = if_else(!grepl("_", name), paste0(name, "_signal"), name)
     ) |>
-    separate(name, into = c("Gesture", "name"), sep = "_") |>
+    tidyr::separate(name, into = c("Gesture", "name"), sep = "_") |>
     # back to mixed format - Gestures as rows but type of signal as columns
-    pivot_wider(names_prefix = "V_") |>
+    tidyr::pivot_wider(names_prefix = "V_") |>
     rename("V" = "V_signal")
   
   # get the shift for the raw data / scale for the frequency
