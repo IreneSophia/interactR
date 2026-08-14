@@ -60,13 +60,6 @@ plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
                         win = win, minFreq = minFreq, maxFreq = maxFreq, 
                         winCentre = winCentre, winSmooth = winSmooth, verbose = F)
   
-  # preprocess the dataframe
-  df = df |>
-    # extract the frames
-    filter(Frame >= minFrame & Frame <= maxFrame) |>
-    # focus on the relevant columns
-    select(Dyad, Identifier, Frame, Timestamp,
-           starts_with(c("Nodding", "Shaking")))
   
   # check if there is a Timecourse in the data, if not create it
   if (!("Timecourse" %in% colnames(df))) {
@@ -75,6 +68,14 @@ plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
         Timecourse = as.numeric(difftime(Timestamp, min(Timestamp), units = "secs"))
       )
   }
+  
+  # preprocess the dataframe
+  df = df |>
+    # extract the frames
+    filter(Frame >= minFrame & Frame <= maxFrame) |>
+    # focus on the relevant columns
+    select(Dyad, Identifier, Frame, Timestamp,
+           starts_with(c("Nodding", "Shaking")))
   
   # if smoothing, then take the smoothing column
   if (winSmooth > 0) {
