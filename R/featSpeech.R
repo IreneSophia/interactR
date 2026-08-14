@@ -360,6 +360,9 @@ convertGrid = function(ls.files, rs.path = c(), suffix = '', prefix = '', extrac
     
     # initialise a dataframe
     df.speak = data.frame()
+    
+    # error if no files
+    if (length(ls.files) == 0) stop("No files in ls.files")
 
     # loop through the paths
     for (path in ls.files) {
