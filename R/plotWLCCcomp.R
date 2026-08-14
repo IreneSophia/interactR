@@ -65,7 +65,7 @@ plotWLCCcomp = function(df, ncol = 2, term = "significant",
      ggplot() +
      geom_rect(data = df.back, 
                aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = Inf,
-                   fill = "observed exceeding pseudo"),
+                   fill = term),
                alpha = 0.3) +
      geom_ribbon(aes(x = Lag, y = AVG, group = Method, fill = Method, 
                      ymin = AVG - STD, ymax = AVG + STD), 
@@ -75,7 +75,7 @@ plotWLCCcomp = function(df, ncol = 2, term = "significant",
      geom_label(data = df.lag, aes(x = Lag, y = ypos, label = label),  size = 2.5) + 
      facet_wrap(. ~ Feature, scale = "free_y", ncol = ncol) +  
      scale_fill_manual(values = col.plot,
-                       breaks = c("observed exceeding pseudo")) +
+                       breaks = c(term)) +
      scale_colour_manual(values = col.plot) +
      theme_bw() + 
      theme(legend.position = "bottom", legend.title = element_blank(),
