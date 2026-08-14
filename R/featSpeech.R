@@ -16,6 +16,10 @@
 #'   Needs to contain a file of the name `[praat.prefix]_pitchIntensity.csv` or be empty
 #'   such that `is.null(praat.path) == TRUE`.
 #' @param praat.prefix Character. Prefix used in the Praat script for the output files.
+#' @param extractIdentifier Character. Character describing a regular expression to 
+#'   extract the Identifier from the filenames of the wav files that were analysed
+#'   with the praat script. Default is `".*Participant_(.+)"` which works for the
+#'   automatic naming of VERSE.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
 #'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
@@ -31,7 +35,9 @@
 #' @author Irene Sophia Plank (\email{10planki@@gmail.com})
 #' @export
 
-featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix = '',
+featSpeech = function(df.speak, praat.path, praat.prefix, 
+                      extractIdentifier = ".*Participant_(.+)",
+                      rs.path = c(), suffix = '',
                       verbose = T, recompute = F, return = F) {
   
   if (verbose) cat("-------------------- Extracting speech features --------------------\n")
@@ -66,8 +72,9 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
       # read in the praat output capturing pitch and intensity
       df.pint = readr::read_csv(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv")),
                                 show_col_types = F) |>
-        tidyr::separate(Name, into = c("tmp1", "Dyad", "Identifier", "tmp2"), sep = "_") |>
-        select(-tmp1, -tmp2)
+        mutate(
+          Identifier = sub(extractIdentifier, "\\1", Name)
+        ) |> select(-Name)
       
       # remove all speaking instances that do not have syllables detected - these
       # are most likely just breathing sounds mistaken for speech
@@ -126,7 +133,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix, rs.path = c(), suffix 
         ArticulationRate = nSyll/PhonationDuration,
         .groups = "drop"
       ) |>
-      full_join(df.pint, by = c("Dyad", "Identifier")) |>
+      full_join(df.pint, by = "Identifier") |>
       group_by(Dyad) |>
       mutate(
         # compute silence-to-turn ratio: higher means more silence

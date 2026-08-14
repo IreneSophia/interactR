@@ -8,6 +8,7 @@ featSpeech(
   df.speak,
   praat.path,
   praat.prefix,
+  extractIdentifier = ".*Participant_(.+)",
   rs.path = c(),
   suffix = "",
   verbose = T,
@@ -25,6 +26,11 @@ Needs to contain a file of the name \verb{[praat.prefix]_pitchIntensity.csv} or 
 such that \code{is.null(praat.path) == TRUE}.}
 
 \item{praat.prefix}{Character. Prefix used in the Praat script for the output files.}
+
+\item{extractIdentifier}{Character. Character describing a regular expression to
+extract the Identifier from the filenames of the wav files that were analysed
+with the praat script. Default is \code{".*Participant_(.+)"} which works for the
+automatic naming of VERSE.}
 
 \item{rs.path}{Character. Path to the directory where the output files will be saved.
 If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk. Default is \code{c()}.}

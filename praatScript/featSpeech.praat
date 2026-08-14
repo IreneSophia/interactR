@@ -25,11 +25,11 @@ folder$ = "audio"
 # please enter the file separator from your OS
 filesep$ = "/" 
 # set a prefix for all the output files
-prefix$ = "VIBE"
+prefix$ = "audio"
 
 # set which processing steps should be run
 procpint = 1
-procuhm = 0
+procuhm = 1
 
 #### set variables
 
