@@ -224,8 +224,7 @@ preproHead = function(df, rotnames, tranames, rs.path = c(), suffix = '',
     # focus on relevant columns
     df = df |> 
       select(Dyad, Identifier, Frame, Timestamp, Time,
-             any_of(c("Speaking", "Listening", "Communication")),
-             any_of(c(rotnames, tranames, cornames))) |>
+             any_of(c("Communication", rotnames, tranames, cornames))) |>
       arrange(Dyad, Identifier, Frame)
     
     if (performFixCirc) {

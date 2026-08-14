@@ -89,7 +89,7 @@ extractZCrossing = function(df, colnames, fps, minDegree, rs.path = c(), suffix 
       df = df |>
         group_by(Dyad, Identifier, Time) |> arrange(Dyad, Identifier, Frame) |>
         mutate(
-          # detrend data with local mean (1 second window)
+          # detrend data with local mean (based on winCentre)
           across(.cols = all_of(colnames), .fns = list(centred   = ~ .x - aggSlide(.x, mean, fps * winCentre)),
                  .names = "{.col}_{.fn}")
         )
@@ -106,10 +106,13 @@ extractZCrossing = function(df, colnames, fps, minDegree, rs.path = c(), suffix 
           .fns = list(
             # extract the zero crossings
             zc     = ~ findZCrossing(.x),
+            # find zero crossings with difference above minDegree
+            zcT    = ~ findZCrossing(.x) & (abs(.x - lag(.x, default = .x[1])) >= minDegree)
             # get the difference in rotation with 0 for first entry
-            diff   = ~ abs(.x - lag(.x, default = .x[1])),
-            # sum up the ZCrossings across the window and divide by it for frequency
-            sum    = ~ aggSlide(findZCrossing(.x), sum, fps * win) / win,
+            diff   = ~ abs(.x - lag(.x, default = .x[1]))
+            # sum up the above threshold ZCrossings across the window and divide by window for frequency
+            sum    = ~ aggSlide(findZCrossing(.x) & (abs(.x - lag(.x, default = .x[1])) >= minDegree), 
+                                sum, fps * win) / win,
             # compare sum / window to the minimum and maximum frequencies
             rel    = ~ 
               # larger than the minimum frequencey
