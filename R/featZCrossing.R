@@ -115,12 +115,12 @@ extractZCrossing = function(df, colnames, fps, minDegree, rs.path = c(), suffix 
                                 sum, fps * win) / win,
             # compare sum / window to the minimum and maximum frequencies
             rel    = ~ 
-              # larger than the minimum frequencey
-              (aggSlide(findZCrossing(.x), sum, fps * win) / win > minFreq ) & 
+              # larger than the minimum frequency
+              (aggSlide(findZCrossing(.x) & (abs(.x - lag(.x, default = .x[1])) >= minDegree), 
+                        sum, fps * win) / win > minFreq ) & 
               # smaller than the maximum frequency
-              (aggSlide(findZCrossing(.x), sum, fps * win) / win < maxFreq ) & 
-              # difference between frames exceeds minDegree
-              abs(.x - lag(.x, default = .x[1])) > minDegree
+              (aggSlide(findZCrossing(.x) & (abs(.x - lag(.x, default = .x[1])) >= minDegree), 
+                        sum, fps * win) / win < maxFreq )
           ),
           .names = "{.col}_{.fn}"
         )
