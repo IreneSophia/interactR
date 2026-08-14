@@ -74,7 +74,7 @@ plotHeadGestures = function(df, colNodding, colShaking, fps, minDegree,
     # extract the frames
     filter(Frame >= minFrame & Frame <= maxFrame) |>
     # focus on the relevant columns
-    select(Dyad, Identifier, Frame, Timestamp,
+    select(Dyad, Identifier, Frame, Timecourse,
            starts_with(c("Nodding", "Shaking")))
   
   # if smoothing, then take the smoothing column
