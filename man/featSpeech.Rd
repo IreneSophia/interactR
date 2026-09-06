@@ -8,7 +8,6 @@ featSpeech(
   df.speak,
   praat.path,
   praat.prefix,
-  extractIdentifier = ".*Participant_(.+)",
   rs.path = c(),
   suffix = "",
   verbose = T,
@@ -26,11 +25,6 @@ Needs to contain a file of the name \verb{[praat.prefix]_pitchIntensity.csv} or 
 such that \code{is.null(praat.path) == TRUE}.}
 
 \item{praat.prefix}{Character. Prefix used in the Praat script for the output files.}
-
-\item{extractIdentifier}{Character. Character describing a regular expression to
-extract the Identifier from the filenames of the wav files that were analysed
-with the praat script. Default is \code{".*Participant_(.+)"} which works for the
-automatic naming of VERSE.}
 
 \item{rs.path}{Character. Path to the directory where the output files will be saved.
 If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk. Default is \code{c()}.}
@@ -50,8 +44,10 @@ If \code{return = TRUE}, returns the processed dataframe. Saves \verb{featSpeech
 This function aggregates all of the speech information. There two options:
 \enumerate{
 \item Information extracted from \code{featSpeech.praat}, which includes the aggregated
-scores from the uhm-o-meter (de Jong et al., 2021). This option is chosen by
-providing \code{praat.path} and \code{praat.prefix}.
+scores from the uhm-o-meter (de Jong et al., 2021) extracted from the
+TextGris with \code{\link[=convertGrid]{convertGrid()}}. This option is chosen by providing
+\code{praat.path} and \code{praat.prefix} and \code{df.speak} must contain the column
+\code{Name} to link it with the pitch and intensity information.
 \item Information based on VERSE audio tracking. If \code{is.null(praat.path) == TRUE},
 the columns \code{Speaking} and \code{Listening} from VERSE are used to compute available
 features.

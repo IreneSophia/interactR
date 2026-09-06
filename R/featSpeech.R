@@ -3,8 +3,10 @@
 #'
 #' This function aggregates all of the speech information. There two options: 
 #' 1. Information extracted from `featSpeech.praat`, which includes the aggregated 
-#'    scores from the uhm-o-meter (de Jong et al., 2021). This option is chosen by
-#'    providing `praat.path` and `praat.prefix`.
+#'    scores from the uhm-o-meter (de Jong et al., 2021) extracted from the 
+#'    TextGris with [convertGrid()]. This option is chosen by providing 
+#'    `praat.path` and `praat.prefix` and `df.speak` must contain the column
+#'    `Name` to link it with the pitch and intensity information. 
 #' 2. Information based on VERSE audio tracking. If `is.null(praat.path) == TRUE`,
 #'    the columns `Speaking` and `Listening` from VERSE are used to compute available
 #'    features. 
@@ -16,10 +18,6 @@
 #'   Needs to contain a file of the name `[praat.prefix]_pitchIntensity.csv` or be empty
 #'   such that `is.null(praat.path) == TRUE`.
 #' @param praat.prefix Character. Prefix used in the Praat script for the output files.
-#' @param extractIdentifier Character. Character describing a regular expression to 
-#'   extract the Identifier from the filenames of the wav files that were analysed
-#'   with the praat script. Default is `".*Participant_(.+)"` which works for the
-#'   automatic naming of VERSE.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
 #'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
@@ -36,7 +34,6 @@
 #' @export
 
 featSpeech = function(df.speak, praat.path, praat.prefix, 
-                      extractIdentifier = ".*Participant_(.+)",
                       rs.path = c(), suffix = '',
                       verbose = T, recompute = F, return = F) {
   
@@ -60,7 +57,7 @@ featSpeech = function(df.speak, praat.path, praat.prefix,
     if (!is.null(praat.path)) {
       # OPTION 1: ASSUMING PRAAT DATAFRAME
       
-      checkDF(df.speak, c("Dyad", "Identifier", "Turn", "Start", "End", "Duration", "nSyll"))
+      checkDF(df.speak, c("Dyad", "Identifier", "Name", "Turn", "Start", "End", "Duration", "nSyll"))
       
       if (!file.exists(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv")))) {
         stop("Specified praat path and prefix do not lead to file ", paste0(praat.prefix, "_pitchIntensity.csv"))
@@ -71,16 +68,16 @@ featSpeech = function(df.speak, praat.path, praat.prefix,
       
       # read in the praat output capturing pitch and intensity
       df.pint = readr::read_csv(file.path(praat.path, paste0(praat.prefix, "_pitchIntensity.csv")),
-                                show_col_types = F) |>
-        mutate(
-          Identifier = sub(extractIdentifier, "\\1", Name)
-        ) |> select(-Name)
+                                show_col_types = F)
       
       # remove all speaking instances that do not have syllables detected - these
       # are most likely just breathing sounds mistaken for speech
       df.speak = df.speak |> 
         # focus on speaking where there is at least one syllable
         filter(nSyll > 0)
+      
+      # column by which pint and speak are linked
+      link = "Name"
       
     }
     else {
@@ -119,6 +116,9 @@ featSpeech = function(df.speak, praat.path, praat.prefix,
         select(Dyad, Identifier, Time, Exp.Duration) |>
         distinct() |> rename(Duration = Exp.Duration)
       
+      # column by which pint and speak are linked
+      link = "Identifier"
+      
     }
     
     if (verbose) cat(format(Sys.time(), "%X"), ": Computing new features\n")
@@ -126,14 +126,14 @@ featSpeech = function(df.speak, praat.path, praat.prefix,
     # summarise the articulation rate (number of syllables / phonation duration)  
     # and the silence-to-turn ratio (level of the dyad)
     df = df.speak |>
-      group_by(Dyad, Identifier, across(any_of('Time'))) |>
+      group_by(Dyad, Identifier, across(any_of(c('Time', 'Name')))) |>
       summarise(
         nSyll = sum(nSyll),
         PhonationDuration = sum(Duration),
         ArticulationRate = nSyll/PhonationDuration,
         .groups = "drop"
       ) |>
-      full_join(df.pint, by = "Identifier") |>
+      full_join(df.pint, by = link) |>
       group_by(Dyad) |>
       mutate(
         # compute silence-to-turn ratio: higher means more silence
@@ -335,9 +335,9 @@ detectTurns = function(df.speak, rs.path = c(), suffix = '',
 #' 
 convertGrid = function(ls.files, rs.path = c(), suffix = '', prefix = '', extract = T, 
                        verbose = T, recompute = F, return = F) {
-
+  
   if (verbose) cat("----------------- Converting praat TextGrid files  -----------------\n")
-    
+  
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
@@ -363,7 +363,7 @@ convertGrid = function(ls.files, rs.path = c(), suffix = '', prefix = '', extrac
     
     # error if no files
     if (length(ls.files) == 0) stop("No files in ls.files")
-
+    
     # loop through the paths
     for (path in ls.files) {
       
@@ -398,9 +398,14 @@ convertGrid = function(ls.files, rs.path = c(), suffix = '', prefix = '', extrac
     if (extract) {
       df.speak = df.speak |>
         mutate(
+          Name = sub("\\.TextGrid", "", basename(Path)),
           Dyad = gsub(sprintf("^%s(.+)_.*_.*", prefix), "\\1", basename(Path)),
           Identifier = gsub(sprintf("^%s.*_(.+)_.*", prefix), "\\1", basename(Path)),
-        ) |> select(-Path) |> relocate(Dyad, Identifier)
+        ) |> select(-Path) |> relocate(Dyad, Identifier, Name)
+    } else {
+      df.speak = df.speak |>
+        mutate(Name = sub("\\.TextGrid", "", basename(Path))) |>
+        select(-Path) |> relocate(Name)
     }
     
     # potentially save to disk
