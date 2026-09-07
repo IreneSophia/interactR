@@ -98,13 +98,13 @@ featWLCC = function(df, absolute = F, r2z = F, rs.path = c(), suffix = "",
       # aggregate for each Dyad and Identifier over all windows
       group_by(Dyad, Time, Method, Identifier, Feature) |>
       summarise(
-        STD  = sd(WLCC, na.rm = T),
+        SD   = sd(WLCC, na.rm = T),
         AVG  = mean(WLCC, na.rm = T),
         MED  = median(WLCC, na.rm = T),
         .groups = "drop"
       ) |>
       tidyr::pivot_wider(names_from = Feature, 
-                         values_from = c(AVG, MED, STD),
+                         values_from = c(AVG, MED, SD),
                          names_glue = "WLCC_{Feature}_{.value}")
     
     # get overall WLCC
@@ -112,13 +112,13 @@ featWLCC = function(df, absolute = F, r2z = F, rs.path = c(), suffix = "",
       # aggregate for each Dyad over all windows
       group_by(Dyad, Time, Method, Feature) |>
       summarise(
-        STD  = sd(WLCC, na.rm = T),
+        SD   = sd(WLCC, na.rm = T),
         AVG  = mean(WLCC, na.rm = T),
         MED  = median(WLCC, na.rm = T),
         .groups = "drop"
       ) |>
       tidyr::pivot_wider(names_from = Feature, 
-                         values_from = c(AVG, MED, STD),
+                         values_from = c(AVG, MED, SD),
                          names_glue = "DyadWLCC_{Feature}_{.value}")
     
     df.out = merge(df.indi, df.dyad) |> 
