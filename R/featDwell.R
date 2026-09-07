@@ -11,6 +11,7 @@
 #'   and in this list. The order of the AOIs matters: if more than one were to fit, then the first
 #'   AOI is chosen. E.g., if ls.AOI = c("Self", "Laptop"), then "Self Laptop" is classified as "Self".
 #'   If empty (`is.null(ls.AOI) == TRUE`), existing classification is used.
+#' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
 #'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
@@ -25,7 +26,7 @@
 #' @export
 #' 
 
-featDwell = function(df, ls.AOI, rs.path = c(), suffix = "", 
+featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "", 
                      verbose = T, recompute = F, return = T) {
   
   if (verbose) cat("------------------ Extracting dwell time features ------------------\n")
@@ -118,7 +119,7 @@ featDwell = function(df, ls.AOI, rs.path = c(), suffix = "",
       ) |>
       select(-block) |>
       filter(AOI.smooth != "noAOI") |> 
-      mutate(Duration = maxFrame - minFrame)
+      mutate(Duration = (maxFrame - minFrame)/fps)
     
     arrow::write_feather(df.blocks, fldat, compression = "zstd")
     

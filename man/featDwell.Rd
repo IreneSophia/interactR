@@ -7,6 +7,7 @@
 featDwell(
   df,
   ls.AOI,
+  fps,
   rs.path = c(),
   suffix = "",
   verbose = T,
@@ -23,6 +24,8 @@ ignoring undeclared targets. All but alphabet characters will be removed, both i
 and in this list. The order of the AOIs matters: if more than one were to fit, then the first
 AOI is chosen. E.g., if ls.AOI = c("Self", "Laptop"), then "Self Laptop" is classified as "Self".
 If empty (\code{is.null(ls.AOI) == TRUE}), existing classification is used.}
+
+\item{fps}{Numeric. Frame processing rate frequency profile (frames per second) of the dataset.}
 
 \item{rs.path}{Character. Path to the directory where the output files will be saved.
 If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk. Default is \code{c()}.}
