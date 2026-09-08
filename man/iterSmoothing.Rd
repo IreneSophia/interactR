@@ -7,9 +7,9 @@
 iterSmoothing(x, niter = 4)
 }
 \arguments{
-\item{x}{A character or factor vector ordered by frame or time, i.e. AOI classifications}
+\item{x}{Character. A character or factor vector ordered by frame or time, i.e. AOI classifications}
 
-\item{niter}{An integer specifying the maximum number of smoothing passes to perform
+\item{niter}{Numeric. An integer specifying the maximum number of smoothing passes to perform
 (default is \code{10}). The loop terminates early if no further changes are detected.}
 }
 \value{

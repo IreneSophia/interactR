@@ -96,20 +96,32 @@ featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "",
         )
     }
     
-    # extract periods of fixation
-    df.blocks = df.dwell |>
-      select(Dyad, Time, Identifier, Frame, Timestamp, AOI) |>
+    # smooth the AOI extraction
+    df.dwell = df.dwell |>
+      select(Dyad, Time, Identifier, Actor, Frame, Timestamp, AOI, Communication) |>
       #  iterative smoothing to get rid of one-frame AOIs encased by the same other AOI
       arrange(Dyad, Time, Identifier, Frame) |>
       mutate(
-        AOI.smooth = iterSmoothing(AOI)
-      ) |>
-      mutate(block = consecutive_id(AOI.smooth)) |>
+        AOI_smooth = iterSmoothing(AOI)
+      )
+    
+    # extract initiations and solo attention to the other's head
+    df.ini = df.dwell %>%
+      group_by(Dyad) %>%
+      group_modify(~ classifyInitiation(.x)) |>
+      select(-Actor) |>
+      tidyr::pivot_wider(names_from = Classification, values_from = count,
+                         names_prefix = "Dwell_")
+    
+    # extract periods of fixation
+    df.blocks = df.dwell |>
+      arrange(Dyad, Time, Identifier, Frame) |>
+      mutate(block = consecutive_id(AOI_smooth)) |>
       group_by(Dyad, Time, Identifier, block) |>
       filter(n() > 1) |> # get rid of everything that is just one sample
       ungroup() |>
-      mutate(block = consecutive_id(AOI.smooth)) |>
-      group_by(Dyad, Time, Identifier, block, AOI.smooth) |>
+      mutate(block = consecutive_id(AOI_smooth)) |>
+      group_by(Dyad, Time, Identifier, block, AOI_smooth) |>
       summarise(
         minFrame = min(Frame),
         maxFrame = max(Frame),
@@ -118,22 +130,22 @@ featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "",
         .groups = 'drop'
       ) |>
       select(-block) |>
-      filter(AOI.smooth != "noAOI") |> 
+      filter(AOI_smooth != "noAOI") |> 
       mutate(Duration = (maxFrame - minFrame)/fps)
     
-    arrow::write_feather(df.blocks, fldat, compression = "zstd")
+    #arrow::write_feather(df.blocks, fldat, compression = "zstd")
     
     # aggregate the block durations
     df.blocks = df.blocks |>
-      group_by(Dyad, Time, Identifier, AOI.smooth) |>
+      group_by(Dyad, Time, Identifier, AOI_smooth) |>
       summarise(
         AVG = mean(Duration, na.rm = T),
         SD  = sd(Duration, na.rm = T),
         MED = median(Duration, na.rm = T),
         .groups = "drop"
       ) |>
-      tidyr::pivot_wider(names_from = AOI.smooth, values_from = c(AVG, SD, MED),
-                         names_glue = "DwellBlocks_{AOI.smooth}_{.value}")
+      tidyr::pivot_wider(names_from = AOI_smooth, values_from = c(AVG, SD, MED),
+                         names_glue = "DwellBlocks_{AOI_smooth}_{.value}")
     
     # add total number of frames
     df.dwell = df.dwell |>
@@ -156,7 +168,8 @@ featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "",
       ) |> select(-AOI.frames, -Frames.total) |>
       tidyr::pivot_wider(names_from = AOI, values_from = Dwell,
                          names_glue = "{.value}_{AOI}_Total") |>
-      left_join(df.blocks, by = c("Dyad", "Time", "Identifier"))
+      left_join(df.blocks, by = c("Dyad", "Time", "Identifier")) |>
+      left_join(df.ini, by = c("Dyad", "Time", "Identifier"))
     
     # potentially add the values depending on Communication
     if ("Communication" %in% colnames(df)) {
@@ -215,8 +228,8 @@ featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "",
 #' vector (such as eye-tracking AOIs) by iteratively replacing isolated values 
 #' that are sandwiched between identical preceding and succeeding values.
 #'
-#' @param x A character or factor vector ordered by frame or time, i.e. AOI classifications
-#' @param niter An integer specifying the maximum number of smoothing passes to perform 
+#' @param x Character. A character or factor vector ordered by frame or time, i.e. AOI classifications
+#' @param niter Numeric. An integer specifying the maximum number of smoothing passes to perform 
 #'   (default is `10`). The loop terminates early if no further changes are detected.
 #'
 #' @return A character or factor vector of the same length as `x`, with isolated 
@@ -291,4 +304,83 @@ iterSmoothing = function(x, niter = 4) {
     
   }
   return(x)
+}
+
+#' Classify AOI Dwell Periods
+#'
+#' Takes a dataframe containing the smoothed AOI data of one Dyad distinguished 
+#' by Identifiers and the Actor column. The function focuses on the target AOI
+#' and extracts periods of continuous fixation considering both Actors. For each
+#' of these periods, it is determined if only one Actor fixated on the target
+#' AOI (SoloAttention) or both did in which case it is also determined who 
+#' initiated the period (Initiation).
+#'
+#' @param df.dwell A dataframe containing the smoothed AOI data of one Dyad. Must
+#'   contain the columns `AOI_smooth`, `Actor`, `Identifier`, `Time` and `Frame`.
+#' @param target Character. Character describing the target AOI. Must be found 
+#'   in `AOI_smooth`. Default is `OtherHead`.
+#'
+#' @return An aggregated dataframe with the columns `Identifier`, `Actor`,
+#'   `Classification`, `count` and `Time`.
+#'
+#' @author Irene Sophia Plank (\email{10planki@@gmail.com})
+#' 
+#' @export
+#' 
+classifyInitiation = function(df.dwell, target = "OtherHead") {
+  
+  # focus on the target AOI and extract start and end frames
+  df.dyad = df.dwell |>
+    filter(AOI_smooth == target) |>
+    group_by(Actor) |>
+    mutate(grp = cumsum(c(0, diff(Frame) != 1))) |> group_by(Actor, grp) |>
+    summarise(start = min(Frame), end = max(Frame), .groups = "drop") |>
+    select(Actor, start, end) |> 
+    arrange(start) |>
+    mutate(
+      BlockID = 0
+    )
+  
+  # add a block ID: as long as overlapping Frames of any actor, same block
+  cend = -Inf   # current end of the block
+  cid  = 0      # current id number
+  
+  # loop through and check 
+  for (i in seq_len(nrow(df.dyad))) {
+    # is this start after the current end point? always T for first block
+    if (df.dyad$start[i] > cend) {
+      cid = cid + 1         # increase the current block id
+      cend = df.dyad$end[i] # set the new current end point to the end of this row
+    } else {
+      # use the later end point: current maximum or the end of this row
+      cend = max(cend, df.dyad$end[i])
+    }
+    # add the current block ID for this row
+    df.dyad$BlockID[i] = cid
+  }
+  
+  # summarise into individual face attention and eye contact initiation
+  df.dyad |>
+    group_by(BlockID) |>
+    # get the lowest starting point for each block for each actor
+    summarise(
+      Actor0 = if (any(Actor == "actor0")) min(start[Actor == "actor0"]) else NA_integer_,
+      Actor1 = if (any(Actor == "actor1")) min(start[Actor == "actor1"]) else NA_integer_,
+      .groups = "drop"
+    ) |>
+    # classify into eye contact initiation and solo face attention
+    mutate(
+      tmp = case_when(
+        Actor0 < Actor1 ~ "actor0_Initiation",
+        Actor0 > Actor1 ~ "actor1_Initiation",
+        is.na(Actor0)   ~ "actor1_SoloAttention",
+        is.na(Actor1)   ~ "actor0_SoloAttention"
+      )
+    ) |> filter(!is.na(tmp)) |>
+    count(tmp, name = "count") |>
+    tidyr::separate(col = tmp, into = c("Actor", "Classification")) |>
+    mutate(Classification = paste0(target, "_", Classification)) |>
+    # combine with the dyad information
+    left_join(df.dwell |> select(Identifier, Time, Actor) |>
+                distinct(), by = "Actor")
 }
