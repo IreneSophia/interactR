@@ -133,7 +133,7 @@ featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "",
       filter(AOI_smooth != "noAOI") |> 
       mutate(Duration = (maxFrame - minFrame)/fps)
     
-    #arrow::write_feather(df.blocks, fldat, compression = "zstd")
+    arrow::write_feather(df.blocks, fldat, compression = "zstd")
     
     # aggregate the block durations
     df.blocks = df.blocks |>
