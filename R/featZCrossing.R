@@ -110,17 +110,20 @@ extractZCrossing = function(df, colnames, fps, minDegree, rs.path = c(), suffix 
             zcT    = ~ findZCrossing(.x) & (abs(.x - lag(.x, default = .x[1])) >= minDegree),
             # get the difference in rotation with 0 for first entry
             diff   = ~ abs(.x - lag(.x, default = .x[1])),
-            # sum up the above threshold ZCrossings across the window and divide by window for frequency
+            # sum up the above threshold ZCrossings across the window and divide by 2 for full cycles per window
             sum    = ~ aggSlide(findZCrossing(.x) & (abs(.x - lag(.x, default = .x[1])) >= minDegree), 
-                                sum, fps * win) / win,
-            # compare sum / window to the minimum and maximum frequencies
+                                sum, fps * win) / 2,
+            # as sum but also divide by window for frequency
+            freq   = ~ aggSlide(findZCrossing(.x) & (abs(.x - lag(.x, default = .x[1])) >= minDegree), 
+                                sum, fps * win) / (win * 2),
+            # compare freq to the minimum and maximum frequencies
             rel    = ~ 
               # larger than the minimum frequency
               (aggSlide(findZCrossing(.x) & (abs(.x - lag(.x, default = .x[1])) >= minDegree), 
-                        sum, fps * win) / win > minFreq ) & 
+                        sum, fps * win) / (win * 2) > minFreq ) & 
               # smaller than the maximum frequency
               (aggSlide(findZCrossing(.x) & (abs(.x - lag(.x, default = .x[1])) >= minDegree), 
-                        sum, fps * win) / win < maxFreq )
+                        sum, fps * win) / (win * 2) < maxFreq )
           ),
           .names = "{.col}_{.fn}"
         )
