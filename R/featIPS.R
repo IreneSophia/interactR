@@ -658,7 +658,7 @@ extractIPS = function(df, colname, type, fps, featname = NA,
           }
         }
       },
-      .options = furrr::furrr_options(seed = seed)
+      .options = furrr::furrr_options(seed = seed, packages = c("lubridate"))
     )
     
     # clean up parallelisation
