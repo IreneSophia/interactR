@@ -619,7 +619,14 @@ extractIPS = function(df, colname, type, fps, featname = NA,
           # drop NA to ensure that we have the same Frames in both interaction partners
           tidyr::drop_na()
         
-        # check if a Frame is missing in-between
+        # check if no matching frames found
+        if (nrow(df.sel) == 0) {
+          warning("No matching frames in dyad ", df.dyad$Dyad[dyadRow])
+          # return an empty dataframe for this one
+          return(data.frame())
+        }
+        
+        # check if Frame is missing in-between
         if (length(setdiff(min(df.sel$Frame):max(df.sel$Frame), df.sel$Frame)) != 0) {
           warning("Missing Frames in dyad ", df.dyad$Dyad[dyadRow])
           # return an empty dataframe for this one
