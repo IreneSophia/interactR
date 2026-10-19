@@ -65,7 +65,7 @@ featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "",
                         "actor0", "actor1")
       ) |> ungroup()
     
-    # if ls.AOI is given, classify according to this [!CHECK: None or noAOI here????]
+    # if ls.AOI is given, classify according to this
     if (!is.null(ls.AOI)) {
       if ("AOI" %in% colnames(df)) {
         df = df |> 
@@ -98,7 +98,7 @@ featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "",
     
     # smooth the AOI extraction
     df.dwell = df.dwell |>
-      select(Dyad, Time, Identifier, Actor, Frame, Timestamp, AOI, Communication) |>
+      select(Dyad, Time, Identifier, Actor, Frame, Timestamp, AOI, any_of('Communication')) |>
       #  iterative smoothing to get rid of one-frame AOIs encased by the same other AOI
       arrange(Dyad, Time, Identifier, Frame) |>
       mutate(
