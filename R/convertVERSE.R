@@ -4,7 +4,7 @@
 #' 
 #' @param df.info Dataframe with one row per file to be read in. Must contain the 
 #'   column `Filename` (full path to the CSV file) and `Time` which is the name
-#'   of the folder automatically by VERSE. All TrackingLogData.csv to which the 
+#'   of the folder automatically created by VERSE. All TrackingLogData.csv to which the 
 #'   Filenames point have to contain the same number of Social Actors.
 #'   Can optionally contain parameters defining windows: 
 #'   `start.use` (first Timestamp), `end.use` (last Timestamp), 
