@@ -311,7 +311,7 @@ extractEventsVERSE = function(fl.ls, timezone = "UTC", type = "df") {
     # loop through the file paths
     for (i in 1:length(fl.ls)) {
       # read in the Event file
-      txt = scan(fl.ls[i], what = "", sep = "\n")
+      txt = scan(fl.ls[i], what = "", sep = "\n", quiet = TRUE)
       # extract the json part from it
       ls.info[[i]] = jsonlite::parse_json(txt[3:grep("^}", txt)])
       # grab the VERSE version
