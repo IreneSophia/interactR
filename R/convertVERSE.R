@@ -316,6 +316,9 @@ extractEventsVERSE = function(fl.ls, timezone = "UTC", type = "df") {
       ls.info[[i]] = jsonlite::parse_json(txt[3:grep("^}", txt)])
       # grab the VERSE version
       ls.info[[i]]$Version = gsub(".*: (.+)", "\\1", txt[1])
+      # add the Time
+      ls.info[[i]]$Time = as.POSIXct(gsub(".*/(.+)/EventLog.txt", "\\1", fl.ls[i]), 
+                                     format = "%Y-%m-%d_%H-%M-%S", tz = timezone),
       # include an Events dataframe
       ls.info[[i]]$Events = data.frame(Event = txt[(grep("^}", txt)+1):length(txt)]) |> 
         mutate(Timestamp = as.POSIXct(substr(Event, 1, 23), 
