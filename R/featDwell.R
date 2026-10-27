@@ -13,6 +13,9 @@
 #'   If "OtherHead" is part of ls.AOI, then eye contact initiations are computed. 
 #'   If empty (`is.null(ls.AOI) == TRUE`), existing classification is used. 
 #' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
+#' @param initiationTarget Character. The element of ls.AOI that should be used to detect
+#'   eye contact initiations and responses. Default is `Other Head`, corresponding to 
+#'   the head AOI based on VERSE default values.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
 #'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
@@ -27,7 +30,8 @@
 #' @export
 #' 
 
-featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "", 
+featDwell = function(df, ls.AOI, fps, initiationTarget = "Other Head", 
+                     rs.path = c(), suffix = "", 
                      verbose = T, recompute = F, return = T) {
   
   if (verbose) cat("------------------ Extracting dwell time features ------------------\n")
@@ -35,7 +39,7 @@ featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "",
   # check rs.path
   if (is.null(rs.path)) {
     # create empty filename because nothing will be saved
-    flcsv = ''
+    flcsv = fldat = ''
   } else {
     # create filename
     flcsv = file.path(rs.path, sprintf("featDwell%s.csv", suffix))
@@ -106,17 +110,6 @@ featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "",
         AOI_smooth = iterSmoothing(AOI)
       )
     
-    # if OtherHead is part of ls.AOI, then also look into Initations and Responses
-    if ("OtherHead" %in% ls.AOI) {
-      # extract initiations and solo attention to the other's head
-      df.ini = df.dwell %>%
-        group_by(Dyad) %>%
-        group_modify(~ classifyInitiation(.x)) |>
-        select(-Actor) |>
-        tidyr::pivot_wider(names_from = Classification, values_from = count,
-                           names_prefix = "Dwell_")
-    }
-    
     # extract periods of fixation
     df.blocks = df.dwell |>
       arrange(Dyad, Time, Identifier, Frame) |>
@@ -137,7 +130,7 @@ featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "",
       filter(AOI_smooth != "noAOI") |> 
       mutate(Duration = (maxFrame - minFrame)/fps)
     
-    arrow::write_feather(df.blocks, fldat, compression = "zstd")
+    if (fldat != '') arrow::write_feather(df.blocks, fldat, compression = "zstd")
     
     # aggregate the block durations
     df.blocks = df.blocks |>
@@ -156,12 +149,12 @@ featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "",
       group_by(Dyad, Identifier, Time) |>
       mutate(
         Frames.total = n()
-      ) |> ungroup() |>
-      # remove any where there was no fixation on an AOI
-      filter(AOI != "noAOI")
+      ) |> ungroup()
     
     # aggregate the dwell times
     df.dwell.agg = df.dwell |>
+      # remove any where there was no fixation on an AOI
+      filter(AOI != "noAOI") |>
       group_by(Dyad, Time, AOI, Identifier, Frames.total) |>
       summarise(
         AOI.frames = n(),
@@ -174,17 +167,13 @@ featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "",
                          names_glue = "{.value}_{AOI}_Total") |>
       left_join(df.blocks, by = c("Dyad", "Time", "Identifier"))
     
-    # if OtherHead then add the Initiations
-    if ("OtherHead" %in% ls.AOI) {
-      df.dwell.agg = df.dwell.agg |>
-        left_join(df.ini, by = c("Dyad", "Time", "Identifier"))
-    }
-    
     # potentially add the values depending on Communication
     if ("Communication" %in% colnames(df)) {
       df.dwell.agg = merge(
         df.dwell.agg, 
-        df.dwell |> 
+        df.dwell |>
+          # remove any where there was no fixation on an AOI
+          filter(AOI != "noAOI") |> 
           group_by(Dyad, Time, AOI, Identifier, Communication, Frames.total) |>
           summarise(
             AOI.frames = n(),
@@ -198,11 +187,16 @@ featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "",
       )
     }
     
-    # for all dyads compute shared attention
+    df.dwell.agg = df.dwell.agg |> 
+      mutate(across(where(is.numeric), \(x) coalesce(x, 0)))
+    
+    # for all dyads compute shared attention and, potentially, eye contact initiation
     df.dyad = df.dwell |>
       filter(!grepl("solo", Dyad))
     
     if (nrow(df.dyad) > 0) {
+      
+      if (verbose) cat(format(Sys.time(), "%X"), ": Compute dyad features\n")
       
       # compute joint attention
       df.dwell.joint = df.dyad |>
@@ -217,14 +211,34 @@ featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "",
         ) |> mutate(value = value/Frames.total) |>
         tidyr::pivot_wider(names_from = AOI,
                            names_glue = "DyadDwell_{AOI}_Total") |>
-        ungroup() |> select(-Frames.total)
-      
-      df.out = merge(df.dwell.agg, df.dwell.joint, all.x = T) |> 
+        ungroup() |> select(-Frames.total) |> 
         mutate(across(where(is.numeric), \(x) coalesce(x, 0)))
+      
+      # merge with other aggregated features
+      df.out = merge(df.dwell.agg, df.dwell.joint, all.x = T)
+      
+      # if OtherHead is part of ls.AOI, then also look into Initiations and Responses
+      if (initiationTarget %in% ls.AOI) {
+        
+        if (verbose) cat(format(Sys.time(), "%X"), ": Compute eye contact initiations\n")
+        
+        # extract initiations and solo attention to the other's head
+        df.ini = df.dyad |>
+          group_by(Dyad) |>
+          group_modify(~ classifyInitiation(.x, target = initiationTarget)) |>
+          select(-Actor) |>
+          tidyr::pivot_wider(names_from = Classification, values_from = count,
+                             names_prefix = "Dwell_") |> 
+          mutate(across(where(is.numeric), \(x) coalesce(x, 0)))
+        
+        df.out = df.out |>
+          left_join(df.ini, by = c("Dyad", "Time", "Identifier"))
+        
+      }
       
     } else {
-      df.out = df.dwell.agg |> 
-        mutate(across(where(is.numeric), \(x) coalesce(x, 0)))
+      
+      df.out = df.dwell.agg
     }
     
     # save speech dwell dataframe
@@ -348,6 +362,9 @@ iterSmoothing = function(x, niter = 4) {
 #' @export
 #' 
 classifyInitiation = function(df.dwell, target = "OtherHead") {
+  
+  # remove spaces from target
+  target = gsub("[^a-zA-Z]", "", target)
   
   # focus on the target AOI and extract start and end frames
   df.dyad = df.dwell |>

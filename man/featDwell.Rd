@@ -8,6 +8,7 @@ featDwell(
   df,
   ls.AOI,
   fps,
+  initiationTarget = "Other Head",
   rs.path = c(),
   suffix = "",
   verbose = T,
@@ -27,6 +28,10 @@ If "OtherHead" is part of ls.AOI, then eye contact initiations are computed.
 If empty (\code{is.null(ls.AOI) == TRUE}), existing classification is used.}
 
 \item{fps}{Numeric. Frame processing rate frequency profile (frames per second) of the dataset.}
+
+\item{initiationTarget}{Character. The element of ls.AOI that should be used to detect
+eye contact initiations and responses. Default is \verb{Other Head}, corresponding to
+the head AOI based on VERSE default values.}
 
 \item{rs.path}{Character. Path to the directory where the output files will be saved.
 If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk. Default is \code{c()}.}
