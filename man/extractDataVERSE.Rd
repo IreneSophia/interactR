@@ -17,10 +17,10 @@ extractDataVERSE(
 }
 \arguments{
 \item{df.info}{Dataframe with one row per file to be read in. Must contain the
-column \code{Filename} (full path to the CSV file) and \code{Time} which is the name
-of the folder automatically created by VERSE. All TrackingLogData.csv to which the
-Filenames point have to contain the same number of Social Actors.
-Can optionally contain parameters defining windows:
+column \code{Filename} (full path to the CSV file) and \code{Time}. Usually, \code{Time} is the name
+of the folder automatically created by VERSE, but it can also be a different Session ID.
+All TrackingLogData.csv to which the \code{Filename} point have to contain the same
+number of Social Actors. Can optionally contain parameters defining windows:
 \code{start.use} (first Timestamp), \code{end.use} (last Timestamp),
 or \code{frame.use} (number of frames starting at \code{start.use} or sequence origin).}
 

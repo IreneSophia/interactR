@@ -3,10 +3,10 @@
 #' Utility function to read in VERSE data streams from TrackingLog.csv file(s).
 #' 
 #' @param df.info Dataframe with one row per file to be read in. Must contain the 
-#'   column `Filename` (full path to the CSV file) and `Time` which is the name
-#'   of the folder automatically created by VERSE. All TrackingLogData.csv to which the 
-#'   Filenames point have to contain the same number of Social Actors.
-#'   Can optionally contain parameters defining windows: 
+#'   column `Filename` (full path to the CSV file) and `Time`. Usually, `Time` is the name
+#'   of the folder automatically created by VERSE, but it can also be a different Session ID. 
+#'   All TrackingLogData.csv to which the `Filename` point have to contain the same 
+#'   number of Social Actors. Can optionally contain parameters defining windows: 
 #'   `start.use` (first Timestamp), `end.use` (last Timestamp), 
 #'   or `frame.use` (number of frames starting at `start.use` or sequence origin).
 #' @param timezone Character. Timezone in which the data collection was conducted. Default is `"UTC"`.
@@ -157,9 +157,6 @@ extractDataVERSE = function(df.info, timezone = "UTC",
     df = df |>
       group_by(Identifier) |> 
       mutate(
-        # extract the starting time of this experiment from the Filename
-        Time = as.POSIXct(gsub(".*/(.+)/TrackingDataLog.*", "\\1", Filename), 
-                          format = "%Y-%m-%d_%H-%M-%S", tz = timezone),
         # focus on the target with the shortest distance
         AOI.gaze  = sub("^Name: (.*?) Distance.*$", "\\1", Gaze_Targets, perl = TRUE),
         AOI.left  = sub("^Name: (.*?) Distance.*$", "\\1", LeftEye_Targets, perl = TRUE),
