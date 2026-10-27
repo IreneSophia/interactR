@@ -10,7 +10,8 @@
 #'   ignoring undeclared targets. All but alphabet characters will be removed, both in the AOI columns 
 #'   and in this list. The order of the AOIs matters: if more than one were to fit, then the first
 #'   AOI is chosen. E.g., if ls.AOI = c("Self", "Laptop"), then "Self Laptop" is classified as "Self".
-#'   If empty (`is.null(ls.AOI) == TRUE`), existing classification is used.
+#'   If "OtherHead" is part of ls.AOI, then eye contact initiations are computed. 
+#'   If empty (`is.null(ls.AOI) == TRUE`), existing classification is used. 
 #' @param fps Numeric. Frame processing rate frequency profile (frames per second) of the dataset.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
 #'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk. Default is `c()`.
@@ -105,13 +106,16 @@ featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "",
         AOI_smooth = iterSmoothing(AOI)
       )
     
-    # extract initiations and solo attention to the other's head
-    df.ini = df.dwell %>%
-      group_by(Dyad) %>%
-      group_modify(~ classifyInitiation(.x)) |>
-      select(-Actor) |>
-      tidyr::pivot_wider(names_from = Classification, values_from = count,
-                         names_prefix = "Dwell_")
+    # if OtherHead is part of ls.AOI, then also look into Initations and Responses
+    if ("OtherHead" %in% ls.AOI) {
+      # extract initiations and solo attention to the other's head
+      df.ini = df.dwell %>%
+        group_by(Dyad) %>%
+        group_modify(~ classifyInitiation(.x)) |>
+        select(-Actor) |>
+        tidyr::pivot_wider(names_from = Classification, values_from = count,
+                           names_prefix = "Dwell_")
+    }
     
     # extract periods of fixation
     df.blocks = df.dwell |>
@@ -168,8 +172,13 @@ featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "",
       ) |> select(-AOI.frames, -Frames.total) |>
       tidyr::pivot_wider(names_from = AOI, values_from = Dwell,
                          names_glue = "{.value}_{AOI}_Total") |>
-      left_join(df.blocks, by = c("Dyad", "Time", "Identifier")) |>
-      left_join(df.ini, by = c("Dyad", "Time", "Identifier"))
+      left_join(df.blocks, by = c("Dyad", "Time", "Identifier"))
+    
+    # if OtherHead then add the Initiations
+    if ("OtherHead" %in% ls.AOI) {
+      df.dwell.agg = df.dwell.agg |>
+        left_join(df.ini, by = c("Dyad", "Time", "Identifier"))
+    }
     
     # potentially add the values depending on Communication
     if ("Communication" %in% colnames(df)) {
@@ -189,23 +198,34 @@ featDwell = function(df, ls.AOI, fps, rs.path = c(), suffix = "",
       )
     }
     
-    # joint attention 
-    df.dwell.joint = df.dwell |>
-      select(Dyad, Time, Actor, Frame, AOI, Frames.total) |> filter(AOI != "noAOI") |>
-      tidyr::pivot_wider(names_from = Actor, values_from = AOI) |>
-      filter(actor0 == actor1) |>
-      rename(AOI = actor0) |>
-      group_by(Dyad, Time, AOI, Frames.total) |>
-      summarise(
-        value = n()*100,
-        .groups = "drop"
-      ) |> mutate(value = value/Frames.total) |>
-      tidyr::pivot_wider(names_from = AOI,
-                         names_glue = "DyadDwell_{AOI}_Total") |>
-      ungroup() |> select(-Frames.total)
+    # for all dyads compute shared attention
+    df.dyad = df.dwell |>
+      filter(!grepl("solo", Dyad))
     
-    df.out = merge(df.dwell.agg, df.dwell.joint, all.x = T) |> 
-      mutate(across(where(is.numeric), \(x) coalesce(x, 0)))
+    if (nrow(df.dyad) > 0) {
+      
+      # compute joint attention
+      df.dwell.joint = df.dyad |>
+        select(Dyad, Time, Actor, Frame, AOI, Frames.total) |> filter(AOI != "noAOI") |>
+        tidyr::pivot_wider(names_from = Actor, values_from = AOI) |>
+        filter(actor0 == actor1) |>
+        rename(AOI = actor0) |>
+        group_by(Dyad, Time, AOI, Frames.total) |>
+        summarise(
+          value = n()*100,
+          .groups = "drop"
+        ) |> mutate(value = value/Frames.total) |>
+        tidyr::pivot_wider(names_from = AOI,
+                           names_glue = "DyadDwell_{AOI}_Total") |>
+        ungroup() |> select(-Frames.total)
+      
+      df.out = merge(df.dwell.agg, df.dwell.joint, all.x = T) |> 
+        mutate(across(where(is.numeric), \(x) coalesce(x, 0)))
+      
+    } else {
+      df.out = df.dwell.agg |> 
+        mutate(across(where(is.numeric), \(x) coalesce(x, 0)))
+    }
     
     # save speech dwell dataframe
     if (!is.null(rs.path)) {

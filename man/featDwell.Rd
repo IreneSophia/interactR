@@ -23,6 +23,7 @@ featDwell(
 ignoring undeclared targets. All but alphabet characters will be removed, both in the AOI columns
 and in this list. The order of the AOIs matters: if more than one were to fit, then the first
 AOI is chosen. E.g., if ls.AOI = c("Self", "Laptop"), then "Self Laptop" is classified as "Self".
+If "OtherHead" is part of ls.AOI, then eye contact initiations are computed.
 If empty (\code{is.null(ls.AOI) == TRUE}), existing classification is used.}
 
 \item{fps}{Numeric. Frame processing rate frequency profile (frames per second) of the dataset.}
