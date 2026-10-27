@@ -58,6 +58,9 @@ extractDataVERSE = function(df.info, timezone = "UTC",
 
     checkDF(df.info, c("Filename", "Time"))
     
+    # check if df.info is empty
+    if (nrow(df.info) == 0) stop("df.info is empty")
+    
     # extract the header from one of the files
     header = as.character(
       readr::read_delim(df.info$Filename[1], delim = ";", col_names = F,
@@ -300,6 +303,9 @@ readCSVs = function(Filename, cols = 1:186) {
 #' 
 
 extractEventsVERSE = function(fl.ls, timezone = "UTC", type = "df") {
+  
+  # check if fl.ls is empty
+  if (length(fl.ls) == 0) stop("fl.ls is empty")
   
   # return all the information as a list
   if (type == "list") {
