@@ -9,6 +9,7 @@ featDwell(
   ls.AOI,
   fps,
   initiationTarget = "Other Head",
+  blocks = T,
   rs.path = c(),
   suffix = "",
   verbose = T,
@@ -32,6 +33,9 @@ If empty (\code{is.null(ls.AOI) == TRUE}), existing classification is used.}
 \item{initiationTarget}{Character. The element of ls.AOI that should be used to detect
 eye contact initiations and responses. Default is \verb{Other Head}, corresponding to
 the head AOI based on VERSE default values.}
+
+\item{blocks}{Logical. Whether blocks of fixations should be extracted - this only
+makes sense if there are no Frames missing in-between. Default is \code{TRUE}.}
 
 \item{rs.path}{Character. Path to the directory where the output files will be saved.
 If empty (\code{is.null(rs.path) == TRUE}), nothing is saved to disk. Default is \code{c()}.}

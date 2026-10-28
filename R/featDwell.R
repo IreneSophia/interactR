@@ -16,6 +16,8 @@
 #' @param initiationTarget Character. The element of ls.AOI that should be used to detect
 #'   eye contact initiations and responses. Default is `Other Head`, corresponding to 
 #'   the head AOI based on VERSE default values.
+#' @param blocks Logical. Whether blocks of fixations should be extracted - this only
+#'   makes sense if there are no Frames missing in-between. Default is `TRUE`.
 #' @param rs.path Character. Path to the directory where the output files will be saved.
 #'   If empty (`is.null(rs.path) == TRUE`), nothing is saved to disk. Default is `c()`.
 #' @param suffix Character. Suffix to be added to the files saved to disk. Default is `""`.
@@ -30,7 +32,7 @@
 #' @export
 #' 
 
-featDwell = function(df, ls.AOI, fps, initiationTarget = "Other Head", 
+featDwell = function(df, ls.AOI, fps, initiationTarget = "Other Head", blocks = T,
                      rs.path = c(), suffix = "", 
                      verbose = T, recompute = F, return = T) {
   
@@ -88,7 +90,8 @@ featDwell = function(df, ls.AOI, fps, initiationTarget = "Other Head",
     
     # if necessary, combine the two eyes into one gaze fixation
     if ("AOI" %in% colnames(df)) {
-      df.dwell = df
+      df.dwell = df  |>
+        select(Dyad, Time, Identifier, Actor, Frame, Timestamp, AOI, any_of('Communication'))
     } else {
       df.dwell = df |> 
         mutate(
@@ -98,51 +101,56 @@ featDwell = function(df, ls.AOI, fps, initiationTarget = "Other Head",
             grepl("noAOI", AOI.right) ~ AOI.left,
             T ~ AOI.left
           )
-        )
+        ) |>
+        select(Dyad, Time, Identifier, Actor, Frame, Timestamp, AOI, any_of('Communication'))
     }
     
-    # smooth the AOI extraction
-    df.dwell = df.dwell |>
-      select(Dyad, Time, Identifier, Actor, Frame, Timestamp, AOI, any_of('Communication')) |>
-      #  iterative smoothing to get rid of one-frame AOIs encased by the same other AOI
-      arrange(Dyad, Time, Identifier, Frame) |>
-      mutate(
-        AOI_smooth = iterSmoothing(AOI)
-      )
-    
-    # extract periods of fixation
-    df.blocks = df.dwell |>
-      arrange(Dyad, Time, Identifier, Frame) |>
-      mutate(block = consecutive_id(AOI_smooth)) |>
-      group_by(Dyad, Time, Identifier, block) |>
-      filter(n() > 1) |> # get rid of everything that is just one sample
-      ungroup() |>
-      mutate(block = consecutive_id(AOI_smooth)) |>
-      group_by(Dyad, Time, Identifier, block, AOI_smooth) |>
-      summarise(
-        minFrame = min(Frame),
-        maxFrame = max(Frame),
-        minTime  = min(Timestamp),
-        maxTime  = max(Timestamp),
-        .groups = 'drop'
-      ) |>
-      select(-block) |>
-      filter(AOI_smooth != "noAOI") |> 
-      mutate(Duration = (maxFrame - minFrame)/fps)
-    
-    if (fldat != '') arrow::write_feather(df.blocks, fldat, compression = "zstd")
-    
-    # aggregate the block durations
-    df.blocks = df.blocks |>
-      group_by(Dyad, Time, Identifier, AOI_smooth) |>
-      summarise(
-        AVG = mean(Duration, na.rm = T),
-        SD  = sd(Duration, na.rm = T),
-        MED = median(Duration, na.rm = T),
-        .groups = "drop"
-      ) |>
-      tidyr::pivot_wider(names_from = AOI_smooth, values_from = c(AVG, SD, MED),
-                         names_glue = "DwellBlocks_{AOI_smooth}_{.value}")
+    if (blocks) {
+      
+      # smooth the AOI extraction
+      df.dwell = df.dwell |>
+        group_by(Dyad, Time, Identifier) |>
+        #  iterative smoothing to get rid of one-frame AOIs encased by the same other AOI
+        arrange(Dyad, Time, Identifier, Frame) |>
+        mutate(
+          AOI_smooth = iterSmoothing(AOI)
+        )
+      
+      # extract periods of fixation
+      df.blocks = df.dwell |>
+        arrange(Dyad, Time, Identifier, Frame) |>
+        mutate(block = consecutive_id(AOI_smooth)) |>
+        group_by(Dyad, Time, Identifier, block) |>
+        filter(n() > 1) |> # get rid of everything that is just one sample
+        ungroup() |>
+        mutate(block = consecutive_id(AOI_smooth)) |>
+        group_by(Dyad, Time, Identifier, block, AOI_smooth) |>
+        summarise(
+          minFrame = min(Frame),
+          maxFrame = max(Frame),
+          minTime  = min(Timestamp),
+          maxTime  = max(Timestamp),
+          .groups = 'drop'
+        ) |>
+        select(-block) |>
+        filter(AOI_smooth != "noAOI") |> 
+        mutate(Duration = (maxFrame - minFrame)/fps)
+      
+      if (fldat != '') arrow::write_feather(df.blocks, fldat, compression = "zstd")
+      
+      # aggregate the block durations
+      df.blocks = df.blocks |>
+        group_by(Dyad, Time, Identifier, AOI_smooth) |>
+        summarise(
+          AVG = mean(Duration, na.rm = T),
+          SD  = sd(Duration, na.rm = T),
+          MED = median(Duration, na.rm = T),
+          .groups = "drop"
+        ) |>
+        tidyr::pivot_wider(names_from = AOI_smooth, values_from = c(AVG, SD, MED),
+                           names_glue = "DwellBlocks_{AOI_smooth}_{.value}")
+      
+    }
     
     # add total number of frames
     df.dwell = df.dwell |>
@@ -164,8 +172,9 @@ featDwell = function(df, ls.AOI, fps, initiationTarget = "Other Head",
         Dwell = AOI.frames * 100 / Frames.total
       ) |> select(-AOI.frames, -Frames.total) |>
       tidyr::pivot_wider(names_from = AOI, values_from = Dwell,
-                         names_glue = "{.value}_{AOI}_Total") |>
-      left_join(df.blocks, by = c("Dyad", "Time", "Identifier"))
+                         names_glue = "{.value}_{AOI}_Total")
+    
+    if (blocks) df.dwell.agg = df.dwell.agg |> left_join(df.blocks, by = c("Dyad", "Time", "Identifier"))
     
     # potentially add the values depending on Communication
     if ("Communication" %in% colnames(df)) {
