@@ -325,7 +325,6 @@ extractEventsVERSE = function(fl.ls, timezone = "UTC", type = "df") {
       # include an Events dataframe
       ls.info[[i]]$Events = data.frame(Event = txt[(grep("^}", txt)+1):length(txt)]) |> 
         mutate(Timestamp = as.POSIXct(substr(Event, 1, 23), 
-                                      format="%Y-%m-%d %X",
                                       tz = timezone),
                Event = gsub(".*?: (.+)", "\\1", Event))
       # name the list entry after the directory
@@ -345,7 +344,6 @@ extractEventsVERSE = function(fl.ls, timezone = "UTC", type = "df") {
         mutate(
           # extract the Timestamp from the Event
           Timestamp = as.POSIXct(substr(Event, 1, 23), 
-                                 format="%Y-%m-%d %X",
                                  tz = timezone),
           # extract what happened
           Event = gsub(".*?: (.+)", "\\1", Event),
